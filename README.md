@@ -3,5 +3,5 @@ FishCycle adalah sistem pencatatan dan distribusi hasil laut untuk memastikan se
 
 **Kelompok:**
 - Ketua Kelompok: 
-- Anggota 1: 
+- Anggota 1: Maritza Vania Adelia (23/517643/TK/56944)
 - Anggota 2: Sharon Nakisha Hezharu Putri (23/512030/TK/56285)
