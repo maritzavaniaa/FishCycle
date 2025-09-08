@@ -5,3 +5,7 @@ FishCycle adalah sistem pencatatan dan distribusi hasil laut untuk memastikan se
 - Ketua Kelompok: 
 - Anggota 1: Maritza Vania Adelia (23/517643/TK/56944)
 - Anggota 2: 
+
+## Class Diagram
+Berikut adalah rancangan class diagram untuk aplikasi FishCycle.
+![Class Diagram](images/classdiagram.png)
