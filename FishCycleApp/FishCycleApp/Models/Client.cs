@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FishCycleApp.Models
 {
-    internal class Client
+    public class Client
     {
         public Guid ClientId { get; set; }
         public string Name { get; set; }
