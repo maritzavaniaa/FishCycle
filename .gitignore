@@ -1,6 +1,5 @@
 .DS_Store
-**/bin/
-**/obj/
 .vs/
-*.user
-*.user.cs
+bin/
+obj/
+.env
