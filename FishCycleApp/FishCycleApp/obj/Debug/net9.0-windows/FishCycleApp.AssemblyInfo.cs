@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FishCycleApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ded74f3500510900bf8dc4d482f81781e695a10")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0753647faf1446aaefa007a24ee5ca334d937a7c")]
 [assembly: System.Reflection.AssemblyProductAttribute("FishCycleApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FishCycleApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
