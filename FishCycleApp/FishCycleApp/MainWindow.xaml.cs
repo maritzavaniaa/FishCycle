@@ -20,5 +20,10 @@ namespace FishCycleApp
         {
             InitializeComponent();
         }
+
+        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Lanjut ke Login Google!");
+        }
     }
 }
