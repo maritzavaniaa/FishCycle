@@ -8,5 +8,8 @@
     <Compile Update="StockPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="TransactionPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>
