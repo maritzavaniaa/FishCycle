@@ -145,7 +145,6 @@
                                     <TextBlock Grid.Column="5" Text="Sat" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
                                     <TextBlock Grid.Column="6" Text="Sun" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
                                 </Grid>
-
                             </Grid>
 
                             <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,0,0,0">
