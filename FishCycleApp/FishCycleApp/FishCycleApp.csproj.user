@@ -8,6 +8,9 @@
     <Compile Update="DashboardWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="EmployeePage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="StockPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
