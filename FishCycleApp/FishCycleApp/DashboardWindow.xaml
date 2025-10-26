@@ -8,125 +8,6 @@
         Title="Dashboard Page" Height="768" Width="1366"
         WindowStartupLocation="CenterScreen">
 
-    <Window.Resources>
-        <Style x:Key="ActiveMenuItemStyle" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="#90E0EF"/>
-            <Setter Property="Foreground" Value="#00334E"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Width" Value="180"/>
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Margin" Value="0,5,0,10"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="15,0,0,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" Opacity="0.2" ShadowDepth="3" BlurRadius="5" Direction="320"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="InactiveMenuItemStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ActiveMenuItemStyle}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Effect" Value="{x:Null}"/>
-
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E0F7FA"/>
-                    <Setter Property="Foreground" Value="#00334E"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="LogoutButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource InactiveMenuItemStyle}">
-            <Setter Property="Foreground" Value="#808080"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Width" Value="150"/>
-            <Setter Property="Margin" Value="0"/>
-            <Setter Property="Effect" Value="{x:Null}"/>
-
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="Red"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="DetailButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="#D9ED92"/>
-            <Setter Property="Foreground" Value="#00334E"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="10,3"/>
-            <Setter Property="Height" Value="25"/>
-            <Setter Property="Width" Value="70"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" Opacity="0.25" ShadowDepth="3" BlurRadius="5"/>
-                </Setter.Value>
-            </Setter>
-
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#C4D386"/>
-
-                    <Setter Property="Effect" Value="{x:Null}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="DataGridHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
-            <Setter Property="Background" Value="#F8F9FA"/>
-            <Setter Property="BorderThickness" Value="1,1,1,1"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="Foreground" Value="#00334E"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Padding" Value="5, 10, 5, 10"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="ChartBarBaseStyle" TargetType="{x:Type Rectangle}">
-            <Setter Property="Fill" Value="#90E0EF"/>
-            <Setter Property="RadiusX" Value="5"/>
-            <Setter Property="RadiusY" Value="5"/>
-            <Setter Property="Margin" Value="0,0,0,1"/>
-            <Setter Property="Opacity" Value="0.8"/>
-
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Fill" Value="#D9ED92"/>
-                    <Setter Property="Opacity" Value="1.0"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
-
     <Grid Background="#E9ECEF">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
@@ -144,21 +25,21 @@
                     <Image Source="/Images/logo_lengkap.png" Width="140" Margin="0,30,0,20"/>
                     <StackPanel x:Name="MenuPanel" Margin="10,0,10,0">
 
-                        <Button Style="{StaticResource ActiveMenuItemStyle}">
+                        <Button x:Name="btnDashboard" x:FieldModifier="public" Style="{StaticResource ActiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Images/icon_dashboard.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Dashboard" VerticalAlignment="Center" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnStock" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
+                        <Button x:Name="btnStock" x:FieldModifier="public" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Images/icon_stock.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Stock" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnTransaction" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
+                        <Button x:Name="btnTransaction" x:FieldModifier="public" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Images/icon_transaction.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Transaction" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
@@ -187,7 +68,7 @@
                         Margin="20,10,0,10" Height="40" 
                         HorizontalAlignment="Left"
                         Click="btnLogout_Click">
-                    
+
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/Images/icon_logout.png" Width="20" Height="20" Margin="25,0,10,0"/>
                         <TextBlock Text="Log Out" VerticalAlignment="Center" Margin="0,-2.5,0,0"/>
@@ -196,231 +77,8 @@
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Column="1" Padding="10">
-            <StackPanel x:Name="MainContentStack">
+        <Frame Grid.Column="1" x:Name="MainFrame" 
+               NavigationUIVisibility="Hidden"/>
 
-                <Grid x:Name="HeaderGrid" Margin="15,10,0,30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Dashboard" FontSize="28" FontWeight="Bold" Foreground="#00334E"/>
-                        <TextBlock Text="Thu 11 Sep | 12.00 WIB" FontSize="18" Foreground="#00334E"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Image Source="/Images/icon_profile.png" Height="30" Width="30" Margin="0,0,10,0"/>
-                        <TextBlock Text="Amira Syafika" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
-                    </StackPanel>
-                </Grid>
-
-                <Grid x:Name="StatCardsGrid" Margin="15,0,0,30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Height="135" CornerRadius="30" Background="White" Margin="-15,0,20,0" Padding="20">
-                        <StackPanel>
-                            <Grid Margin="3,0,0,0">
-                                <TextBlock Text="Total Revenue" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_money.png" Width="22" Height="22" HorizontalAlignment="Right"/>
-                            </Grid>
-                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
-                            <Grid Margin="3,10,0,0">
-                                <TextBlock Text="Rp1.560.000.000" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1" Height="135" CornerRadius="30" Background="White" Margin="0,0,20,0" Padding="20">
-                        <StackPanel>
-                            <Grid Margin="3,0,0,0">
-                                <TextBlock Text="Total Transaction" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_cart.png" Width="22" Height="22" HorizontalAlignment="Right"/>
-                            </Grid>
-                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
-                            <Grid Margin="3,10,0,0">
-                                <TextBlock Text="352" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Height="135" CornerRadius="30" Background="White" Padding="20">
-                        <StackPanel>
-                            <Grid Margin="3,0,0,0">
-                                <TextBlock Text="Active Delivery" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_truck.png" Width="22" Height="22" HorizontalAlignment="Right"/>
-                            </Grid>
-                            <TextBlock Text="Today" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
-                            <Grid Margin="3,10,0,0">
-                                <TextBlock Text="17" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Grid x:Name="ChartAndStockGrid" Margin="0,0,0,30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Height="300" CornerRadius="30" Background="White" Margin="0,0,20,0">
-                        <Grid Margin="20">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Text="Analytic Chart" Margin="0,0,0,30" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-
-                            <Grid Grid.Row="1">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <Grid Grid.Row="0" Margin="40, 0, 0, 0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel VerticalAlignment="Top" Grid.ColumnSpan="7" Margin="0,0,0,0">
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,0,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,1"/>
-                                    </StackPanel>
-
-                                    <Rectangle Grid.Column="0" Height="152" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="1" Height="170" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="2" Height="155" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="3" Height="159" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="4" Height="120" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="5" Height="166" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="6" Height="168" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                </Grid>
-
-                                <Grid Grid.Row="1" Margin="40, 5, 0, 0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Mon" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="1" Text="Tue" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="2" Text="Wed" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="3" Text="Thurs" FontSize="16" HorizontalAlignment="Center" Foreground="#727377"/>
-                                    <TextBlock Grid.Column="4" Text="Fri" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="5" Text="Sat" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="6" Text="Sun" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                </Grid>
-
-                            </Grid>
-
-                            <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,0,0,0">
-                                <TextBlock Text="600" Foreground="#727374" Margin="0,-12,0,0" FontSize="16"/>
-                                <TextBlock Text="500" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
-                                <TextBlock Text="400" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
-                                <TextBlock Text="300" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    
-                    <Border Grid.Column="1" Height="300" CornerRadius="30" Background="White" Padding="20">
-                        <StackPanel>
-                            <Grid Margin="0,0,5,15">
-                                <TextBlock Text="Fish Stock" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" Foreground="#00334E"/>
-                                <Button x:Name="btnDetailStock" Content="DETAIL" HorizontalAlignment="Right" Style="{StaticResource DetailButtonStyle}" Click="btnDetailStock_Click"/>
-                            </Grid>
-
-                            <Grid Margin="0,0,0,15">
-                                <TextBlock Text="Total Quantity" Foreground="#212529" FontSize="16" VerticalAlignment="Center"/>
-                                <TextBlock Text="280 kg" HorizontalAlignment="Right" FontWeight="Bold" FontSize="19" Foreground="#00334E"/>
-                            </Grid>
-
-                            <StackPanel>
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Kerapu" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="35 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Tuna" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="23 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Kakap" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="19 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Salmon" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="13 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Bawal" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="7 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Border x:Name="TransactionsBorder" Height="300" CornerRadius="30" Background="White">
-                    <StackPanel>
-                        <Grid Margin="20,0,20,10">
-                            <TextBlock Text="Today's Transactions" FontSize="22" FontWeight="Bold" Margin="0,18,0,10" Foreground="#00334E"/>
-                            <Button x:Name="btnDetailTransactions" Content="DETAIL" HorizontalAlignment="Right" Style="{StaticResource DetailButtonStyle}" Margin="0,15,5,0" Click="btnDetailTransactions_Click"/>
-                        </Grid>
-
-                        <DataGrid Height="240" AutoGenerateColumns="False" HeadersVisibility="Column"
-                                  IsReadOnly="True" BorderThickness="0" GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#E0E0E0" ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
-
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Transaction Number" Width="1.5*" Binding="{Binding TransactionNumber}"/>
-                                <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}"/>
-                                <DataGridTextColumn Header="Amount" Width="*" Binding="{Binding Amount}"/>
-                                <DataGridTextColumn Header="Transaction Status" Width="*" Binding="{Binding TransactionStatus}"/>
-                                <DataGridTextColumn Header="Delivery Status" Width="*" Binding="{Binding DeliveryStatus}"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
     </Grid>
 </Window>

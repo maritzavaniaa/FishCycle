@@ -22,63 +22,64 @@ namespace FishCycleApp
         public DashboardWindow()
         {
             InitializeComponent();
+            MainFrame.Navigate(new DashboardPage());
+            HighlightActiveButton(btnDashboard);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        public void HighlightActiveButton(Button activeButton)
         {
+            Button[] menuButtons = { btnDashboard, btnStock, btnTransaction, btnClient, btnEmployee };
 
-        }
+            foreach (Button btn in menuButtons)
+            {
+                btn.Style = (Style)FindResource("InactiveMenuItemStyle");
+                btn.IsEnabled = true;
+            }
 
-        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
+            if (activeButton != null)
+            {
+                activeButton.Style = (Style)FindResource("ActiveMenuItemStyle");
+                activeButton.IsEnabled = false;
+            }
         }
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             Button clickedButton = sender as Button;
-            Window newWindow = null;
+            HighlightActiveButton(clickedButton);
 
             if (clickedButton == btnStock)
             {
-                newWindow = new StockWindow();
+                MainFrame.Navigate(new StockPage());
             }
             else if (clickedButton == btnTransaction)
             {
-                newWindow = new TransactionWindow();
+                MainFrame.Navigate(new TransactionPage());
             }
             else if (clickedButton == btnClient)
             {
-                newWindow = new ClientWindow();
+                MainFrame.Navigate(new ClientPage());
             }
             else if (clickedButton == btnEmployee)
             {
-                newWindow = new EmployeeWindow();
+                MainFrame.Navigate(new EmployeePage());
             }
-
-            if (newWindow != null)
+            else if (clickedButton == btnDashboard)
             {
-                newWindow.Show();
-                this.Close();
-            }
-            else
-            {
-                MessageBox.Show("Dashboard sudah aktif!");
+                MainFrame.Navigate(new DashboardPage());
             }
         }
 
         private void btnDetailStock_Click(object sender, RoutedEventArgs e)
         {
-            StockWindow stockWindow = new StockWindow();
-            stockWindow.Show();
-            this.Close();
+            HighlightActiveButton(btnStock);
+            MainFrame.Navigate(new StockPage());
         }
 
         private void btnDetailTransactions_Click(object sender, RoutedEventArgs e)
         {
-            TransactionWindow transactionWindow = new TransactionWindow();
-            transactionWindow.Show();
-            this.Close();
+            HighlightActiveButton(btnTransaction);
+            MainFrame.Navigate(new TransactionPage());
         }
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)
