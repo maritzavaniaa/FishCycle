@@ -23,7 +23,19 @@ namespace FishCycleApp
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Lanjut ke Login Google!");
+            bool loginBerhasil = true;
+
+            if (loginBerhasil)
+            {
+                DashboardWindow dashboard = new DashboardWindow();
+                dashboard.Show();
+
+                this.Close();
+            }
+            else
+            {
+                MessageBox.Show("Login Gagal. Silakan coba lagi.");
+            }
         }
     }
 }
