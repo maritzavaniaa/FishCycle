@@ -70,18 +70,6 @@ namespace FishCycleApp
             }
         }
 
-        private void btnDetailStock_Click(object sender, RoutedEventArgs e)
-        {
-            HighlightActiveButton(btnStock);
-            MainFrame.Navigate(new StockPage());
-        }
-
-        private void btnDetailTransactions_Click(object sender, RoutedEventArgs e)
-        {
-            HighlightActiveButton(btnTransaction);
-            MainFrame.Navigate(new TransactionPage());
-        }
-
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
             MainWindow loginWindow = new MainWindow();
