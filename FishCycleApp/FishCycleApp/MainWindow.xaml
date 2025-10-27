@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FishCycleApp"
         mc:Ignorable="d"
-        Title="Login Page" Height="572" Width="929">
+        Title="Login Window" Height="768" Width="1366"
+        WindowStartupLocation="CenterScreen">
+
     <Grid>
         <Image Source="/Images/bg_ikan.png" Stretch="UniformToFill"/>
         <Border Width="427" Height="363"
@@ -71,3 +73,4 @@
         </Border>
     </Grid>
 </Window>
+    
