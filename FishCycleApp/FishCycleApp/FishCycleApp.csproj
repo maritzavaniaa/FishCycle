@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Images\bg_ikan.png" />
     <Resource Include="Images\icon_cart.png" />
     <Resource Include="Images\icon_client.png" />
