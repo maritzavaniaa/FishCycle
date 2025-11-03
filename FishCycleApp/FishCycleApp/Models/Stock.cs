@@ -8,14 +8,11 @@ namespace FishCycleApp.Models
 {
     public class Stock
     {
-        public Guid StockId { get; set; }
+        public string StockID { get; set; }
+        public string ProductID { get; set; }
+        public string SupplierID { get; set; }
+        public string TransactionID { get; set; }
         public DateTime Date { get; set; }
-        public int StockIn { get; set; }
-        public int StockOut { get; set; }
-
-        public bool CheckAvailability()
-        {
-            return (StockIn - StockOut) > 0;
-        }
+        public int Quantity { get; set; }
     }
 }
