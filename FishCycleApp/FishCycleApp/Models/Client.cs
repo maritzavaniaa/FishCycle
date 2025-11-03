@@ -13,7 +13,5 @@ namespace FishCycleApp.Models
         public string ClientContact { get; set; }
         public string ClientAddress { get; set; }
         public string ClientCategory { get; set; }
-
-        public List<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 }
