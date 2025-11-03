@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FishCycleApp.Models
 {
-    internal class Supplier
+    public class Supplier
     {
         public string SupplierID { get; set; }
         public string SupplierName { get; set; }
