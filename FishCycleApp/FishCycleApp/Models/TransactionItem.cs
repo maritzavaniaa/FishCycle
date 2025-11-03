@@ -8,17 +8,11 @@ namespace FishCycleApp.Models
 {
     public class TransactionItem
     {
-        public Guid TxItemId { get; set; }
-        public int Qty { get; set; }
+        public string TxItemID { get; set; }
+        public string TransactionID { get; set; }
+        public string ProductID { get; set; }
+        public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-
-        // Relasi ke Product
-        public Guid ProductId { get; set; }
-        public Product Product { get; set; }
-
-        public decimal Subtotal()
-        {
-            return Qty * UnitPrice;
-        }
+        public int CurrentStock { get; set; }
     }
 }
