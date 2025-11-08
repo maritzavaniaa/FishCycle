@@ -12,7 +12,8 @@ namespace FishCycleApp.DataAccess
     public class DatabaseConnection
     {
         protected NpgsqlConnection conn;
-        private string connstring = "Host=localhost;Port=5432;Username=app_user;Password=app123;Database=FishCycleDB";
+        private string connstring = "Host=localhost;Port=5434;Username=app_user;" +
+            "Password=app123;Database=FishCycleDB";
 
         public DatabaseConnection()
         {
