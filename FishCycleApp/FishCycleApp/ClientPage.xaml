@@ -6,9 +6,74 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="ClientPage" Background="WhiteSmoke">
+      Title="ClientPage" Background="#E9ECEF"
+      IsVisibleChanged="ClientPage_IsVisibleChanged">
 
-    <Grid>
-        <TextBlock Text="Ini adalah Client Page." FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid Margin="100,50,50,50">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="All Clients" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="(showing data results)" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
+
+            <Button x:Name="btnAdd" Content="ADD CLIENT" 
+                    HorizontalAlignment="Right" 
+                    Margin="50,0,0,0"
+                    Padding="15,5" 
+                    Background="#007ACC" Foreground="White"
+                    Click="btnAdd_Click"/>
+
+            <Button x:Name="btnLoad" Content="Refresh" 
+                    Margin="10,0,0,0"
+                    Padding="10,5"
+                    Click="btnLoad_Click"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBox x:Name="txtSearch" Width="250" Height="30" Padding="5" Style="{StaticResource WatermarkTextBox}" TextChanged="txtSearch_TextChanged"/>
+        </StackPanel>
+
+        <DataGrid x:Name="dgvClients" 
+                  Grid.Row="2" 
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  Background="White"
+                  BorderBrush="#E0E0E0"
+                  RowHeaderWidth="0">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Client ID" Binding="{Binding clientid}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding client_name}" Width="200" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Contact" Binding="{Binding client_contact}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Address" Binding="{Binding client_address}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Category" Binding="{Binding client_category}" Width="120" IsReadOnly="True"/>
+
+
+                <DataGridTemplateColumn Header="Action" Width="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                <Button Content="View" Margin="5,0"
+                                        Click="btnView_Click" 
+                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+
+                                <Button Content="🗑️" 
+                                        Click="btnDelete_Click" 
+                                        Background="Transparent" Foreground="Red" BorderBrush="Transparent"
+                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Page>

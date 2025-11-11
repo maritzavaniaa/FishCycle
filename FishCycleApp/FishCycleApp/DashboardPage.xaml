@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="DashboardPage">
+      Title="DashboardPage" Background="#E9ECEF">
 
     <Grid>
         <ScrollViewer Grid.Column="1" Padding="10">

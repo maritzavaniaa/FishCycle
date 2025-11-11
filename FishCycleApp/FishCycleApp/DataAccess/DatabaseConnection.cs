@@ -31,7 +31,8 @@ namespace FishCycleApp.DataAccess
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error opening database connection: " + ex.Message, "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error opening database connection: " + ex.Message, 
+                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
