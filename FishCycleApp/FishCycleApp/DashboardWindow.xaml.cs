@@ -28,7 +28,7 @@ namespace FishCycleApp
 
         public void HighlightActiveButton(Button activeButton)
         {
-            Button[] menuButtons = { btnDashboard, btnStock, btnTransaction, btnClient, btnEmployee };
+            Button[] menuButtons = { btnDashboard, btnStock, btnTransaction, btnClient, btnEmployee, btnSupplier };
 
             foreach (Button btn in menuButtons)
             {
@@ -67,6 +67,10 @@ namespace FishCycleApp
             else if (clickedButton == btnDashboard)
             {
                 MainFrame.Navigate(new DashboardPage());
+            }
+            else if (clickedButton == btnSupplier)
+            {
+                MainFrame.Navigate(new SupplierPage());
             }
         }
 

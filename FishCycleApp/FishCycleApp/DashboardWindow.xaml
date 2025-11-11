@@ -46,9 +46,16 @@
                             </StackPanel>
                         </Button>
 
+                        <Button x:Name="btnSupplier" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Images/icon_supplier.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <TextBlock Text="Supplier" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
+                            </StackPanel>
+                        </Button>
+
                         <Button x:Name="btnClient" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_client.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Images/icon_clients.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Client" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
