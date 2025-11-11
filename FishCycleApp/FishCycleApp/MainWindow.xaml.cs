@@ -8,6 +8,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
+using Google.Apis.Auth.OAuth2;  
+using Google.Apis.Util.Store;
 
 namespace FishCycleApp
 {
@@ -21,20 +24,43 @@ namespace FishCycleApp
             InitializeComponent();
         }
 
-        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        private async void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            bool loginBerhasil = true;
+            string clientId = "";
+            string clientSecret = "";
 
-            if (loginBerhasil)
+            string[] scopes = { "profile", "email" };
+
+            try
             {
-                DashboardWindow dashboard = new DashboardWindow();
-                dashboard.Show();
+                UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    new ClientSecrets
+                    {
+                        ClientId = clientId,
+                        ClientSecret = clientSecret
+                    },
+                    scopes,
+                    "user", 
+                    CancellationToken.None,
+                    new FileDataStore("FishCycleAppToken")
+                );
 
-                this.Close();
+                if (credential.Token.AccessToken != null)
+                {
+                    MessageBox.Show("Login Google Berhasil!", "SUCCESS");
+
+                    DashboardWindow dashboard = new DashboardWindow();
+                    dashboard.Show();
+                    this.Close(); 
+                }
+                else
+                {
+                    MessageBox.Show("Otentikasi dibatalkan.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Login Gagal. Silakan coba lagi.");
+                MessageBox.Show($"Error Login Google: {ex.Message}", "FATAL ERROR");
             }
         }
     }
