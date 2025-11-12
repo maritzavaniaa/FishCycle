@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Apis.PeopleService.v1.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,10 @@ namespace FishCycleApp
     /// </summary>
     public partial class DashboardPage : Page
     {
-        public DashboardPage()
+        public DashboardPage(Person userProfile)
         {
             InitializeComponent();
+            DisplayProfileData(userProfile);
         }
 
         private void btnDetailStock_Click(object sender, RoutedEventArgs e)
@@ -47,6 +49,40 @@ namespace FishCycleApp
             }
 
             NavigationService.Navigate(new TransactionPage());
+        }
+
+        private void DisplayProfileData(Person profile)
+        {
+            if (profile.Names != null && profile.Names.Count > 0)
+            {
+                lblUserName.Text = profile.Names[0].DisplayName;
+            }
+            else
+            {
+                lblUserName.Text = "Pengguna Tidak Dikenal";
+            }
+
+            if (profile.Photos != null && profile.Photos.Count > 0)
+            {
+                string photoUrl = profile.Photos[0].Url;
+
+                try
+                {
+                    BitmapImage bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
+                    bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
+                    bitmap.EndInit();
+
+                    imgUserProfile.Source = bitmap;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Gagal memuat foto profil: {ex.Message}", "Error Foto", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
         }
     }
 }

@@ -1,4 +1,13 @@
-﻿using System.Text;
+﻿using Google.Apis.Auth.OAuth2;  
+using Google.Apis.PeopleService.v1;
+using Google.Apis.PeopleService.v1.Data;
+using Google.Apis.Util.Store;
+using Newtonsoft.Json;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,9 +17,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Threading;
-using Google.Apis.Auth.OAuth2;  
-using Google.Apis.Util.Store;
 
 namespace FishCycleApp
 {
@@ -29,7 +35,10 @@ namespace FishCycleApp
             string clientId = "";
             string clientSecret = "";
 
-            string[] scopes = { "profile", "email" };
+            string[] scopes = {
+                "https://www.googleapis.com/auth/userinfo.email",
+                "https://www.googleapis.com/auth/userinfo.profile"
+            };
 
             try
             {
@@ -40,18 +49,21 @@ namespace FishCycleApp
                         ClientSecret = clientSecret
                     },
                     scopes,
-                    "user", 
+                    "user",
                     CancellationToken.None,
                     new FileDataStore("FishCycleAppToken")
                 );
 
                 if (credential.Token.AccessToken != null)
                 {
-                    MessageBox.Show("Login Google Berhasil!", "SUCCESS");
+                    Person profile = await GetGoogleProfile(credential);
 
-                    DashboardWindow dashboard = new DashboardWindow();
-                    dashboard.Show();
-                    this.Close(); 
+                    if (profile != null)
+                    {
+                        DashboardWindow dashboard = new DashboardWindow(profile);
+                        dashboard.Show();
+                        this.Close();
+                    }
                 }
                 else
                 {
@@ -62,6 +74,33 @@ namespace FishCycleApp
             {
                 MessageBox.Show($"Error Login Google: {ex.Message}", "FATAL ERROR");
             }
+        }
+
+        private async Task<Person> GetGoogleProfile(UserCredential credential)
+        {
+            var profile = new Person();
+
+            const string url = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                    "Bearer", credential.Token.AccessToken);
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode(); 
+
+                string json = await response.Content.ReadAsStringAsync();
+
+                dynamic userInfo = JsonConvert.DeserializeObject(json);
+
+                if (userInfo != null)
+                {
+                    profile.Names = new List<Name> { new Name() { DisplayName = userInfo.name } };
+                    profile.Photos = new List<Photo> { new Photo() { Url = userInfo.picture } };
+                }
+            }
+            return profile;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Apis.PeopleService.v1.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,10 +20,14 @@ namespace FishCycleApp
     /// </summary>
     public partial class DashboardWindow : Window
     {
-        public DashboardWindow()
+        private Person currentUserProfile;
+
+        public DashboardWindow(Person userProfile)
         {
             InitializeComponent();
-            MainFrame.Navigate(new DashboardPage());
+            this.currentUserProfile = userProfile;
+            DashboardPage startPage = new DashboardPage(this.currentUserProfile);
+            MainFrame.Navigate(startPage);
             HighlightActiveButton(btnDashboard);
         }
 
@@ -66,7 +71,7 @@ namespace FishCycleApp
             }
             else if (clickedButton == btnDashboard)
             {
-                MainFrame.Navigate(new DashboardPage());
+                MainFrame.Navigate(new DashboardPage(this.currentUserProfile));
             }
             else if (clickedButton == btnSupplier)
             {
