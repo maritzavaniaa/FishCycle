@@ -15,6 +15,7 @@
     <None Remove="Images\icon_clients.png" />
     <None Remove="Images\icon_dashboard.png" />
     <None Remove="Images\icon_delete.png" />
+    <None Remove="Images\icon_edit.png" />
     <None Remove="Images\icon_employee.png" />
     <None Remove="Images\icon_logout.png" />
     <None Remove="Images\icon_menu.png" />
@@ -23,11 +24,13 @@
     <None Remove="Images\icon_stock.png" />
     <None Remove="Images\icon_supplier.png" />
     <None Remove="Images\icon_truck.png" />
+    <None Remove="Images\icon_view.png" />
     <None Remove="Images\logo.png" />
     <None Remove="Images\logo_lengkap.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.72.0" />
     <PackageReference Include="Google.Apis.PeopleService.v1" Version="1.69.0.3785" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -41,6 +44,7 @@
     <Resource Include="Images\icon_clients.png" />
     <Resource Include="Images\icon_dashboard.png" />
     <Resource Include="Images\icon_delete.png" />
+    <Resource Include="Images\icon_edit.png" />
     <Resource Include="Images\icon_employee.png" />
     <Resource Include="Images\icon_logout.png" />
     <Resource Include="Images\icon_menu.png" />
@@ -50,6 +54,7 @@
     <Resource Include="Images\icon_profile.png" />
     <Resource Include="Images\icon_stock.png" />
     <Resource Include="Images\icon_truck.png" />
+    <Resource Include="Images\icon_view.png" />
     <Resource Include="Images\logo.png" />
     <Resource Include="Images\logo_lengkap.png" />
   </ItemGroup>

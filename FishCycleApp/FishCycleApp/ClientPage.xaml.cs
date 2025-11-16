@@ -74,6 +74,30 @@ namespace FishCycleApp
             }
         }
 
+        private void btnEdit_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button == null) return;
+
+            DataRowView selectedRow = button.DataContext as DataRowView;
+
+            if (selectedRow != null)
+            {
+                string clientID = selectedRow["clientid"].ToString();
+
+                // Navigasi ke halaman edit, kirim clientID
+                this.NavigationService?.Navigate(new EditClientPage(clientID));
+            }
+            else
+            {
+                MessageBox.Show("Unable to retrieve client details.",
+                                "ERROR",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+            }
+        }
+
+
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
             this.NavigationService.Navigate(new AddClientPage());

@@ -55,21 +55,37 @@
                 <DataGridTextColumn Header="Category" Binding="{Binding client_category}" Width="120" IsReadOnly="True"/>
 
 
-                <DataGridTemplateColumn Header="Action" Width="150">
+                <DataGridTemplateColumn Header="Action" Width="200">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
-                                <Button Content="View" Margin="5,0"
-                                        Click="btnView_Click" 
-                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
-
-                                <Button x:Name="btnDelete" Style="{StaticResource ActiveMenuItemStyle}" Click="btnDelete_Click">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="/Images/icon_delete.png" Width="20" Height="20" Margin="20,0,10,0"/>
-                                    </StackPanel>
+                                <Button Click="btnView_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
                                 </Button>
 
+                                <Button Click="btnEdit_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_edit.png" Width="20" Height="20"/>
+                                </Button>
+
+                                <Button x:Name="btnDelete"
+                                        Click="btnDelete_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="5,0,0,0">
+                                    <Image Source="/Images/icon_delete.png"
+                                       Width="20" Height="20"
+                                       Margin="0"/>
+                                </Button>
 
                             </StackPanel>
                         </DataTemplate>

@@ -3,12 +3,101 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:FishCycleApp"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="SupplierPage" Background="WhiteSmoke">
+      Title="SupplierPage"
+      Background="#E9ECEF">
 
-    <Grid>
-        <TextBlock Text="Ini adalah Supplier Page." FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid Margin="100,50,50,50">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="All Suppliers" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="(showing data results)" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
+
+            <Button x:Name="btnAdd"
+                    Content="ADD SUPPLIER"
+                    HorizontalAlignment="Right"
+                    Margin="50,0,0,0"
+                    Padding="15,5"
+                    Background="#007ACC"
+                    Foreground="White"
+                    Click="btnAdd_Click"/>
+
+            <Button x:Name="btnLoad"
+                    Content="Refresh"
+                    Margin="10,0,0,0"
+                    Padding="10,5"
+                    Click="btnLoad_Click"/>
+        </StackPanel>
+
+        <!-- SEARCH -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBox x:Name="txtSearch"
+                     Width="250"
+                     Height="30"
+                     Padding="5"
+                     TextChanged="txtSearch_TextChanged"/>
+        </StackPanel>
+
+        <!-- DATAGRID -->
+        <DataGrid x:Name="dgvSuppliers"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  Background="White"
+                  BorderBrush="#E0E0E0"
+                  RowHeaderWidth="0">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Supplier ID" Binding="{Binding supplierid}" Width="150"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding supplier_name}" Width="200"/>
+                <DataGridTextColumn Header="Phone" Binding="{Binding supplier_phone}" Width="150"/>
+                <DataGridTextColumn Header="Address" Binding="{Binding supplier_address}" Width="300"/>
+                <DataGridTextColumn Header="Category" Binding="{Binding supplier_type}" Width="150"/>
+
+                <DataGridTemplateColumn Header="Action" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                <Button Click="btnView_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
+                                </Button>
+
+                                <Button Click="btnEdit_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_edit.png" Width="20" Height="20"/>
+                                </Button>
+
+                                <Button Click="btnDelete_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="5,0,0,0">
+                                    <Image Source="/Images/icon_delete.png" Width="20" Height="20"/>
+                                </Button>
+
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
     </Grid>
 </Page>
