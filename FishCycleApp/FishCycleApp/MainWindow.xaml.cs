@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;  
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.PeopleService.v1;
 using Google.Apis.PeopleService.v1.Data;
 using Google.Apis.Util.Store;
@@ -88,7 +88,7 @@ namespace FishCycleApp
                     "Bearer", credential.Token.AccessToken);
 
                 HttpResponseMessage response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode(); 
+                response.EnsureSuccessStatusCode();
 
                 string json = await response.Content.ReadAsStringAsync();
 
