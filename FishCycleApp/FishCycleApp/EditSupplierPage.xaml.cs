@@ -1,46 +1,53 @@
-﻿using System;
+﻿using FishCycleApp.DataAccess;
+using FishCycleApp.Models;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using FishCycleApp.DataAccess;
-using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 
 namespace FishCycleApp
 {
-    public partial class AddSupplierPage : Page
+    public partial class EditSupplierPage : Page
     {
         private SupplierDataManager supplierManager = new SupplierDataManager();
+        private Person currentUserProfile;
+        private string SupplierID;
 
-        public AddSupplierPage(Person userProfile)
+        public EditSupplierPage(string id, Person userProfile)
         {
             InitializeComponent();
+            SupplierID = id;
+            this.currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
-            InitializeCategoryComboBox();
+            LoadCategory();
+            LoadSupplierData();
         }
 
-        private void InitializeCategoryComboBox()
+        private void LoadCategory()
         {
-            cmbSupplierCategory.Items.Clear();
-            // Content = tampilan di UI
-            // Tag = ENUM value (harus persis dengan enum PostgreSQL)
-            cmbSupplierCategory.Items.Add(new ComboBoxItem()
+            cmbSupplierType.Items.Clear();
+            cmbSupplierType.Items.Add("Fresh Catch");
+            cmbSupplierType.Items.Add("First-Hand");
+            cmbSupplierType.Items.Add("Reprocessed Stock");
+        }
+
+        private void LoadSupplierData()
+        {
+            Supplier s = supplierManager.GetSupplierByID(SupplierID);
+            if (s != null)
             {
-                Content = "Fresh Catch",
-                Tag = "Fresh Catch"
-            });
-            cmbSupplierCategory.Items.Add(new ComboBoxItem()
+                txtSupplierID.Text = s.SupplierID;
+                txtSupplierName.Text = s.SupplierName;
+                txtSupplierPhone.Text = s.SupplierPhone;
+                txtSupplierAddress.Text = s.SupplierAddress;
+                cmbSupplierType.SelectedItem = s.SupplierType;
+            }
+            else
             {
-                Content = "First-Hand",
-                Tag = "First-Hand"
-            });
-            cmbSupplierCategory.Items.Add(new ComboBoxItem()
-            {
-                Content = "Reprocessed Stock",
-                Tag = "Reprocessed Stock"
-            });
-            cmbSupplierCategory.SelectedIndex = 0; // optional
+                MessageBox.Show($"Supplier with ID {SupplierID} not found.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.NavigationService.GoBack();
+            }
         }
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
@@ -70,46 +77,62 @@ namespace FishCycleApp
                 return;
             }
 
-            if (cmbSupplierCategory.SelectedItem == null)
+            if (cmbSupplierType.SelectedItem == null)
             {
                 MessageBox.Show("Please select a category.", "WARNING",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var selectedItem = (ComboBoxItem)cmbSupplierCategory.SelectedItem;
-            string supplierTypeEnum = selectedItem.Tag?.ToString()
-                                      ?? selectedItem.Content.ToString();
-
-            Supplier newSupplier = new Supplier
+            Supplier s = new Supplier
             {
-                SupplierID = "SID-" + DateTime.Now.ToString("yyMMddHHmmss"),
+                SupplierID = SupplierID,
+                SupplierType = cmbSupplierType.SelectedItem?.ToString() ?? "",
                 SupplierName = txtSupplierName.Text.Trim(),
                 SupplierPhone = txtSupplierPhone.Text.Trim(),
                 SupplierAddress = txtSupplierAddress.Text.Trim(),
-                SupplierType = supplierTypeEnum  // ENUM aman
             };
 
-            int result = supplierManager.InsertSupplier(newSupplier);
+            int result = supplierManager.UpdateSupplier(s);
 
             if (result == 1)
             {
-                MessageBox.Show("Supplier added successfully!",
-                    "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                if (NavigationService?.CanGoBack == true)
-                    NavigationService.GoBack();
+                MessageBox.Show("Supplier updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                this.NavigationService.GoBack();
             }
             else
             {
-                MessageBox.Show("Failed to add supplier.",
-                    "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Failed to update supplier.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (NavigationService?.CanGoBack == true)
+            MessageBoxResult confirmation = MessageBox.Show(
+                $"Are you sure you want to delete this supplier?\nSupplier ID: {SupplierID}\nSupplier Name: {txtSupplierName.Text}",
+                "CONFIRM DELETE",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirmation == MessageBoxResult.Yes)
+            {
+                int result = supplierManager.DeleteSupplier(SupplierID);
+
+                if (result == 1)
+                {
+                    MessageBox.Show("Supplier deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    this.NavigationService.GoBack();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to delete supplier.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.NavigationService.CanGoBack)
             {
                 this.NavigationService.GoBack();
             }

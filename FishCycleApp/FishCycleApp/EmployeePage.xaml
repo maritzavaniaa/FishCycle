@@ -9,95 +9,271 @@
       Title="EmployeePage" Background="#E9ECEF"
       IsVisibleChanged="EmployeePage_IsVisibleChanged">
 
-    <Grid Margin="100,50,50,50">
+    <Grid Margin="40,30,40,40">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header Section -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-            <TextBlock Text="All Employees" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
-            <TextBlock Text="(showing employee data results)" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
+        <!-- Page Title -->
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Add Employee Button -->
-            <Button x:Name="btnAdd" Content="ADD EMPLOYEE" 
-                    HorizontalAlignment="Right" 
-                    Margin="50,0,0,0"
-                    Padding="15,5" 
-                    Background="#007ACC" Foreground="White"
-                    Click="btnAdd_Click"/>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Employee" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
+            </StackPanel>
 
-            <!-- Refresh Button -->
-            <Button x:Name="btnLoad" Content="Refresh" 
-                    Margin="10,0,0,0"
-                    Padding="10,5"
-                    Click="btnLoad_Click"/>
-        </StackPanel>
+            <!-- User Info (right side) -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <!-- Profile Picture -->
+                <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
+                <!-- User Name -->
+                <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
+            </StackPanel>
+        </Grid>
 
-        <!-- Search Box -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-            <TextBox x:Name="txtSearch" Width="250" Height="30" Padding="5" Style="{StaticResource WatermarkTextBox}" TextChanged="txtSearch_TextChanged"/>
-        </StackPanel>
+        <!-- Search Bar Section -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- DataGrid to Display Employee Data -->
-        <DataGrid x:Name="dgvEmployees" 
-                  Grid.Row="2" 
-                  AutoGenerateColumns="False" 
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  Background="White"
-                  BorderBrush="#E0E0E0"
-                  RowHeaderWidth="0">
+            <!-- Search Bar with Icon -->
+            <Border Grid.Column="0" 
+                    BorderBrush="#CCCCCC" 
+                    BorderThickness="1" 
+                    CornerRadius="25" 
+                    Background="White" 
+                    Height="45" 
+                    Padding="5,0"
+                    HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-            <DataGrid.Columns>
-                <!-- Employee Data Columns -->
-                <DataGridTextColumn Header="Employee ID" Binding="{Binding employee_id}" Width="120" IsReadOnly="True"/>
-                <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="300" IsReadOnly="True"/>
-                <DataGridTextColumn Header="Google Account" Binding="{Binding google_account}" Width="300" IsReadOnly="True"/>
+                    <!-- Search Icon -->
+                    <TextBlock Grid.Column="0" 
+                               Text="🔍"
+                               Width="18" 
+                               Height="18" 
+                               Margin="15,0,10,0" 
+                               VerticalAlignment="Center"/>
 
-                <!-- Action Column -->
-                <DataGridTemplateColumn Header="Action" Width="200">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <!-- Search TextBox -->
+                    <TextBox Grid.Column="1" 
+                             x:Name="txtSearch" 
+                             BorderThickness="0" 
+                             Background="Transparent" 
+                             VerticalContentAlignment="Center" 
+                             Text="Search anything..." 
+                             Foreground="#999999" 
+                             FontSize="14" 
+                             GotFocus="txtSearch_GotFocus" 
+                             LostFocus="txtSearch_LostFocus" 
+                             TextChanged="txtSearch_TextChanged" 
+                             Padding="0,0,15,0"/>
+                </Grid>
+            </Border>
+        </Grid>
 
-                                <!-- View Button -->
-                                <Button Click="btnView_Click"
-                                        Background="Transparent"
-                                        BorderBrush="Transparent"
-                                        Padding="0"
-                                        Margin="0,0,4,0">
-                                    <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
-                                </Button>
+        <!-- Header Section inside white card -->
+        <Border Grid.Row="2" Background="White" CornerRadius="20,20,0,0" Padding="25,20,25,15" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                                <!-- Edit Button -->
-                                <Button Click="btnEdit_Click"
-                                        Background="Transparent"
-                                        BorderBrush="Transparent"
-                                        Padding="0"
-                                        Margin="0,0,4,0">
-                                    <Image Source="/Images/icon_edit.png" Width="20" Height="20"/>
-                                </Button>
+                <!-- Left: Title -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="All Employees" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
+                    <TextBlock x:Name="txtResultInfo" Text="showing 1-10 result from 99 results" Foreground="#6C757D" FontSize="12" Margin="0,4,0,0"/>
+                </StackPanel>
 
-                                <!-- Delete Button -->
-                                <Button x:Name="btnDelete"
-                                        Click="btnDelete_Click"
-                                        Background="Transparent"
-                                        BorderBrush="Transparent"
-                                        Padding="0"
-                                        Margin="5,0,0,0">
-                                    <Image Source="/Images/icon_delete.png"
-                                           Width="20" Height="20"
-                                           Margin="0"/>
-                                </Button>
+                <!-- Right: Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnAdd" Content="ADD EMPLOYEE" Padding="20,10" Margin="0,0,10,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#0066B3"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+                    <Button x:Name="btnLoad" Content="Refresh" Padding="20,10" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Click="btnLoad_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- DataGrid Section with Scroll -->
+        <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,20,20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <DataGrid x:Name="dgvEmployees" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal" HeadersVisibility="Column" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" RowHeight="60" FontSize="13">
+
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="#495057"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="20,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                            <Setter Property="BorderBrush" Value="#E9ECEF"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#333333"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="20,0">
+                                            <ContentPresenter VerticalAlignment="Center" 
+                                                              HorizontalAlignment="Left"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#333333"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="White"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Employee ID" Binding="{Binding employee_id}" Width="150" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#6C757D"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="*" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#212529"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Google Account" Binding="{Binding google_account}" Width="*" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Action" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" 
+                                                HorizontalAlignment="Left" 
+                                                VerticalAlignment="Center"
+                                                Margin="10,0,0,0">
+                                        <Button Click="btnView_Click" 
+                                                Background="Transparent" 
+                                                BorderBrush="Transparent" 
+                                                Padding="0" 
+                                                Margin="0,0,8,0" 
+                                                Cursor="Hand" 
+                                                ToolTip="View Employee Details">
+                                            <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
+                                        </Button>
+
+                                        <Button Click="btnDelete_Click" 
+                                                Background="Transparent" 
+                                                BorderBrush="Transparent" 
+                                                Padding="0" 
+                                                Cursor="Hand" 
+                                                ToolTip="Delete Employee">
+                                            <Image Source="/Images/icon_delete.png" Width="20" Height="20"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+        </Border>
+
     </Grid>
 </Page>

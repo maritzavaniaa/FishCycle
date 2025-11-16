@@ -63,11 +63,11 @@ namespace FishCycleApp
             }
             else if (clickedButton == btnClient)
             {
-                MainFrame.Navigate(new ClientPage());
+                MainFrame.Navigate(new ClientPage(this.currentUserProfile));
             }
             else if (clickedButton == btnEmployee)
             {
-                MainFrame.Navigate(new EmployeePage());
+                MainFrame.Navigate(new EmployeePage(this.currentUserProfile));
             }
             else if (clickedButton == btnDashboard)
             {
@@ -75,7 +75,7 @@ namespace FishCycleApp
             }
             else if (clickedButton == btnSupplier)
             {
-                MainFrame.Navigate(new SupplierPage());
+                MainFrame.Navigate(new SupplierPage(this.currentUserProfile));
             }
         }
 
