@@ -6,9 +6,98 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="EmployeePage" Background="WhiteSmoke">
+      Title="EmployeePage" Background="#E9ECEF"
+      IsVisibleChanged="EmployeePage_IsVisibleChanged">
 
-    <Grid>
-        <TextBlock Text="Ini adalah Employee Page." FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid Margin="100,50,50,50">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="All Employees" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="(showing employee data results)" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="Gray"/>
+
+            <!-- Add Employee Button -->
+            <Button x:Name="btnAdd" Content="ADD EMPLOYEE" 
+                    HorizontalAlignment="Right" 
+                    Margin="50,0,0,0"
+                    Padding="15,5" 
+                    Background="#007ACC" Foreground="White"
+                    Click="btnAdd_Click"/>
+
+            <!-- Refresh Button -->
+            <Button x:Name="btnLoad" Content="Refresh" 
+                    Margin="10,0,0,0"
+                    Padding="10,5"
+                    Click="btnLoad_Click"/>
+        </StackPanel>
+
+        <!-- Search Box -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBox x:Name="txtSearch" Width="250" Height="30" Padding="5" Style="{StaticResource WatermarkTextBox}" TextChanged="txtSearch_TextChanged"/>
+        </StackPanel>
+
+        <!-- DataGrid to Display Employee Data -->
+        <DataGrid x:Name="dgvEmployees" 
+                  Grid.Row="2" 
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  Background="White"
+                  BorderBrush="#E0E0E0"
+                  RowHeaderWidth="0">
+
+            <DataGrid.Columns>
+                <!-- Employee Data Columns -->
+                <DataGridTextColumn Header="Employee ID" Binding="{Binding employee_id}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="300" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Google Account" Binding="{Binding google_account}" Width="300" IsReadOnly="True"/>
+
+                <!-- Action Column -->
+                <DataGridTemplateColumn Header="Action" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                <!-- View Button -->
+                                <Button Click="btnView_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
+                                </Button>
+
+                                <!-- Edit Button -->
+                                <Button Click="btnEdit_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="0,0,4,0">
+                                    <Image Source="/Images/icon_edit.png" Width="20" Height="20"/>
+                                </Button>
+
+                                <!-- Delete Button -->
+                                <Button x:Name="btnDelete"
+                                        Click="btnDelete_Click"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Padding="0"
+                                        Margin="5,0,0,0">
+                                    <Image Source="/Images/icon_delete.png"
+                                           Width="20" Height="20"
+                                           Margin="0"/>
+                                </Button>
+
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Page>

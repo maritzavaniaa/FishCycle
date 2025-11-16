@@ -1,0 +1,63 @@
+﻿<Page x:Class="FishCycleApp.EditEmployeePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:FishCycleApp"
+      mc:Ignorable="d" 
+      d:DesignHeight="768" d:DesignWidth="1366"
+      Title="EditEmployeePage" Background="#E9ECEF">
+
+    <Grid Margin="50">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title Section -->
+        <TextBlock Grid.Row="0" Text="Edit Employee" FontSize="30" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <!-- Form to Edit Employee Information -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,20">
+
+            <!-- Employee ID -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Employee ID:" Width="120" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtEmployeeID" Width="300" IsReadOnly="True" Background="#EFEFEF"/>
+            </StackPanel>
+
+            <!-- Employee Name -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Name:" Width="120" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtEmployeeName" Width="300"/>
+            </StackPanel>
+
+            <!-- Google Account -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Google Account:" Width="120" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtGoogleAccount" Width="300"/>
+            </StackPanel>
+
+        </StackPanel>
+
+        <!-- Action Buttons: Save, Delete, Back -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+
+            <!-- Delete Button -->
+            <Button x:Name="btnDelete" Content="Delete" Width="100" Margin="0,0,10,0" 
+                    Background="Red" Foreground="White"
+                    Click="btnDelete_Click"/>
+
+            <!-- Back Button -->
+            <Button x:Name="btnBack" Content="Back" Width="100" Margin="0,0,10,0" 
+                    Click="btnBack_Click"/>
+
+            <!-- Save Button -->
+            <Button x:Name="btnSave" Content="Save" Width="120" 
+                    Background="#007ACC" Foreground="White"
+                    Click="btnSave_Click"/>
+
+        </StackPanel>
+    </Grid>
+</Page>
