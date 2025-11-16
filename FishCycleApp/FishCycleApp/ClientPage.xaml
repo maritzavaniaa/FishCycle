@@ -64,10 +64,12 @@
                                         Click="btnView_Click" 
                                         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
 
-                                <Button Content="🗑️" 
-                                        Click="btnDelete_Click" 
-                                        Background="Transparent" Foreground="Red" BorderBrush="Transparent"
-                                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>
+                                <Button x:Name="btnDelete" Style="{StaticResource ActiveMenuItemStyle}" Click="btnDelete_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="/Images/icon_delete.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                    </StackPanel>
+                                </Button>
+
 
                             </StackPanel>
                         </DataTemplate>

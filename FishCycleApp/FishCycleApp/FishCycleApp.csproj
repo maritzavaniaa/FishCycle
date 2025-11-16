@@ -14,6 +14,7 @@
     <None Remove="Images\icon_client.png" />
     <None Remove="Images\icon_clients.png" />
     <None Remove="Images\icon_dashboard.png" />
+    <None Remove="Images\icon_delete.png" />
     <None Remove="Images\icon_employee.png" />
     <None Remove="Images\icon_logout.png" />
     <None Remove="Images\icon_menu.png" />
@@ -39,6 +40,7 @@
     <Resource Include="Images\icon_client.png" />
     <Resource Include="Images\icon_clients.png" />
     <Resource Include="Images\icon_dashboard.png" />
+    <Resource Include="Images\icon_delete.png" />
     <Resource Include="Images\icon_employee.png" />
     <Resource Include="Images\icon_logout.png" />
     <Resource Include="Images\icon_menu.png" />
