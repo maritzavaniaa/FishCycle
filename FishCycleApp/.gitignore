@@ -13,3 +13,6 @@ x86/
 [Bb]in/
 [Oo]bj/
 Properties/PublishProfiles/
+
+# Environment variables
+.env

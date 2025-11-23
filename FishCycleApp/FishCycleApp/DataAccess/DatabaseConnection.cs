@@ -12,11 +12,19 @@ namespace FishCycleApp.DataAccess
     public class DatabaseConnection
     {
         protected NpgsqlConnection conn;
-        private string connstring = "Host=localhost;Port=5434;Username=app_user;" +
-            "Password=app123;Database=FishCycleDB";
+        private string connstring;
 
         public DatabaseConnection()
         {
+            string host = Environment.GetEnvironmentVariable("DB_HOST") ?? "";
+            string port = Environment.GetEnvironmentVariable("DB_PORT") ?? "";
+            string username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "";
+            string password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+            string database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "";
+
+            connstring = $"Host={host};Port={port};Username={username};" +
+                        $"Password={password};Database={database}";
+
             conn = new NpgsqlConnection(connstring);
         }
 

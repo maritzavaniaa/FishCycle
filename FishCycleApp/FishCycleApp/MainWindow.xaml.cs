@@ -32,8 +32,18 @@ namespace FishCycleApp
 
         private async void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string clientId = "";
-            string clientSecret = "";
+            string clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? "";
+            string clientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ?? "";
+
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+            {
+                MessageBox.Show(
+                    "Google OAuth credentials not configured.\nPlease check your .env file.",
+                    "Configuration Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
 
             string[] scopes = {
                 "https://www.googleapis.com/auth/userinfo.email",
