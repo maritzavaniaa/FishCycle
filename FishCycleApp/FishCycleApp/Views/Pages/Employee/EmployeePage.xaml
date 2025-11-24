@@ -1,4 +1,4 @@
-﻿<Page x:Class="FishCycleApp.ClientPage"
+﻿<Page x:Class="FishCycleApp.EmployeePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,8 +6,8 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="ClientPage" Background="#E9ECEF"
-      IsVisibleChanged="ClientPage_IsVisibleChanged">
+      Title="EmployeePage" Background="#E9ECEF"
+      IsVisibleChanged="EmployeePage_IsVisibleChanged">
 
     <Grid Margin="40,30,40,40">
         <Grid.RowDefinitions>
@@ -25,7 +25,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="Client" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
+                <TextBlock Text="Employee" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
             </StackPanel>
 
             <!-- User Info (right side) -->
@@ -35,27 +35,23 @@
                 <!-- User Name -->
                 <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
             </StackPanel>
-
-
         </Grid>
 
-        <!-- Search Bar and Filter Section -->
+        <!-- Search Bar Section -->
         <Grid Grid.Row="1" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Search Bar with Icon -->
             <Border Grid.Column="0" 
-            BorderBrush="#CCCCCC" 
-            BorderThickness="1" 
-            CornerRadius="25" 
-            Background="White" 
-            Height="45" 
-            Padding="5,0"
-            Margin="0,0,15,0"
-            HorizontalAlignment="Stretch">
+                    BorderBrush="#CCCCCC" 
+                    BorderThickness="1" 
+                    CornerRadius="25" 
+                    Background="White" 
+                    Height="45" 
+                    Padding="5,0"
+                    HorizontalAlignment="Stretch">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -64,65 +60,25 @@
 
                     <!-- Search Icon -->
                     <TextBlock Grid.Column="0" 
-                       Text="🔍"
-                       Width="18" 
-                       Height="18" 
-                       Margin="15,0,10,0" 
-                       VerticalAlignment="Center"/>
+                               Text="🔍"
+                               Width="18" 
+                               Height="18" 
+                               Margin="15,0,10,0" 
+                               VerticalAlignment="Center"/>
 
                     <!-- Search TextBox -->
                     <TextBox Grid.Column="1" 
-                         x:Name="txtSearch" 
-                         BorderThickness="0" 
-                         Background="Transparent" 
-                         VerticalContentAlignment="Center" 
-                         Text="Search anything..." 
-                         Foreground="#999999" 
-                         FontSize="14" 
-                         GotFocus="txtSearch_GotFocus" 
-                         LostFocus="txtSearch_LostFocus" 
-                         TextChanged="txtSearch_TextChanged" 
-                         Padding="0,0,15,0"/>
-                </Grid>
-            </Border>
-
-            <!-- Category Filter -->
-            <Border Grid.Column="1" 
-            BorderBrush="#CCCCCC" 
-            BorderThickness="1" 
-            Background="White" 
-            Width="200" 
-            Height="45" 
-            Padding="5,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Category Icon -->
-                    <TextBlock Grid.Column="0" 
-                       Text="🏷️" 
-                       FontSize="16" 
-                       Margin="12,0,8,0" 
-                       VerticalAlignment="Center" RenderTransformOrigin="-0.405,0.517"/>
-
-                    <ComboBox 
-                      x:Name="cmbCategory" 
-                      IsEnabled="True"
-                      Background="White"        
-                      BorderThickness="0" 
-                      VerticalContentAlignment="Center" 
-                      FontSize="14" 
-                      Padding="5,0,12,0" 
-                      SelectionChanged="cmbCategory_SelectionChanged" Margin="0,4,0,5" Grid.Column="1">
-
-                        <ComboBoxItem Content="All Categories" IsSelected="True"/>
-                        <ComboBoxItem Content="Retail"/>
-                        <ComboBoxItem Content="Restaurant"/>
-                        <ComboBoxItem Content="Industry"/>
-                        <ComboBoxItem Content="Distributor"/>
-                    </ComboBox>
+                             x:Name="txtSearch" 
+                             BorderThickness="0" 
+                             Background="Transparent" 
+                             VerticalContentAlignment="Center" 
+                             Text="Search anything..." 
+                             Foreground="#999999" 
+                             FontSize="14" 
+                             GotFocus="txtSearch_GotFocus" 
+                             LostFocus="txtSearch_LostFocus" 
+                             TextChanged="txtSearch_TextChanged" 
+                             Padding="0,0,15,0"/>
                 </Grid>
             </Border>
         </Grid>
@@ -137,13 +93,13 @@
 
                 <!-- Left: Title -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="All Client" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
+                    <TextBlock Text="All Employees" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
                     <TextBlock x:Name="txtResultInfo" Text="showing 1-10 result from 99 results" Foreground="#6C757D" FontSize="12" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <!-- Right: Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnAdd" Content="ADD CLIENT" Padding="20,10" Margin="0,0,10,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
+                    <Button x:Name="btnAdd" Content="ADD EMPLOYEE" Padding="20,10" Margin="0,0,10,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -188,10 +144,10 @@
             </Grid>
         </Border>
 
-        <!-- DataGrid Section with Scroll (NO PAGINATION) -->
+        <!-- DataGrid Section with Scroll -->
         <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,20,20">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <DataGrid x:Name="dgvClients" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal" HeadersVisibility="Column" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" RowHeight="60" FontSize="13">
+                <DataGrid x:Name="dgvEmployees" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal" HeadersVisibility="Column" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" RowHeight="60" FontSize="13">
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
@@ -216,11 +172,11 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="DataGridCell">
                                         <Border Background="{TemplateBinding Background}" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="20,0">
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                Padding="20,0">
                                             <ContentPresenter VerticalAlignment="Center" 
-                                          HorizontalAlignment="Left"/>
+                                                              HorizontalAlignment="Left"/>
                                         </Border>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -250,7 +206,7 @@
 
                     <DataGrid.Columns>
 
-                        <DataGridTextColumn Header="Supplier ID" Binding="{Binding clientid}" Width="120" IsReadOnly="True">
+                        <DataGridTextColumn Header="Employee ID" Binding="{Binding employee_id}" Width="150" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="#6C757D"/>
@@ -262,7 +218,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Name" Binding="{Binding client_name}" Width="220" IsReadOnly="True">
+                        <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="*" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -274,7 +230,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Phone" Binding="{Binding client_contact}" Width="140" IsReadOnly="True">
+                        <DataGridTextColumn Header="Google Account" Binding="{Binding google_account}" Width="*" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="#495057"/>
@@ -285,76 +241,30 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Address" Binding="{Binding client_address}" Width="*" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTemplateColumn Header="Category" Width="150">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border x:Name="CategoryBorder" 
-                    CornerRadius="20" 
-                    Padding="16,8" 
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Margin="10,0,0,0">
-                                        <TextBlock Text="{Binding client_category}" 
-                           Foreground="White" 
-                           FontWeight="SemiBold" 
-                           FontSize="11" 
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-                                    </Border>
-
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding client_category}" Value="Retail">
-                                            <Setter TargetName="CategoryBorder" Property="Background" Value="#B794F6"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding client_category}" Value="Restaurant">
-                                            <Setter TargetName="CategoryBorder" Property="Background" Value="#FFB088"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding client_category}" Value="Industry">
-                                            <Setter TargetName="CategoryBorder" Property="Background" Value="#FF8F8F"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding client_category}" Value="Distributor">
-                                            <Setter TargetName="CategoryBorder" Property="Background" Value="#B8DB95"/>
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
-                        <DataGridTemplateColumn Header="Action" Width="120">
+                        <DataGridTemplateColumn Header="Action" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" 
-                                            HorizontalAlignment="Left" 
-                                            VerticalAlignment="Center"
-                                            Margin="10,0,0,0">
+                                                HorizontalAlignment="Left" 
+                                                VerticalAlignment="Center"
+                                                Margin="10,0,0,0">
                                         <Button Click="btnView_Click" 
-                                            Background="Transparent" 
-                                            BorderBrush="Transparent" 
-                                            Padding="0" 
-                                            Margin="0,0,12,0" 
-                                            Cursor="Hand" 
-                                            ToolTip="View Client Details">
-                                            <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
+                                                Background="Transparent" 
+                                                BorderBrush="Transparent" 
+                                                Padding="0" 
+                                                Margin="0,0,8,0" 
+                                                Cursor="Hand" 
+                                                ToolTip="View Employee Details">
+                                            <Image Source="/Resources/Images/Icons/icon_view.png" Width="20" Height="20"/>
                                         </Button>
 
                                         <Button Click="btnDelete_Click" 
-                                            Background="Transparent" 
-                                            BorderBrush="Transparent" 
-                                            Padding="0" 
-                                            Cursor="Hand" 
-                                            ToolTip="Delete Client">
-                                            <Image Source="/Images/icon_delete.png" Width="20" Height="20"/>
+                                                Background="Transparent" 
+                                                BorderBrush="Transparent" 
+                                                Padding="0" 
+                                                Cursor="Hand" 
+                                                ToolTip="Delete Employee">
+                                            <Image Source="/Resources/Images/Icons/icon_delete.png" Width="20" Height="20"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>
@@ -364,5 +274,6 @@
                 </DataGrid>
             </ScrollViewer>
         </Border>
+
     </Grid>
 </Page>

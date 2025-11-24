@@ -40,7 +40,7 @@
                         <StackPanel>
                             <Grid Margin="3,0,0,0">
                                 <TextBlock Text="Total Revenue" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_money.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_money.png" Width="22" Height="22" HorizontalAlignment="Right"/>
                             </Grid>
                             <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
                             <Grid Margin="3,10,0,0">
@@ -54,7 +54,7 @@
                         <StackPanel>
                             <Grid Margin="3,0,0,0">
                                 <TextBlock Text="Total Transaction" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_cart.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_cart.png" Width="22" Height="22" HorizontalAlignment="Right"/>
                             </Grid>
                             <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
                             <Grid Margin="3,10,0,0">
@@ -68,7 +68,7 @@
                         <StackPanel>
                             <Grid Margin="3,0,0,0">
                                 <TextBlock Text="Active Delivery" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Images/icon_truck.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_truck.png" Width="22" Height="22" HorizontalAlignment="Right"/>
                             </Grid>
                             <TextBlock Text="Today" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
                             <Grid Margin="3,10,0,0">
@@ -170,7 +170,7 @@
 
                             <StackPanel>
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
                                     <TextBlock Text="Kerapu" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
                                     <TextBlock Text="35 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>
@@ -178,7 +178,7 @@
                                 <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
 
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
                                     <TextBlock Text="Tuna" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
                                     <TextBlock Text="23 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>
@@ -186,7 +186,7 @@
                                 <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
 
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
                                     <TextBlock Text="Kakap" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
                                     <TextBlock Text="19 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>
@@ -194,7 +194,7 @@
                                 <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
 
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
                                     <TextBlock Text="Salmon" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
                                     <TextBlock Text="13 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>
@@ -202,7 +202,7 @@
                                 <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
 
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Images/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
                                     <TextBlock Text="Bawal" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
                                     <TextBlock Text="7 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>

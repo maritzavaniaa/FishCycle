@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen">
 
     <Grid>
-        <Image Source="/Images/bg_ikan.png" Stretch="UniformToFill"/>
+        <Image Source="/Resources/Images/bg_ikan.png" Stretch="UniformToFill"/>
         <Border Width="427" Height="363"
                 Background="#F8F9FA"
                 CornerRadius="30"
@@ -26,7 +26,7 @@
 
             <StackPanel x:Name="LoginContentPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                <Image Source="/Images/logo_lengkap.png" Width="180" Margin="0,0,0,0"/>
+                <Image Source="/Resources/Images/logo_lengkap.png" Width="180" Margin="0,0,0,0"/>
 
                 <TextBlock Text="Welcome !!" 
                            FontSize="30" FontWeight="Bold" FontFamily="Segoe UI Semibold"

@@ -22,47 +22,47 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0">
-                    <Image Source="/Images/logo_lengkap.png" Width="140" Margin="0,30,0,20"/>
+                    <Image Source="/Resources/Images/logo_lengkap.png" Width="140" Margin="0,30,0,20"/>
                     <StackPanel x:Name="MenuPanel" Margin="10,0,10,0">
 
                         <Button x:Name="btnDashboard" x:FieldModifier="public" Style="{StaticResource ActiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_dashboard.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_dashboard.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Dashboard" VerticalAlignment="Center" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnStock" x:FieldModifier="public" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_stock.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_stock.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Stock" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnTransaction" x:FieldModifier="public" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_transaction.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_transaction.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Transaction" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnSupplier" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_supplier.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_supplier.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Supplier" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnClient" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_clients.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_clients.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Client" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnEmployee" Style="{StaticResource InactiveMenuItemStyle}" Click="MenuButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="/Images/icon_employee.png" Width="20" Height="20" Margin="20,0,10,0"/>
+                                <Image Source="/Resources/Images/Icons/icon_employee.png" Width="20" Height="20" Margin="20,0,10,0"/>
                                 <TextBlock Text="Employee" VerticalAlignment="Center" Foreground="#212529" Margin="0,-2.5,0,0"/>
                             </StackPanel>
                         </Button>
@@ -77,7 +77,7 @@
                         Click="btnLogout_Click">
 
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="/Images/icon_logout.png" Width="20" Height="20" Margin="25,0,10,0"/>
+                        <Image Source="/Resources/Images/Icons/icon_logout.png" Width="20" Height="20" Margin="25,0,10,0"/>
                         <TextBlock Text="Log Out" VerticalAlignment="Center" Margin="0,-2.5,0,0"/>
                     </StackPanel>
                 </Button>

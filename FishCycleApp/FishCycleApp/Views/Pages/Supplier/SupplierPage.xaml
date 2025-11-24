@@ -341,7 +341,7 @@
                                             Margin="0,0,12,0" 
                                             Cursor="Hand" 
                                             ToolTip="View Supplier Details">
-                                            <Image Source="/Images/icon_view.png" Width="20" Height="20"/>
+                                            <Image Source="/Resources/Images/Icons/icon_view.png" Width="20" Height="20"/>
                                         </Button>
 
                                         <Button Click="btnDelete_Click" 
@@ -350,7 +350,7 @@
                                             Padding="0" 
                                             Cursor="Hand" 
                                             ToolTip="Delete Client">
-                                            <Image Source="/Images/icon_delete.png" Width="20" Height="20"/>
+                                            <Image Source="/Resources/Images/Icons/icon_delete.png" Width="20" Height="20"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>
