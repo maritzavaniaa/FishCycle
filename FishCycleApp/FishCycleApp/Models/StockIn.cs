@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace FishCycleApp.Models
 {
-    public class Stock
+    public class StockIn
     {
-        public string StockID { get; set; }
+        public string StockInID { get; set; }
         public string ProductID { get; set; }
         public string SupplierID { get; set; }
-        public string TransactionID { get; set; }
-        public DateTime Date { get; set; }
-        public int Quantity { get; set; }
+
+        public DateTime DateIn { get; set; }
+        public int QuantityIn { get; set; }
     }
 }
