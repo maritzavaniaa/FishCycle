@@ -16,22 +16,26 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Header & Profile -->
         <Grid Grid.Row="0" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Header -->
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                 <TextBlock Text="Transaction" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
             </StackPanel>
 
+            <!-- Profile -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                 <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
                 <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
             </StackPanel>
         </Grid>
 
+        <!-- Search & Filter Section -->
         <Grid Grid.Row="1" Margin="0,0,0,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*"/>
@@ -39,6 +43,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Search Bar -->
             <Border Grid.Column="0" 
             BorderBrush="#CCCCCC" 
             BorderThickness="1" 
@@ -76,6 +81,7 @@
                 </Grid>
             </Border>
 
+            <!-- Date Range Filter -->
             <Border Grid.Column="1"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="1" 
@@ -106,6 +112,7 @@
                 </Grid>
             </Border>
 
+            <!-- Status Filter -->
             <Border Grid.Column="2"
                 BorderBrush="#CCCCCC" 
                 BorderThickness="1" 
@@ -138,6 +145,7 @@
             </Border>
         </Grid>
 
+        <!-- Content Section -->
         <Border Grid.Row="2" Background="White" CornerRadius="20,20,0,0" Padding="25,20,25,15" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -145,11 +153,13 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Content Header -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock Text="All Transactions" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
                     <TextBlock x:Name="txtResultInfo" Text="showing 1-10 result from 99 results" Foreground="#6C757D" FontSize="12" Margin="0,4,0,0"/>
                 </StackPanel>
 
+                <!-- Add Transaction Button -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="btnAdd" Content="ADD TRANSACTION" Padding="20,10" Margin="0,0,0,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
                         <Button.Style>
@@ -175,6 +185,7 @@
             </Grid>
         </Border>
 
+        <!-- Content Table (READ ONLY) with Action Button -->
         <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,20,20">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <DataGrid x:Name="dgvTransactions" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal" HeadersVisibility="Column" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" RowHeight="60" FontSize="13" SelectionChanged="dgvTransactions_SelectionChanged">
@@ -287,20 +298,6 @@
                                         VerticalAlignment="Center"
                                         TextTrimming="None" />
                                     </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding transaction_status}" Value="Dikirim">
-                                            <Setter TargetName="TransactionStatusBorder" Property="Background" Value="#95E89F"/>
-                                            <Setter TargetName="txtTransactionStatus" Property="Foreground" Value="#2D5016"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding transaction_status}" Value="Down Payment">
-                                            <Setter TargetName="TransactionStatusBorder" Property="Background" Value="#FFD699"/>
-                                            <Setter TargetName="txtTransactionStatus" Property="Foreground" Value="#8A5A0A"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding transaction_status}" Value="Selesai">
-                                            <Setter TargetName="TransactionStatusBorder" Property="Background" Value="#C8E86C"/>
-                                            <Setter TargetName="txtTransactionStatus" Property="Foreground" Value="#2D5016"/>
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -321,20 +318,6 @@
                                         VerticalAlignment="Center"
                                         TextTrimming="None" />
                                     </Border>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding delivery_status}" Value="Dikirim">
-                                            <Setter TargetName="DeliveryStatusBorder" Property="Background" Value="#B19CD9"/>
-                                            <Setter TargetName="txtDeliveryStatus" Property="Foreground" Value="White"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding delivery_status}" Value="Pending">
-                                            <Setter TargetName="DeliveryStatusBorder" Property="Background" Value="#FFD699"/>
-                                            <Setter TargetName="txtDeliveryStatus" Property="Foreground" Value="#8A5A0A"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding delivery_status}" Value="Sampai Tujuan">
-                                            <Setter TargetName="DeliveryStatusBorder" Property="Background" Value="#95E89F"/>
-                                            <Setter TargetName="txtDeliveryStatus" Property="Foreground" Value="#2D5016"/>
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -350,6 +333,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
+                        <!-- Action Button -->
                         <DataGridTemplateColumn Header="Action" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
