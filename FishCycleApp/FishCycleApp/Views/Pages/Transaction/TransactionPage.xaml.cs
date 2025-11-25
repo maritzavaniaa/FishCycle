@@ -24,5 +24,10 @@ namespace FishCycleApp
         {
             InitializeComponent();
         }
+
+        private void dgvTransactions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }
