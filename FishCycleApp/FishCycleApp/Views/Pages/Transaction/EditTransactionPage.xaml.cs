@@ -13,26 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FishCycleApp
+namespace FishCycleApp.Views.Pages.Transaction
 {
     /// <summary>
-    /// Interaction logic for TransactionPage.xaml
+    /// Interaction logic for EditTransactionPage.xaml
     /// </summary>
-    public partial class TransactionPage : Page
+    public partial class EditTransactionPage : Page
     {
-        public TransactionPage()
+        public EditTransactionPage()
         {
             InitializeComponent();
-        }
-
-        private void dgvTransactions_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 }

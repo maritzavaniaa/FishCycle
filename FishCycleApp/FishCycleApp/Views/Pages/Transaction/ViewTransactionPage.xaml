@@ -156,20 +156,6 @@
                                 <TextBlock Grid.Row="1" Text="TS-000001" 
                                 FontSize="16" Foreground="#212529"/>
                             </Grid>
-
-                            <!-- Time -->
-                            <Grid Grid.Column="2">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Time" 
-                               FontSize="14" FontWeight="SemiBold" 
-                               Foreground="#6C757D" Margin="0,0,0,8"/>
-
-                                <TextBlock Grid.Row="1" Text="2025/10/10 11:59" 
-                           FontSize="16" Foreground="#212529"/>
-                            </Grid>
                         </Grid>
 
                         <!-- Row 2: Employee & Client Contact -->
@@ -194,6 +180,44 @@
                                 FontSize="16" Foreground="#212529"/>
                             </Grid>
 
+                            <!-- Time -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Date and Time" 
+                                FontSize="14" FontWeight="SemiBold" 
+                                Foreground="#6C757D" Margin="0,0,0,8"/>
+
+                                <TextBlock Grid.Row="1" Text="2025/10/10 11:59" 
+                                FontSize="16" Foreground="#212529"/>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Row 3: Client & Client Contact -->
+                        <Grid Grid.Row="2" Margin="0,0,0,25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Employee -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Client" 
+                                FontSize="14" FontWeight="SemiBold" 
+                                Foreground="#6C757D" Margin="0,0,0,8"/>
+
+                                <TextBlock Grid.Row="1" Text="Toko Ikan Segar Pak Rudi" 
+                                FontSize="16" Foreground="#212529"/>
+                            </Grid>
+
                             <!-- Client Contact -->
                             <Grid Grid.Column="2">
                                 <Grid.RowDefinitions>
@@ -201,27 +225,15 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0" Text="Client Contact" 
-                               FontSize="14" FontWeight="SemiBold" 
-                               Foreground="#6C757D" Margin="0,0,0,8"/>
+       FontSize="14" FontWeight="SemiBold" 
+       Foreground="#6C757D" Margin="0,0,0,8"/>
 
                                 <TextBlock Grid.Row="1" Text="081234567800" 
-                           FontSize="16" Foreground="#212529"/>
+   FontSize="16" Foreground="#212529"/>
                             </Grid>
                         </Grid>
-
-                        <!-- Row 3: Client -->
                         <Grid Grid.Row="2" Margin="0,0,0,25">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0" Text="Client" 
-                           FontSize="14" FontWeight="SemiBold" 
-                           Foreground="#6C757D" Margin="0,0,0,8"/>
-
-                            <TextBlock Grid.Row="1" Text="Toko Ikan Segar Pak Rudi" 
-                            FontSize="16" Foreground="#212529"/>
+                            
                         </Grid>
 
                         <!-- Row 4: Address -->

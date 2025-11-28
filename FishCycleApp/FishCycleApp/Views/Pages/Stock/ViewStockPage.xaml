@@ -82,12 +82,16 @@
 
                     <!-- Stock ID -->
                     <Grid Grid.Row="0" Margin="0,0,0,25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="145*"/>
+                            <ColumnDefinition Width="1059*"/>
+                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Stock ID" FontSize="14" FontWeight="SemiBold" Foreground="#6C757D" Margin="0,0,0,8"/>
-                        <TextBlock Grid.Row="1" x:Name="lblStockID" Text="SID-000025" FontSize="16" Foreground="#212529" FontWeight="Normal"/>
+                        <TextBlock Grid.Row="0" Text="Stock ID" FontSize="14" FontWeight="SemiBold" Foreground="#6C757D" Margin="0,0,0,8" Grid.ColumnSpan="2"/>
+                        <TextBlock Grid.Row="1" x:Name="lblStockID" Text="SID-000025" FontSize="16" Foreground="#212529" FontWeight="Normal" Grid.ColumnSpan="2"/>
                     </Grid>
 
                     <!-- Product Name & Supplier Row -->
