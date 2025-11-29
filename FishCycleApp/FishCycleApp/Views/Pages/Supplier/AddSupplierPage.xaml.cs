@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
@@ -11,89 +12,131 @@ namespace FishCycleApp
     public partial class AddSupplierPage : Page
     {
         private readonly SupplierDataManager supplierManager = new SupplierDataManager();
+        private readonly Person currentUserProfile;
+        private bool isSaving = false; // Anti double-click
 
         public AddSupplierPage(Person userProfile)
         {
             InitializeComponent();
+            currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
             InitializeCategoryComboBox();
         }
 
+        // ============================================================
+        // ComboBox Initialization
+        // ============================================================
         private void InitializeCategoryComboBox()
         {
             cmbSupplierCategory.Items.Clear();
-            // Content = tampilan di UI
-            // Tag = ENUM value (harus persis dengan enum PostgreSQL)
+
             cmbSupplierCategory.Items.Add(new ComboBoxItem { Content = "Fresh Catch", Tag = "Fresh Catch" });
             cmbSupplierCategory.Items.Add(new ComboBoxItem { Content = "First-Hand", Tag = "First-Hand" });
             cmbSupplierCategory.Items.Add(new ComboBoxItem { Content = "Reprocessed Stock", Tag = "Reprocessed Stock" });
+
             cmbSupplierCategory.SelectedIndex = 0;
         }
 
-        private void btnSave_Click(object sender, RoutedEventArgs e)
+        // ============================================================
+        // SAVE BUTTON — ASYNC & MIRIP AddEmployeePage versi optimal
+        // ============================================================
+        private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            if (isSaving) return;
+
+            // Validation
             if (string.IsNullOrWhiteSpace(txtSupplierName.Text))
             {
-                MessageBox.Show("Please enter supplier name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter supplier name.", "WARNING",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtSupplierName.Focus();
                 return;
             }
 
             if (cmbSupplierCategory.SelectedItem == null)
             {
-                MessageBox.Show("Please select a category.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select a category.", "WARNING",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var selectedItem = (ComboBoxItem)cmbSupplierCategory.SelectedItem;
-            string supplierTypeEnum = selectedItem.Tag?.ToString() ?? selectedItem.Content.ToString();
-
-            var newSupplier = new Supplier
-            {
-                SupplierID = "SID-" + DateTime.Now.ToString("yyMMddHHmmss"),
-                SupplierName = txtSupplierName.Text.Trim(),
-                SupplierPhone = string.IsNullOrWhiteSpace(txtSupplierPhone.Text) ? null : txtSupplierPhone.Text.Trim(),
-                SupplierAddress = string.IsNullOrWhiteSpace(txtSupplierAddress.Text) ? null : txtSupplierAddress.Text.Trim(),
-                SupplierType = supplierTypeEnum
-            };
-
-            int result = 0;
             try
             {
-                result = supplierManager.InsertSupplier(newSupplier);
+                // Lock UI
+                isSaving = true;
+                btnSave.IsEnabled = false;
+                this.Cursor = System.Windows.Input.Cursors.Wait;
+
+                var categoryItem = (ComboBoxItem)cmbSupplierCategory.SelectedItem;
+                string supplierType = categoryItem.Tag?.ToString() ?? categoryItem.Content.ToString();
+
+                var newSupplier = new Supplier
+                {
+                    SupplierID = "SID-" + DateTime.UtcNow.ToString("yyMMddHHmmss"),
+                    SupplierName = txtSupplierName.Text.Trim(),
+                    SupplierPhone = string.IsNullOrWhiteSpace(txtSupplierPhone.Text) ? null : txtSupplierPhone.Text.Trim(),
+                    SupplierAddress = string.IsNullOrWhiteSpace(txtSupplierAddress.Text) ? null : txtSupplierAddress.Text.Trim(),
+                    SupplierType = supplierType
+                };
+
+                // Async insert
+                int result = await supplierManager.InsertSupplierAsync(newSupplier);
 
                 bool success = result != 0;
+
+                // Double check if DB returns affected = 0
                 if (!success)
                 {
-                    // Verifikasi: cek apakah supplier sudah tersimpan
-                    var exists = supplierManager.GetSupplierByID(newSupplier.SupplierID);
+                    var exists = await supplierManager.GetSupplierByIDAsync(newSupplier.SupplierID);
                     success = exists != null;
                 }
 
                 if (success)
                 {
-                    MessageBox.Show("Supplier added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                    SupplierPage.NotifyDataChanged(); // trigger list reload
+                    MessageBox.Show("Supplier added successfully!", "SUCCESS",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Notify SupplierPage to reload list
+                    SupplierPage.NotifyDataChanged();
+
+                    // Proper navigation (consistent with AddEmployeePage)
                     if (NavigationService?.CanGoBack == true)
                         NavigationService.GoBack();
+                    else
+                        NavigationService?.Navigate(new SupplierPage(currentUserProfile));
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add supplier.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to add supplier.", "ERROR",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Insert error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error:\n{ex.Message}", "EXCEPTION",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // unlock
+                isSaving = false;
+                btnSave.IsEnabled = true;
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
         }
 
+        // ============================================================
+        // CANCEL
+        // ============================================================
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             if (NavigationService?.CanGoBack == true)
                 NavigationService.GoBack();
         }
 
+        // ============================================================
+        // USER PROFILE (Identical to Employee)
+        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
@@ -106,17 +149,17 @@ namespace FishCycleApp
 
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
-                    bitmap.EndInit();
+                    BitmapImage bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.UriSource = new Uri(photoUrl, UriKind.Absolute);
+                    bmp.EndInit();
 
-                    imgUserProfile.Source = bitmap;
+                    imgUserProfile.Source = bmp;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    MessageBox.Show($"Gagal memuat foto profil: {ex.Message}", "Error Foto", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    // ignored — better UX than popup
                 }
             }
         }

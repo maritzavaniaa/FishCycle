@@ -1,8 +1,6 @@
 ﻿using Npgsql;
-using NpgsqlTypes;
 using System;
 using System.Data;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FishCycleApp.Models;
@@ -18,10 +16,10 @@ namespace FishCycleApp.DataAccess
         {
             LoadEnv();
 
-            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST is missing in .env");
+            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST missing");
             var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME is missing in .env");
-            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD is missing in .env");
+            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME missing");
+            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD missing");
             var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "postgres";
 
             var builder = new NpgsqlConnectionStringBuilder
@@ -36,228 +34,195 @@ namespace FishCycleApp.DataAccess
             };
 
             _connectionString = builder.ToString();
-            _schema = "public";
+            _schema = Environment.GetEnvironmentVariable("DB_SCHEMA") ?? "public";
         }
 
         private void LoadEnv()
         {
             try
             {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
 
-                if (!File.Exists(path))
+                if (!System.IO.File.Exists(path))
                 {
-                    string projectRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
-                    path = Path.Combine(projectRoot, ".env");
+                    var root = System.IO.Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)
+                        ?.Parent?.Parent?.Parent?.FullName ?? "";
+                    path = System.IO.Path.Combine(root, ".env");
                 }
 
-                if (!File.Exists(path)) return;
+                if (!System.IO.File.Exists(path)) return;
 
-                foreach (var line in File.ReadAllLines(path))
+                foreach (var line in System.IO.File.ReadAllLines(path))
                 {
-                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
                         continue;
 
                     var parts = line.Split('=', 2);
-                    if (parts.Length != 2) continue;
-
-                    var key = parts[0].Trim();
-                    var value = parts[1].Trim();
-
-                    Environment.SetEnvironmentVariable(key, value);
+                    if (parts.Length == 2)
+                        Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Warning: Failed to load .env file. {ex.Message}");
-            }
+            catch { }
         }
 
         private string Fn(string name) => $"{_schema}.{name}";
 
-        // ==========================================
-        // LOAD ALL CLIENTS (For ComboBox)
-        // ==========================================
+        // ==========================================================
+        // LOAD LIST
+        // ==========================================================
         public async Task<DataTable> LoadClientDataAsync(CancellationToken ct = default)
         {
             var dt = new DataTable();
-            string sql = $"SELECT clientid, client_name, client_contact, client_address, client_category FROM {Fn("st_select_client")}()";
+            string sql = $"select clientid, client_name, client_contact, client_address, client_category from {Fn("st_select_client")}()";
 
             try
             {
                 await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+                await conn.OpenAsync(ct);
 
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 20
-                };
+                await using var cmd = new NpgsqlCommand(sql, conn);
+                await using var rd = await cmd.ExecuteReaderAsync(ct);
 
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
                 dt.Load(rd);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ClientDataManager] Error loading client data: {ex.Message}");
+                Console.WriteLine($"[Client] Load error: {ex.Message}");
             }
+
             return dt;
         }
 
-        // ==========================================
-        // GET CLIENT BY ID
-        // ==========================================
+        // ==========================================================
+        // INSERT
+        // ==========================================================
+        public async Task<int> InsertClientAsync(Client c, CancellationToken ct = default)
+        {
+            string sql = $"select {Fn("st_insert_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
+            return await ExecuteAsync(sql, c, ct);
+        }
+
+        // ==========================================================
+        // UPDATE
+        // ==========================================================
+        public async Task<int> UpdateClientAsync(Client c, CancellationToken ct = default)
+        {
+            string sql = $"select {Fn("st_update_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
+            return await ExecuteAsync(sql, c, ct);
+        }
+
+        // ==========================================================
+        // DELETE
+        // ==========================================================
+        public async Task<int> DeleteClientAsync(string clientID, CancellationToken ct = default)
+        {
+            string sql = $"select {Fn("st_delete_client")}(@p_id)";
+
+            var dummy = new Client
+            {
+                ClientID = clientID,
+                ClientName = "",
+                ClientContact = "",
+                ClientAddress = "",
+                ClientCategory = ""
+            };
+
+            return await ExecuteAsync(sql, dummy, ct, isDelete: true);
+        }
+
+        // ==========================================================
+        // GET BY ID
+        // ==========================================================
         public async Task<Client?> GetClientByIDAsync(string clientID, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(clientID)) return null;
+            Client? client = null;
 
-            string sql = $@"SELECT clientid, client_name, client_contact, client_address, client_category 
-                           FROM {Fn("st_select_client")}()
-                           WHERE clientid = @p_id
-                           LIMIT 1";
+            string sql = $@"
+                select clientid, client_name, client_contact, client_address, client_category
+                from {Fn("client")}
+                where lower(trim(clientid)) = lower(trim(@p_id))
+                limit 1
+            ";
 
             try
             {
                 await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+                await conn.OpenAsync(ct);
 
                 await using var cmd = new NpgsqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("p_id", clientID.Trim());
+                cmd.Parameters.AddWithValue("@p_id", clientID.Trim());
 
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                if (await rd.ReadAsync(ct).ConfigureAwait(false))
+                await using var rd = await cmd.ExecuteReaderAsync(ct);
+
+                if (await rd.ReadAsync(ct))
                 {
-                    return new Client
-                    {
-                        ClientID = rd["clientid"].ToString() ?? "",
-                        ClientName = rd["client_name"].ToString() ?? "",
-                        ClientContact = rd["client_contact"]?.ToString(),
-                        ClientAddress = rd["client_address"]?.ToString(),
-                        ClientCategory = rd["client_category"]?.ToString()
-                    };
+                    client = Map(rd);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ClientDataManager] Get client by ID error: {ex.Message}");
+                Console.WriteLine($"[Client] GetByID error: {ex.Message}");
             }
-            return null;
+
+            return client;
         }
 
-        // ==========================================
-        // INSERT CLIENT
-        // ==========================================
-        public async Task<int> InsertClientAsync(Client clientData, CancellationToken ct = default)
+        // ==========================================================
+        // SHARED EXECUTION
+        // ==========================================================
+        private async Task<int> ExecuteAsync(string sql, Client c, CancellationToken ct, bool isDelete = false)
         {
-            return await ExecuteUpsertOrDeleteAsync("st_insert_client", clientData, ct);
-        }
-
-        // ==========================================
-        // UPDATE CLIENT
-        // ==========================================
-        public async Task<int> UpdateClientAsync(Client clientData, CancellationToken ct = default)
-        {
-            return await ExecuteUpsertOrDeleteAsync("st_update_client", clientData, ct);
-        }
-
-        // ==========================================
-        // DELETE CLIENT
-        // ==========================================
-        public async Task<int> DeleteClientAsync(string clientID, CancellationToken ct = default)
-        {
-            var dummyClient = new Client { ClientID = clientID };
-            return await ExecuteUpsertOrDeleteAsync("st_delete_client", dummyClient, ct, isDelete: true);
-        }
-
-        // ==========================================
-        // SYNCHRONOUS WRAPPERS
-        // ==========================================
-        public DataTable LoadClientData()
-        {
-            return LoadClientDataAsync().GetAwaiter().GetResult();
-        }
-
-        public Client? GetClientByID(string clientID)
-        {
-            return GetClientByIDAsync(clientID).GetAwaiter().GetResult();
-        }
-
-        public int InsertClient(Client clientData)
-        {
-            return InsertClientAsync(clientData).GetAwaiter().GetResult();
-        }
-
-        public int UpdateClient(Client clientData)
-        {
-            return UpdateClientAsync(clientData).GetAwaiter().GetResult();
-        }
-
-        public int DeleteClient(string clientID)
-        {
-            return DeleteClientAsync(clientID).GetAwaiter().GetResult();
-        }
-
-        // ==========================================
-        // PRIVATE HELPER
-        // ==========================================
-        private async Task<int> ExecuteUpsertOrDeleteAsync(string spName, Client client, CancellationToken ct, bool isDelete = false)
-        {
-            string sql = isDelete
-                ? $"SELECT {Fn(spName)}(@p_id)"
-                : $"SELECT {Fn(spName)}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
-
             int result = 0;
 
             try
             {
                 await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+                await conn.OpenAsync(ct);
 
-                await using var cmd = new NpgsqlCommand(sql, conn) { CommandType = CommandType.Text };
+                await using var cmd = new NpgsqlCommand(sql, conn);
 
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = client.ClientID ?? "";
+                cmd.Parameters.AddWithValue("@p_id", c.ClientID);
 
                 if (!isDelete)
                 {
-                    cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = client.ClientName ?? "";
-                    cmd.Parameters.Add("@p_contact", NpgsqlDbType.Varchar).Value = client.ClientContact ?? (object)DBNull.Value;
-                    cmd.Parameters.Add("@p_address", NpgsqlDbType.Varchar).Value = client.ClientAddress ?? (object)DBNull.Value;
-                    cmd.Parameters.Add("@p_category", NpgsqlDbType.Varchar).Value = client.ClientCategory ?? "";
+                    cmd.Parameters.AddWithValue("@p_name", c.ClientName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_contact", c.ClientContact ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_address", c.ClientAddress ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_category", c.ClientCategory ?? (object)DBNull.Value);
                 }
 
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand($"SELECT EXISTS(SELECT 1 FROM {Fn("st_select_client")}() WHERE clientid = @p_id)", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = client.ClientID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    bool exists = existsObj is bool b && b;
-
-                    if (!isDelete && exists) result = 1;
-                    if (isDelete && !exists) result = 1;
-                }
+                var scalar = await cmd.ExecuteScalarAsync(ct);
+                result = ConvertDbInt(scalar);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ClientDataManager] {spName} error: {ex.Message}");
+                Console.WriteLine($"[Client] Exec error: {ex.Message}");
             }
+
             return result;
         }
 
-        private static int ConvertDbResultToInt(object? scalarResult)
+        private static Client Map(IDataRecord rd)
         {
-            if (scalarResult == null || scalarResult == DBNull.Value) return 0;
-            return scalarResult switch
+            return new Client
+            {
+                ClientID = rd["clientid"].ToString(),
+                ClientName = rd["client_name"].ToString(),
+                ClientContact = rd["client_contact"].ToString(),
+                ClientAddress = rd["client_address"].ToString(),
+                ClientCategory = rd["client_category"].ToString()
+            };
+        }
+
+        private static int ConvertDbInt(object? value)
+        {
+            if (value == null || value == DBNull.Value) return 0;
+
+            return value switch
             {
                 int i => i,
                 long l => (int)l,
                 bool b => b ? 1 : 0,
-                decimal d => (int)d,
-                short s => s,
-                byte by => by,
-                string st when int.TryParse(st, out var parsed) => parsed,
                 _ => 0
             };
         }

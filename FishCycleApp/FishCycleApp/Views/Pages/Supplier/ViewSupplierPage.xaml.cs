@@ -2,9 +2,12 @@
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 
 namespace FishCycleApp
 {
@@ -12,130 +15,181 @@ namespace FishCycleApp
     {
         private readonly SupplierDataManager supplierManager = new SupplierDataManager();
         private readonly Person currentUserProfile;
-        private readonly string SupplierID;
-        private Supplier? currentSupplier;
 
-        public ViewSupplierPage(string id, Person userProfile)
+        private Supplier? LoadedSupplier;
+        private string _currentSupplierID;
+
+        private CancellationTokenSource _cts;
+
+        public ViewSupplierPage(string supplierID, Person userProfile)
         {
             InitializeComponent();
-            SupplierID = id?.Trim() ?? string.Empty;
             currentUserProfile = userProfile;
+            _currentSupplierID = supplierID?.Trim() ?? "";
+
             DisplayProfileData(userProfile);
-            LoadData();
+
+            Loaded += ViewSupplierPage_Loaded;
+            Unloaded += ViewSupplierPage_Unloaded;
+            IsVisibleChanged += ViewSupplierPage_IsVisibleChanged;
         }
 
-        private void LoadData()
+        private void ViewSupplierPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ReloadDataSafe(false);
+        }
+
+        private void ViewSupplierPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
+        }
+
+        private void ViewSupplierPage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue == true)
+                ReloadDataSafe(true);
+        }
+
+        private void ReloadDataSafe(bool isSilent)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+
+            _ = LoadSupplierDetailsAsync(_currentSupplierID, isSilent, _cts.Token);
+        }
+
+        private async Task LoadSupplierDetailsAsync(string supplierID, bool isSilent, CancellationToken token)
         {
             try
             {
-                currentSupplier = supplierManager.GetSupplierByID(SupplierID);
-                if (currentSupplier != null)
+                if (!isSilent)
+                    Cursor = System.Windows.Input.Cursors.Wait;
+
+                var result = await supplierManager.GetSupplierByIDAsync(supplierID);
+
+                if (token.IsCancellationRequested) return;
+
+                LoadedSupplier = result;
+
+                if (LoadedSupplier != null)
                 {
-                    lblSupplierID.Text = currentSupplier.SupplierID;
-                    lblSupplierName.Text = currentSupplier.SupplierName;
-                    lblSupplierPhone.Text = currentSupplier.SupplierPhone ?? "-";
-                    lblSupplierAddress.Text = currentSupplier.SupplierAddress ?? "-";
-                    lblSupplierType.Text = currentSupplier.SupplierType;
+                    // update current ID biar selalu benar
+                    _currentSupplierID = LoadedSupplier.SupplierID;
+
+                    ApplyToUI(LoadedSupplier);
                 }
-                else
+                else if (!isSilent)
                 {
-                    MessageBox.Show($"Supplier ID {SupplierID} not found.", "NOT FOUND", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    NavigationService?.GoBack();
+                    MessageBox.Show($"Supplier with ID {supplierID} not found.", "NOT FOUND");
+                    GoBackOrNavigateList();
                 }
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading supplier: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                NavigationService?.GoBack();
+                if (!isSilent)
+                    MessageBox.Show($"Error loading supplier: {ex.Message}", "ERROR");
             }
+            finally
+            {
+                if (!isSilent)
+                    Cursor = System.Windows.Input.Cursors.Arrow;
+            }
+        }
+
+        private void ApplyToUI(Supplier s)
+        {
+            lblSupplierID.Text = s.SupplierID;
+            lblSupplierName.Text = s.SupplierName;
+            lblSupplierPhone.Text = s.SupplierPhone ?? "-";
+            lblSupplierAddress.Text = s.SupplierAddress ?? "-";
+            lblSupplierType.Text = s.SupplierType;
         }
 
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
-            if (NavigationService?.CanGoBack == true)
-                NavigationService.GoBack();
+            GoBackOrNavigateList();
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (currentSupplier == null)
-            {
-                MessageBox.Show("Supplier data not loaded.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            // Navigasi ke halaman edit; jika halaman edit mampu menerima ID saja ini sudah cukup.
-            NavigationService?.Navigate(new EditSupplierPage(SupplierID, currentUserProfile));
+            if (LoadedSupplier == null) return;
+            // Saat navigasi ke Edit, event Unloaded akan terpanggil dan membatalkan loading View
+            this.NavigationService.Navigate(new EditSupplierPage(LoadedSupplier, currentUserProfile));
         }
 
-        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(SupplierID))
-            {
-                MessageBox.Show("Invalid supplier ID.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+            if (LoadedSupplier == null) return;
 
-            MessageBoxResult confirmation = MessageBox.Show(
-                $"Are you sure you want to delete this supplier?\nSupplier ID: {SupplierID}",
+            var confirm = MessageBox.Show(
+                $"Are you sure you want to delete supplier '{LoadedSupplier.SupplierName}'?",
                 "CONFIRM DELETE",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
 
-            if (confirmation != MessageBoxResult.Yes) return;
+            if (confirm != MessageBoxResult.Yes) return;
 
-            int result = 0;
             try
             {
-                result = supplierManager.DeleteSupplier(SupplierID);
+                btnDelete.IsEnabled = false;
+                Cursor = System.Windows.Input.Cursors.Wait;
 
-                bool success = result != 0;
-                if (!success)
-                {
-                    // Verifikasi konsisten dengan pola Employee: cek apakah sudah hilang
-                    var stillThere = supplierManager.GetSupplierByID(SupplierID);
-                    success = (stillThere == null);
-                }
+                // Delete in database
+                await supplierManager.DeleteSupplierAsync(LoadedSupplier.SupplierID);
+
+                // VALID WAY: cek apakah data sudah tidak ada
+                var stillThere = await supplierManager.GetSupplierByIDAsync(LoadedSupplier.SupplierID);
+                bool success = stillThere == null;
 
                 if (success)
                 {
-                    MessageBox.Show("Supplier deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                    SupplierPage.NotifyDataChanged(); // trigger reload list
-                    NavigationService?.GoBack();
+                    MessageBox.Show("Supplier deleted successfully!", "SUCCESS");
+                    SupplierPage.NotifyDataChanged();
+                    GoBackOrNavigateList();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete supplier.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    LoadData(); // refresh tampilan current
+                    MessageBox.Show("Failed to delete supplier.", "ERROR");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Delete error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Delete error: {ex.Message}", "ERROR");
             }
+            finally
+            {
+                btnDelete.IsEnabled = true;
+                Cursor = System.Windows.Input.Cursors.Arrow;
+            }
+        }
+
+        private void GoBackOrNavigateList()
+        {
+            if (NavigationService?.CanGoBack == true)
+                NavigationService.GoBack();
+            else
+                NavigationService?.Navigate(new SupplierPage(currentUserProfile));
         }
 
         private void DisplayProfileData(Person profile)
         {
-            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
-                ? profile.Names[0].DisplayName
-                : "Pengguna Tidak Dikenal";
+            lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";
 
-            if (profile.Photos != null && profile.Photos.Count > 0)
+            if (profile?.Photos?.Count > 0)
             {
-                string photoUrl = profile.Photos[0].Url;
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
-                    bitmap.EndInit();
-                    imgUserProfile.Source = bitmap;
+                    BitmapImage bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.UriSource = new Uri(profile.Photos[0].Url, UriKind.Absolute);
+                    bmp.EndInit();
+                    imgUserProfile.Source = bmp;
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to load profile photo: {ex.Message}");
-                }
+                catch { }
             }
         }
     }

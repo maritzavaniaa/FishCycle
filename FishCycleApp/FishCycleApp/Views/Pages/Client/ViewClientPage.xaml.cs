@@ -2,136 +2,216 @@
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 
 namespace FishCycleApp
 {
     public partial class ViewClientPage : Page
     {
-        private ClientDataManager dataManager = new ClientDataManager();
-        private Person currentUserProfile;
-        private string CurrentClientID;
-        private Client currentClient;
+        private readonly ClientDataManager clientManager = new ClientDataManager();
+        private readonly Person currentUserProfile;
+
+        private Client? LoadedClient;
+        private string _currentClientID;
+
+        private CancellationTokenSource _cts;
 
         public ViewClientPage(string clientID, Person userProfile)
         {
             InitializeComponent();
-            CurrentClientID = (clientID ?? string.Empty).Trim();
             currentUserProfile = userProfile;
+            _currentClientID = clientID?.Trim() ?? "";
+
             DisplayProfileData(userProfile);
-            LoadClientDetails();
+
+            Loaded += ViewClientPage_Loaded;
+            Unloaded += ViewClientPage_Unloaded;
+            IsVisibleChanged += ViewClientPage_IsVisibleChanged;
         }
 
-        private void LoadClientDetails()
+        // ============================================================
+        // PAGE EVENTS
+        // ============================================================
+        private void ViewClientPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ReloadDataSafe(false);
+        }
+
+        private void ViewClientPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
+        }
+
+        private void ViewClientPage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue == true)
+                ReloadDataSafe(true);
+        }
+
+        // ============================================================
+        // SAFE RELOAD (prevent double load)
+        // ============================================================
+        private void ReloadDataSafe(bool isSilent)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+
+            _ = LoadClientDetailsAsync(_currentClientID, isSilent, _cts.Token);
+        }
+
+        // ============================================================
+        // LOAD CLIENT DATA
+        // ============================================================
+        private async Task LoadClientDetailsAsync(string clientID, bool isSilent, CancellationToken token)
         {
             try
             {
-                currentClient = dataManager.GetClientByID(CurrentClientID);
-                if (currentClient != null)
+                if (!isSilent)
+                    Cursor = System.Windows.Input.Cursors.Wait;
+
+                var result = await clientManager.GetClientByIDAsync(clientID);
+
+                if (token.IsCancellationRequested) return;
+
+                LoadedClient = result;
+
+                if (LoadedClient != null)
                 {
-                    lblClientID.Text = currentClient.ClientID;
-                    lblClientName.Text = currentClient.ClientName;
-                    lblClientContact.Text = currentClient.ClientContact ?? "-";
-                    lblClientCategory.Text = currentClient.ClientCategory ?? "-";
-                    lblClientAddress.Text = currentClient.ClientAddress ?? "-";
+                    _currentClientID = LoadedClient.ClientID; // update ID jika ada perubahan
+                    ApplyToUI(LoadedClient);
                 }
-                else
+                else if (!isSilent)
                 {
-                    MessageBox.Show($"Client with ID {CurrentClientID} not found.", "NOT FOUND", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    NavigationService?.GoBack();
+                    MessageBox.Show($"Client with ID {clientID} not found.", "NOT FOUND");
+                    GoBackOrNavigateList();
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // ignored (normal saat navigate)
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading client: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                NavigationService?.GoBack();
+                if (!isSilent)
+                    MessageBox.Show($"Error loading client: {ex.Message}", "ERROR");
             }
+            finally
+            {
+                if (!isSilent)
+                    Cursor = System.Windows.Input.Cursors.Arrow;
+            }
+        }
+
+        // ============================================================
+        // APPLY TO UI
+        // ============================================================
+        private void ApplyToUI(Client c)
+        {
+            lblClientID.Text = c.ClientID;
+            lblClientName.Text = c.ClientName;
+            lblClientContact.Text = c.ClientContact ?? "-";
+            lblClientCategory.Text = c.ClientCategory ?? "-";
+            lblClientAddress.Text = c.ClientAddress ?? "-";
+        }
+
+        // ============================================================
+        // BUTTONS
+        // ============================================================
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            GoBackOrNavigateList();
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (currentClient == null)
-            {
-                MessageBox.Show("Client data not loaded.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-            NavigationService?.Navigate(new EditClientPage(CurrentClientID, currentUserProfile));
+            if (LoadedClient == null) return;
+            // Saat navigasi ke Edit, event Unloaded akan terpanggil dan membatalkan loading View
+            this.NavigationService.Navigate(new EditClientPage(LoadedClient, currentUserProfile));
         }
 
-        private void btnBack_Click(object sender, RoutedEventArgs e)
+        private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (NavigationService?.CanGoBack == true)
-                NavigationService.GoBack();
-        }
+            if (LoadedClient == null) return;
 
-        private void btnDelete_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(CurrentClientID))
-            {
-                MessageBox.Show("Invalid client ID.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            MessageBoxResult confirmation = MessageBox.Show(
-                $"Are you sure you want to delete this client?\nClient ID: {CurrentClientID}",
+            var confirm = MessageBox.Show(
+                $"Are you sure you want to delete client '{LoadedClient.ClientName}'?",
                 "CONFIRM DELETE",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
 
-            if (confirmation != MessageBoxResult.Yes) return;
+            if (confirm != MessageBoxResult.Yes) return;
 
             try
             {
-                int result = dataManager.DeleteClient(CurrentClientID);
-                bool success = result != 0;
+                btnDelete.IsEnabled = false;
+                Cursor = System.Windows.Input.Cursors.Wait;
 
-                if (!success)
-                {
-                    var stillThere = dataManager.GetClientByID(CurrentClientID);
-                    success = (stillThere == null);
-                }
+                // Delete command
+                await clientManager.DeleteClientAsync(LoadedClient.ClientID);
+
+                // VALID WAY — cek sudah terhapus
+                var stillThere = await clientManager.GetClientByIDAsync(LoadedClient.ClientID);
+                bool success = stillThere == null;
 
                 if (success)
                 {
-                    MessageBox.Show("Client deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Client deleted successfully!", "SUCCESS");
                     ClientPage.NotifyDataChanged();
-                    NavigationService?.GoBack();
+                    GoBackOrNavigateList();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    LoadClientDetails();
+                    MessageBox.Show("Failed to delete client.", "ERROR");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Delete error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Delete error: {ex.Message}", "ERROR");
+            }
+            finally
+            {
+                btnDelete.IsEnabled = true;
+                Cursor = System.Windows.Input.Cursors.Arrow;
             }
         }
 
+        // ============================================================
+        // NAVIGATION LOGIC (mirror Supplier)
+        // ============================================================
+        private void GoBackOrNavigateList()
+        {
+            if (NavigationService?.CanGoBack == true)
+                NavigationService.GoBack();
+            else
+                NavigationService?.Navigate(new ClientPage(currentUserProfile));
+        }
+
+        // ============================================================
+        // PROFILE DISPLAY
+        // ============================================================
         private void DisplayProfileData(Person profile)
         {
-            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
-                ? profile.Names[0].DisplayName
-                : "Pengguna Tidak Dikenal";
+            lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";
 
-            if (profile.Photos != null && profile.Photos.Count > 0)
+            if (profile?.Photos?.Count > 0)
             {
-                string photoUrl = profile.Photos[0].Url;
                 try
                 {
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
-                    bitmap.EndInit();
-                    imgUserProfile.Source = bitmap;
+                    BitmapImage bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.UriSource = new Uri(profile.Photos[0].Url, UriKind.Absolute);
+                    bmp.EndInit();
+                    imgUserProfile.Source = bmp;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine($"Failed to load profile photo: {ex.Message}");
+                    // ignore for UX
                 }
             }
         }
