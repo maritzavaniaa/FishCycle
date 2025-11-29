@@ -11,280 +11,239 @@
     <Grid Margin="40,30,40,40">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header & Profile -->
+        <!-- Page Title -->
         <Grid Grid.Row="0" Margin="0,0,0,25">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Header -->
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                 <TextBlock Text="Add Transaction" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
                 <TextBlock Text="Transaction > Add Transaction" FontSize="14" Foreground="#6C757D" Margin="0,5,0,0"/>
             </StackPanel>
 
-            <!-- Profile -->
+            <!-- User Info (right side) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <!-- Profile Picture -->
                 <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
+                <!-- User Name -->
                 <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
             </StackPanel>
         </Grid>
 
-        <!-- Progress Stepper -->
-        <Border Grid.Row="1" Background="White" CornerRadius="20" Padding="40,20" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,20">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="Step1Circle" CornerRadius="10" Height="20" Width="20" Background="#CAF0F8" BorderThickness="1" BorderBrush="#0077B6">
-                        <Ellipse Fill="#0077B6" Height="8" Width="8"/>
-                    </Border>
-                    <TextBlock x:Name="Step1Text" Text="Transaction Detail" FontWeight="SemiBold" Foreground="#0077B6" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-
-                <Separator Width="100" Margin="15,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Background="White"/>
-
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="Step2Circle" CornerRadius="10" Height="20" Width="20" Background="White" BorderThickness="1" BorderBrush="#CCCCCC">
-                        <Ellipse Fill="#E9ECEF" Height="8" Width="8"/>
-                    </Border>
-                    <TextBlock x:Name="Step2Text" Text="Item Detail" FontWeight="Normal" Foreground="#6C757D" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-
-                <Separator Width="100" Margin="15,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Background="White"/>
-
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="Step3Circle" CornerRadius="10" Height="20" Width="20" Background="White" BorderThickness="1" BorderBrush="#CCCCCC">
-                        <Ellipse Fill="#E9ECEF" Height="8" Width="8"/>
-                    </Border>
-                    <TextBlock x:Name="Step3Text" Text="Distribution Detail" FontWeight="Normal" Foreground="#6C757D" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <!-- Form Container -->
-        <Border Grid.Row="2" Background="White" CornerRadius="20" Padding="40" BorderBrush="#E0E0E0" BorderThickness="1">
+        <!-- Form Section -->
+        <Border Grid.Row="1" Background="White" CornerRadius="20" Padding="40" BorderBrush="#E0E0E0" BorderThickness="1">
             <Grid>
-                <!-- Section 1: Transaction Detail -->
-                <Grid x:Name="Section1" Visibility="Visible">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" VerticalAlignment="Top">
+                <!-- Form Fields -->
+                <StackPanel Grid.Row="0" VerticalAlignment="Top">
 
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Employee" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <ComboBox x:Name="cmbEmployee" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Client" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <ComboBox x:Name="cmbClient" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-
-                            <Grid Grid.Column="2">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Client Contact" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <TextBox x:Name="txtClientContact" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-
-                        </Grid>
-
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0" Grid.ColumnSpan="3">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Address" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <TextBox x:Name="txtAddress" 
-                         BorderThickness="0" 
-                         Padding="15,12" 
-                         FontSize="14" 
-                         VerticalContentAlignment="Top" 
-                         Background="Transparent"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         Height="45"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Payment Status" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <ComboBox x:Name="cmbPaymentStatus" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-                    </StackPanel>
-                    
-                    <!-- Navigation Buttons -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
-                        <Button x:Name="btnNext1" Content="NEXT PAGE →" Padding="25,12" Background="#0077B6" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#003049"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Section 2: Item Detail -->
-                <Grid x:Name="Section2" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Item Input Form -->
-                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <!-- Transaction ID & Date Row -->
+                    <Grid Margin="0,0,0,25">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Transaction ID Field -->
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Item Name" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+
+                            <TextBlock Grid.Row="0" Text="Transaction ID" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                <ComboBox x:Name="cmbItemName" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
+                                <TextBox x:Name="txtTransactionID" 
+                                         BorderThickness="0" 
+                                         Padding="15,12" 
+                                         FontSize="14" 
+                                         VerticalContentAlignment="Center"
+                                         Background="Transparent"
+                                         IsReadOnly="True"
+                                         Foreground="#6C757D"/>
                             </Border>
                         </Grid>
 
+                        <!-- Transaction Date Field -->
                         <Grid Grid.Column="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Grade" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                <ComboBox x:Name="cmbGrade" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                            </Border>
-                        </Grid>
 
-                        <Grid Grid.Column="4">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Quantity" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Text="Transaction Date" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                <TextBox x:Name="txtQuantity" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                            </Border>
-                        </Grid>
-
-                        <Grid Grid.Column="6">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Unit Price" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                <TextBox x:Name="txtUnitPrice" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                            </Border>
-                        </Grid>
-
-                        <Grid Grid.Column="8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Total" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F8F9FA">
-                                <TextBox x:Name="txtTotal" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent" IsReadOnly="True"/>
+                                <DatePicker x:Name="dpTransactionDate" 
+                                            BorderThickness="0" 
+                                            Padding="15,12" 
+                                            FontSize="14" 
+                                            VerticalContentAlignment="Center"
+                                            Background="Transparent"/>
                             </Border>
                         </Grid>
                     </Grid>
 
-                    <!-- Add Item Button -->
-                    <Button Grid.Row="0" x:Name="btnAddItem" Content="+ ADD ITEM" Padding="20,10" Background="#495057" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="0,0,0,-50">
+                    <!-- Client & Employee Row -->
+                    <Grid Margin="0,0,0,25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Client ComboBox -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Client" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                <ComboBox x:Name="cmbClient" 
+                                          BorderThickness="0" 
+                                          Padding="15,12" 
+                                          FontSize="14" 
+                                          VerticalContentAlignment="Center"
+                                          Background="Transparent"
+                                          DisplayMemberPath="ClientName"
+                                          SelectedValuePath="ClientID">
+                                    <ComboBox.Resources>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="Padding" Value="10"/>
+                                        </Style>
+                                    </ComboBox.Resources>
+                                </ComboBox>
+                            </Border>
+                        </Grid>
+
+                        <!-- Employee ComboBox -->
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Employee" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                <ComboBox x:Name="cmbEmployee" 
+                                          BorderThickness="0" 
+                                          Padding="15,12" 
+                                          FontSize="14" 
+                                          VerticalContentAlignment="Center"
+                                          Background="Transparent"
+                                          DisplayMemberPath="EmployeeName"
+                                          SelectedValuePath="EmployeeID">
+                                    <ComboBox.Resources>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="Padding" Value="10"/>
+                                        </Style>
+                                    </ComboBox.Resources>
+                                </ComboBox>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Payment Status & Total Amount Row -->
+                    <Grid Margin="0,0,0,25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Payment Status ComboBox -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Payment Status" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                <ComboBox x:Name="cmbPaymentStatus" 
+                                          BorderThickness="0" 
+                                          Padding="15,12" 
+                                          FontSize="14" 
+                                          VerticalContentAlignment="Center"
+                                          Background="Transparent">
+                                    <ComboBoxItem Content="Pending" IsSelected="True"/>
+                                    <ComboBoxItem Content="Paid"/>
+                                    <ComboBoxItem Content="Cancelled"/>
+                                    <ComboBox.Resources>
+                                        <Style TargetType="ComboBoxItem">
+                                            <Setter Property="Padding" Value="10"/>
+                                        </Style>
+                                    </ComboBox.Resources>
+                                </ComboBox>
+                            </Border>
+                        </Grid>
+
+                        <!-- Total Amount Field -->
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Total Amount (Rp)" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                <TextBox x:Name="txtTotalAmount" 
+                                         BorderThickness="0" 
+                                         Padding="15,12" 
+                                         FontSize="14" 
+                                         VerticalContentAlignment="Center"
+                                         Background="Transparent"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Notes Field (Optional) -->
+                    <Grid Margin="0,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Notes (Optional)" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                        <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                            <TextBox x:Name="txtNotes" 
+                                     BorderThickness="0" 
+                                     Padding="15,12" 
+                                     FontSize="14" 
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Height="80"
+                                     VerticalContentAlignment="Top"
+                                     Background="Transparent"/>
+                        </Border>
+                    </Grid>
+
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
+                    <Button x:Name="btnCancel" Content="CANCEL" Padding="25,12" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Margin="0,0,10,0" Click="btnCancel_Click">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Button">
-                                            <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                                    CornerRadius="8" 
+                                                    Padding="{TemplateBinding Padding}">
                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                         </ControlTemplate>
@@ -292,253 +251,39 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#343a40"/>
+                                        <Setter Property="Background" Value="#F5F5F5"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
                     </Button>
 
-                    <!-- Item List Area -->
-                    <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Margin="0,50,0,20">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel x:Name="ItemListContainer">
-                                <TextBlock Text="[Placeholder: Item List DataGrid akan ditampilkan di sini]" 
-                                           FontSize="16" Foreground="#6C757D" 
-                                           HorizontalAlignment="Center" 
-                                           VerticalAlignment="Center"
-                                           Padding="20"/>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Border>
+                    <Button x:Name="btnSave" Content="SAVE" Padding="35,12" Background="#C8E86C" Foreground="#2D5016" FontWeight="Bold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnSave_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="8" 
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#B5D65A"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
 
-                    <!-- Sub Total & Navigation -->
-                    <Grid Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Sub Total -->
-                        <Grid Grid.Row="0" HorizontalAlignment="Right" Margin="0,0,0,20">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="150"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Sub Total" FontSize="16" FontWeight="SemiBold" Foreground="#495057" Margin="0,0,30,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" x:Name="txtSubTotal" Text="Rp 0" FontSize="18" FontWeight="Bold" Foreground="#212529" HorizontalAlignment="Right"/>
-                        </Grid>
-
-                        <!-- Navigation Buttons -->
-                        <Grid Grid.Row="1" Margin="0,10,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal">
-                                <Button x:Name="btnPrev2" Content="← PREVIOUS PAGE" Padding="20,12" Background="#90E0EF" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#48CAE4"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
-                                <Button x:Name="btnNext2" Content="NEXT PAGE →" Padding="25,12" Background="#0077B6" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#003049"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Grid>
-                </Grid>
-
-                <!-- Section 3: Distribution Detail -->
-                <Grid x:Name="Section3" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" VerticalAlignment="Top">
-                        <!-- Distribution Method & Status -->
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Distribution Method" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <ComboBox x:Name="cmbDistributionMethod" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-
-                            <Grid Grid.Column="2">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Status" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <ComboBox x:Name="cmbStatus" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-
-                        <!-- Departure Time & Arrival Time -->
-                        <Grid Margin="0,0,0,25">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid Grid.Column="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Departure Time" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <TextBox x:Name="txtDepartureTime" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent" Text="2025/11/28 12:00"/>
-                                </Border>
-                            </Grid>
-
-                            <Grid Grid.Column="2">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Arrival Time" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                    <TextBox x:Name="txtArrivalTime" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                </Border>
-                            </Grid>
-                        </Grid>
-                    </StackPanel>
-
-                    <!-- Navigation Buttons -->
-                    <Grid Grid.Row="2" Margin="0,30,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal">
-                            <Button x:Name="btnPrev3" Content="← PREVIOUS PAGE" Padding="25,12" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" >
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#F5F5F5"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
-
-                            <Button x:Name="btnCancel" Content="CANCEL" Padding="25,12" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Margin="0,0,10,0" Click="btnCancel_Click">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        CornerRadius="8" 
-                                        Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#F5F5F5"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-
-                            <Button x:Name="btnSave" Content="SAVE" Padding="35,12" Background="#C8E86C" Foreground="#2D5016" FontWeight="Bold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnSave_Click">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}" 
-                                        CornerRadius="8" 
-                                        Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#B5D65A"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
             </Grid>
         </Border>
+
     </Grid>
 </Page>

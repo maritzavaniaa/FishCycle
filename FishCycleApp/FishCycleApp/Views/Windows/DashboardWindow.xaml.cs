@@ -1,4 +1,6 @@
-﻿using Google.Apis.PeopleService.v1.Data;
+﻿using FishCycleApp.Views.Pages.Stock;
+using FishCycleApp.Views.Pages.Transaction;
+using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,11 +57,11 @@ namespace FishCycleApp
 
             if (clickedButton == btnStock)
             {
-                MainFrame.Navigate(new StockPage());
+                MainFrame.Navigate(new StockPage(this.currentUserProfile));
             }
             else if (clickedButton == btnTransaction)
             {
-                MainFrame.Navigate(new TransactionPage());
+                MainFrame.Navigate(new TransactionPage(this.currentUserProfile));
             }
             else if (clickedButton == btnClient)
             {

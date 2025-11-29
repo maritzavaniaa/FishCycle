@@ -1,20 +1,26 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
-using FishCycleApp.DataAccess;
+﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace FishCycleApp
 {
     public partial class AddClientPage : Page
     {
-        private ClientDataManager dataManager = new ClientDataManager();
+        private readonly ClientDataManager dataManager = new ClientDataManager();
+        private readonly Person _currentUserProfile;
+        private bool _isSaving = false;
 
         public AddClientPage(Person userProfile)
         {
             InitializeComponent();
+            _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
             InitializeCategoryComboBox();
         }
@@ -29,8 +35,11 @@ namespace FishCycleApp
             cmbClientCategory.SelectedIndex = 0;
         }
 
-        private void btnSave_Click(object sender, RoutedEventArgs e)
+        private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            if (_isSaving) return;
+
+            // Validation
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
             {
                 MessageBox.Show("Please enter client name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -58,36 +67,59 @@ namespace FishCycleApp
                 return;
             }
 
-            var selectedItem = (ComboBoxItem)cmbClientCategory.SelectedItem;
-            string categoryEnum = selectedItem.Tag?.ToString() ?? selectedItem.Content.ToString();
-
-            Client newClient = new Client
+            try
             {
-                ClientID = "CID-" + DateTime.Now.ToString("yyMMddHHmmss"),
-                ClientName = txtClientName.Text.Trim(),
-                ClientContact = txtClientContact.Text.Trim(),
-                ClientAddress = txtClientAddress.Text.Trim(),
-                ClientCategory = categoryEnum
-            };
+                _isSaving = true;
+                btnSave.IsEnabled = false;
+                btnCancel.IsEnabled = false;
+                this.Cursor = Cursors.Wait;
 
-            int result = dataManager.InsertClient(newClient);
-            bool success = result != 0;
-            if (!success)
-            {
-                var exists = dataManager.GetClientByID(newClient.ClientID);
-                success = exists != null;
+                var selectedItem = (ComboBoxItem)cmbClientCategory.SelectedItem;
+                string categoryEnum = selectedItem.Tag?.ToString() ?? selectedItem.Content.ToString();
+
+                Client newClient = new Client
+                {
+                    ClientID = "CID-" + DateTime.Now.ToString("yyMMddHHmmss"),
+                    ClientName = txtClientName.Text.Trim(),
+                    ClientContact = txtClientContact.Text.Trim(),
+                    ClientAddress = txtClientAddress.Text.Trim(),
+                    ClientCategory = categoryEnum
+                };
+
+                // ✅ Use async method
+                int result = await dataManager.InsertClientAsync(newClient);
+
+                bool success = result != 0;
+                if (!success)
+                {
+                    // ✅ Use async method
+                    var exists = await dataManager.GetClientByIDAsync(newClient.ClientID);
+                    success = exists != null;
+                }
+
+                if (success)
+                {
+                    MessageBox.Show("Client added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClientPage.NotifyDataChanged();
+
+                    if (NavigationService?.CanGoBack == true)
+                        NavigationService.GoBack();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to add client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-
-            if (success)
+            catch (Exception ex)
             {
-                MessageBox.Show("Client added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                ClientPage.NotifyDataChanged();
-                if (NavigationService?.CanGoBack == true)
-                    NavigationService.GoBack();
+                MessageBox.Show($"Error adding client: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            else
+            finally
             {
-                MessageBox.Show("Failed to add client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                _isSaving = false;
+                btnSave.IsEnabled = true;
+                btnCancel.IsEnabled = true;
+                this.Cursor = Cursors.Arrow;
             }
         }
 

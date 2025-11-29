@@ -1,4 +1,6 @@
-﻿using Google.Apis.PeopleService.v1.Data;
+﻿using FishCycleApp.Views.Pages.Stock;
+using FishCycleApp.Views.Pages.Transaction;
+using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +23,12 @@ namespace FishCycleApp
     /// </summary>
     public partial class DashboardPage : Page
     {
+        private readonly Person _currentUserProfile;
+
         public DashboardPage(Person userProfile)
         {
             InitializeComponent();
+            _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
         }
 
@@ -36,19 +41,19 @@ namespace FishCycleApp
                 parentWindow.HighlightActiveButton(parentWindow.btnStock);
             }
 
-            NavigationService.Navigate(new StockPage());
+            NavigationService.Navigate(new StockPage(_currentUserProfile));
         }
 
         private void btnDetailTransactions_Click(object sender, RoutedEventArgs e)
         {
             DashboardWindow parentWindow = Window.GetWindow(this) as DashboardWindow;
 
-            if (parentWindow != null) 
+            if (parentWindow != null)
             {
                 parentWindow.HighlightActiveButton(parentWindow.btnTransaction);
             }
 
-            NavigationService.Navigate(new TransactionPage());
+            NavigationService.Navigate(new TransactionPage(_currentUserProfile));
         }
 
         private void DisplayProfileData(Person profile)
@@ -70,9 +75,7 @@ namespace FishCycleApp
                 {
                     BitmapImage bitmap = new BitmapImage();
                     bitmap.BeginInit();
-
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
-
                     bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
                     bitmap.EndInit();
 
