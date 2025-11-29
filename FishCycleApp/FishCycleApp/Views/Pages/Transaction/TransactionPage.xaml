@@ -6,9 +6,366 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="TransactionPage" Background="WhiteSmoke">
+      Title="TransactionPage" Background="#E9ECEF">
 
-    <Grid>
-        <TextBlock Text="Ini adalah Transaction Page." FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid Margin="40,30,40,40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header & Profile -->
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Transaction" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
+            </StackPanel>
+
+            <!-- Profile -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
+                <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Search & Filter Section -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Search Bar -->
+            <Border Grid.Column="0" 
+            BorderBrush="#CCCCCC" 
+            BorderThickness="1" 
+            CornerRadius="25" 
+            Background="White" 
+            Height="45" 
+            Padding="5,0"
+            Margin="0,0,15,0"
+            HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                    Text="🔍"
+                    Width="18" 
+                    Height="18" 
+                    Margin="15,0,10,0" 
+                    VerticalAlignment="Center"/>
+
+                    <TextBox Grid.Column="1" 
+                     x:Name="txtSearch" 
+                     BorderThickness="0" 
+                     Background="Transparent" 
+                     VerticalContentAlignment="Center" 
+                     Text="Search anything..." 
+                     Foreground="#999999" 
+                     FontSize="14" 
+                     GotFocus="txtSearch_GotFocus" 
+                     LostFocus="txtSearch_LostFocus" 
+                     TextChanged="txtSearch_TextChanged" 
+                     Padding="0,0,15,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Date Range Filter -->
+            <Border Grid.Column="1"
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1" 
+                CornerRadius="25"
+                Background="White" 
+                Width="Auto" 
+                Height="45" 
+                Padding="5,0"
+                Margin="0,0,15,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="📅" FontSize="16" Margin="12,0,8,0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbDateRange" 
+                          Grid.Column="1"
+                          BorderThickness="0" 
+                          Background="Transparent" 
+                          VerticalContentAlignment="Center" 
+                          FontSize="14" 
+                          Padding="5,0,12,0" Margin="0,4,0,5">
+                        <ComboBoxItem Content="Date Range" IsSelected="True"/>
+                        <ComboBoxItem Content="Today"/>
+                        <ComboBoxItem Content="Last 7 Days"/>
+                        <ComboBoxItem Content="Last 30 Days"/>
+                    </ComboBox>
+                </Grid>
+            </Border>
+
+            <!-- Status Filter -->
+            <Border Grid.Column="2"
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1" 
+                CornerRadius="25"
+                Background="White" 
+                Width="Auto" 
+                Height="45" 
+                Padding="5,0"
+                Margin="0,0,15,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="📊" FontSize="16" Margin="12,0,8,0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbStatus" 
+                          Grid.Column="1"
+                          BorderThickness="0" 
+                          Background="Transparent" 
+                          VerticalContentAlignment="Center" 
+                          FontSize="14" 
+                          Padding="5,0,12,0" Margin="0,4,0,5">
+                        <ComboBoxItem Content="Status" IsSelected="True"/>
+                        <ComboBoxItem Content="All Status"/>
+                        <ComboBoxItem Content="Paid"/>
+                        <ComboBoxItem Content="Pending"/>
+                        <ComboBoxItem Content="Cancelled"/>
+                    </ComboBox>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Content Section -->
+        <Border Grid.Row="2" Background="White" CornerRadius="20,20,0,0" Padding="25,20,25,15" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Content Header -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="All Transactions" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
+                    <TextBlock x:Name="txtResultInfo" Text="showing 1-10 result from 99 results" Foreground="#6C757D" FontSize="12" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Add Transaction Button -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnAdd" Content="ADD TRANSACTION" Padding="20,10" Margin="0,0,0,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#0066B3"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content Table (READ ONLY) with Action Button -->
+        <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,20,20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <DataGrid x:Name="dgvTransactions" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeaderWidth="0" GridLinesVisibility="Horizontal" HeadersVisibility="Column" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" RowHeight="60" FontSize="13" SelectionChanged="dgvTransactions_SelectionChanged">
+
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="#495057"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="20,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                            <Setter Property="BorderBrush" Value="#E9ECEF"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#333333"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="{TemplateBinding Background}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="20,0">
+                                            <ContentPresenter VerticalAlignment="Center" 
+                                            HorizontalAlignment="Left"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#333333"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="White"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Transaction Number" Binding="{Binding transaction_number}" Width="200" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#6C757D"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Time" Binding="{Binding transaction_time}" Width="150" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="Foreground" Value="#212529"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Client Name" Binding="{Binding client_name}" Width="250" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTemplateColumn Header="Transaction Status" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="TransactionStatusBorder" 
+                                    CornerRadius="20" 
+                                    Padding="10,4" 
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtTransactionStatus" Text="{Binding transaction_status}" 
+                                        Foreground="White" 
+                                        FontWeight="SemiBold" 
+                                        FontSize="11" 
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        TextTrimming="None" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="Delivery Status" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="DeliveryStatusBorder" 
+                                    CornerRadius="20" 
+                                    Padding="10,4" 
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtDeliveryStatus" Text="{Binding delivery_status}" 
+                                        Foreground="White" 
+                                        FontWeight="SemiBold" 
+                                        FontSize="11" 
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        TextTrimming="None" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Amount" Binding="{Binding amount}" Width="*" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Action Button -->
+                        <DataGridTemplateColumn Header="Action" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalAlignment="Center"
+                                    Margin="10,0,0,0">
+                                        <Button Click="btnView_Click" 
+                                        Background="Transparent" 
+                                        BorderBrush="Transparent" 
+                                        Padding="0" 
+                                        Margin="0,0,12,0" 
+                                        Cursor="Hand" 
+                                        ToolTip="View Transaction Details">
+                                            <Image Source="/Resources/Images/Icons/icon_view.png" Width="20" Height="20"/>
+                                        </Button>
+
+                                        <Button Click="btnDelete_Click" 
+                                        Background="Transparent" 
+                                        BorderBrush="Transparent" 
+                                        Padding="0" 
+                                        Cursor="Hand" 
+                                        ToolTip="Delete Transaction">
+                                            <Image Source="/Resources/Images/Icons/icon_delete.png" Width="20" Height="20"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+        </Border>
     </Grid>
 </Page>

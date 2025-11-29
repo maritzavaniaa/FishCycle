@@ -6,9 +6,417 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="StockPage" Background="WhiteSmoke">
+      Title="StockPage" Background="#E9ECEF">
 
-    <Grid>
-        <TextBlock Text="Ini adalah Stock Page." FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid Margin="40,30,40,40">
+        <!-- ROW DEFINITIONS -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="Stock" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
+            </StackPanel>
+
+            <!-- User Info (right side) -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <!-- Profile Picture -->
+                <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
+                <!-- User Name -->
+                <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
+            </StackPanel>
+
+
+        </Grid>
+
+        <!-- ================= CARDS ================= -->
+        <Grid Grid.Row="1" Margin="0,0,0,20" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CARD 1 -->
+            <Border Grid.Column="0" CornerRadius="20" Background="White" Padding="20" Margin="0,0,20,0">
+                <StackPanel>
+                    <TextBlock Text="Total Jenis Ikan" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Image Source="/Resources/Images/Icons/Card_Stock/fish.png" Width="28"/>
+                        <TextBlock Text="12 Jenis" FontSize="22" FontWeight="Bold" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- CARD 2 -->
+            <Border Grid.Column="1" CornerRadius="20" Background="White" Padding="20" Margin="0,0,20,0">
+                <StackPanel>
+                    <TextBlock Text="Total Stok" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Image Source="/Resources/Images/Icons/Card_Stock/stock.png" Width="28"/>
+                        <TextBlock Text="745 kg" FontSize="22" FontWeight="Bold" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- CARD 3 -->
+            <Border Grid.Column="2" CornerRadius="20" Background="White" Padding="20" Margin="0,0,20,0">
+                <StackPanel>
+                    <TextBlock Text="Nilai Total Stok" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Image Source="/Resources/Images/Icons/Card_Stock/value.png" Width="28"/>
+                        <TextBlock Text="Rp5.000.000" FontSize="22" FontWeight="Bold" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- CARD 4 -->
+            <Border Grid.Column="3" CornerRadius="20" Background="White" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Stok Rendah" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Image Source="/Resources/Images/Icons/Card_Stock/low.png" Width="28"/>
+                        <TextBlock Text="5 Produk" FontSize="22" FontWeight="Bold" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Search Bar and Filter Section -->
+        <Grid Grid.Row="2" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Search Bar with Icon -->
+            <Border Grid.Column="0" 
+    BorderBrush="#CCCCCC" 
+    BorderThickness="1" 
+    CornerRadius="25" 
+    Background="White" 
+    Height="45" 
+    Padding="5,0"
+    Margin="0,0,15,0"
+    HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search Icon -->
+                    <TextBlock Grid.Column="0" 
+               Text="🔍"
+               Width="18" 
+               Height="18" 
+               Margin="15,0,10,0" 
+               VerticalAlignment="Center"/>
+
+                    <!-- Search TextBox -->
+                    <TextBox Grid.Column="1" 
+                 x:Name="txtSearch" 
+                 BorderThickness="0" 
+                 Background="Transparent" 
+                 VerticalContentAlignment="Center" 
+                 Text="Search anything..." 
+                 Foreground="#999999" 
+                 FontSize="14" 
+                 GotFocus="txtSearch_GotFocus" 
+                 LostFocus="txtSearch_LostFocus" 
+                 TextChanged="txtSearch_TextChanged" 
+                 Padding="0,0,15,0"/>
+                </Grid>
+            </Border>
+
+            <!-- Category Filter -->
+            <Border Grid.Column="1" 
+    BorderBrush="#CCCCCC" 
+    BorderThickness="1" 
+    Background="White" 
+    Width="200" 
+    Height="45" 
+    Padding="5,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Category Icon -->
+                    <TextBlock Grid.Column="0" 
+               Text="🏷️" 
+               FontSize="16" 
+               Margin="12,0,8,0" 
+               VerticalAlignment="Center" RenderTransformOrigin="-0.405,0.517"/>
+
+                    <ComboBox 
+              x:Name="cmbCategory" 
+              IsEnabled="True"
+              Background="White"        
+              BorderThickness="0" 
+              VerticalContentAlignment="Center" 
+              FontSize="14" 
+              Padding="5,0,12,0" 
+              SelectionChanged="cmbCategory_SelectionChanged" Margin="0,4,0,5" Grid.Column="1">
+
+                        <ComboBoxItem Content="All Grades" IsSelected="True"/>
+                        <ComboBoxItem Content="A"/>
+                        <ComboBoxItem Content="B"/>
+                        <ComboBoxItem Content="C"/>
+                    </ComboBox>
+                </Grid>
+            </Border>
+        </Grid>
+
+
+        <!-- Header Section inside white card -->
+        <Border Grid.Row="3" Background="White" CornerRadius="20,20,0,0" Padding="25,20,25,15" BorderBrush="#E0E0E0" BorderThickness="1,1,1,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Title -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="All Stock" FontSize="20" FontWeight="Bold" Foreground="#1a1a1a"/>
+                    <TextBlock x:Name="txtResultInfo" Text="showing 1-10 result from 99 results" Foreground="#6C757D" FontSize="12" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Right: Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="btnAdd" Content="ADD STOCK" Padding="20,10" Margin="0,0,10,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#0066B3"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button x:Name="btnLoad" Content="Refresh" Padding="20,10" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Click="btnLoad_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= TABLE ================= -->
+        <Border Grid.Row="4" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,20,20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <DataGrid x:Name="dgvStock"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserAddRows="False"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  RowHeaderWidth="0"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  VerticalScrollBarVisibility="Disabled"
+                  HorizontalScrollBarVisibility="Disabled"
+                  RowHeight="60"
+                  FontSize="13">
+
+                    <!-- HEADER STYLE -->
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="#495057"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="20,12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                            <Setter Property="BorderBrush" Value="#E9ECEF"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <!-- CELL STYLE -->
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="#333333"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="20,0">
+                                            <ContentPresenter VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#333333"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+
+                    <!-- ROW STYLE -->
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="White"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#F8F9FA"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+
+                    <!-- ================= COLUMNS ================= -->
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Product ID" Binding="{Binding product_id}" Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#6C757D"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="220">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="Foreground" Value="#212529"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- GRADE WITH COLORED PILL -->
+                        <DataGridTemplateColumn Header="Grade" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="20" Padding="16,8"
+                                    Background="{Binding GradeColor}"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Margin="10,0,0,0">
+                                        <TextBlock Text="{Binding grade}"
+                                           Foreground="White"
+                                           FontWeight="SemiBold"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="Quantity (kg)" Binding="{Binding quantity}" Width="140">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Unit Price (Rp)" Binding="{Binding unit_price}" Width="140">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Total Value (Rp)" Binding="{Binding total_value}" Width="160">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Supplier" Binding="{Binding supplier}" Width="200">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- ACTION ICONS -->
+                        <DataGridTemplateColumn Header="Action" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                        <Button Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                            <Image Width="20" Height="20" Source="/Resources/Images/Icons/icon_edit.png"/>
+                                        </Button>
+                                        <Button Background="Transparent" BorderThickness="0" Margin="12,0,0,0" Cursor="Hand">
+                                            <Image Width="20" Height="20" Source="/Resources/Images/Icons/icon_delete.png"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+        </Border>
+
     </Grid>
 </Page>

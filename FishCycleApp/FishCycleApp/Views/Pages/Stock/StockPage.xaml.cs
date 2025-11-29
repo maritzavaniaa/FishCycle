@@ -24,5 +24,39 @@ namespace FishCycleApp
         {
             InitializeComponent();
         }
+
+        private async void btnLoad_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void cmbCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+        }
+
+        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+        }
+
+        private void txtSearch_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtSearch.Text == "Search anything...")
+            {
+                txtSearch.Text = string.Empty;
+                txtSearch.Foreground = Brushes.Black;
+            }
+        }
+
+        private void txtSearch_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtSearch.Text))
+            {
+                txtSearch.Text = "Search anything...";
+                txtSearch.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+            }
+        }
     }
 }
