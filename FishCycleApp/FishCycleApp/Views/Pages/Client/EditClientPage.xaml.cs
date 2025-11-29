@@ -1,12 +1,11 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
+using Google.Apis.PeopleService.v1.Data;
 using System;
-using System.Data;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Google.Apis.PeopleService.v1.Data;
 
 namespace FishCycleApp
 {
@@ -15,108 +14,87 @@ namespace FishCycleApp
         private ClientDataManager dataManager = new ClientDataManager();
         private Person currentUserProfile;
         private string CurrentClientID;
+        private Client currentClient;
 
         public EditClientPage(string clientID, Person userProfile)
         {
             InitializeComponent();
-            this.CurrentClientID = clientID;
-            this.currentUserProfile = userProfile;
+            CurrentClientID = (clientID ?? string.Empty).Trim();
+            currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
             InitializeCategoryComboBox();
-            LoadClientDetails(clientID);
+            LoadClientDetails();
         }
 
         private void InitializeCategoryComboBox()
         {
             cmbClientCategory.Items.Clear();
-            cmbClientCategory.Items.Add(new ComboBoxItem()
-            {
-                Content = "Retail",
-                Tag = "Retail"
-            });
-            cmbClientCategory.Items.Add(new ComboBoxItem()
-            {
-                Content = "Restaurant",
-                Tag = "Restaurant"
-            });
-            cmbClientCategory.Items.Add(new ComboBoxItem()
-            {
-                Content = "Industry",
-                Tag = "Industry"
-            });
-            cmbClientCategory.Items.Add(new ComboBoxItem()
-            {
-                Content = "Distributor",
-                Tag = "Distributor"
-            });
+            cmbClientCategory.Items.Add(new ComboBoxItem { Content = "Retail", Tag = "Retail" });
+            cmbClientCategory.Items.Add(new ComboBoxItem { Content = "Restaurant", Tag = "Restaurant" });
+            cmbClientCategory.Items.Add(new ComboBoxItem { Content = "Industry", Tag = "Industry" });
+            cmbClientCategory.Items.Add(new ComboBoxItem { Content = "Distributor", Tag = "Distributor" });
         }
 
-        // Fungsi untuk memuat detail client berdasarkan ID
-        private void LoadClientDetails(string clientID)
+        private void LoadClientDetails()
         {
-            Client client = dataManager.GetClientByID(clientID);
-            if (client != null)
+            try
             {
-                txtClientID.Text = client.ClientID;
-                txtClientName.Text = client.ClientName;
-                txtClientContact.Text = client.ClientContact;
-                txtClientAddress.Text = client.ClientAddress;
-
-                // Set category di ComboBox
-                foreach (ComboBoxItem item in cmbClientCategory.Items)
+                currentClient = dataManager.GetClientByID(CurrentClientID);
+                if (currentClient != null)
                 {
-                    if (item.Tag.ToString() == client.ClientCategory)
-                    {
-                        cmbClientCategory.SelectedItem = item;
-                        break;
-                    }
+                    txtClientID.Text = currentClient.ClientID;
+                    txtClientName.Text = currentClient.ClientName;
+                    txtClientContact.Text = currentClient.ClientContact ?? string.Empty;
+                    txtClientAddress.Text = currentClient.ClientAddress ?? string.Empty;
+
+                    var item = cmbClientCategory.Items.OfType<ComboBoxItem>()
+                        .FirstOrDefault(i => string.Equals(i.Tag?.ToString(), currentClient.ClientCategory, StringComparison.Ordinal));
+                    if (item != null) cmbClientCategory.SelectedItem = item;
+                }
+                else
+                {
+                    MessageBox.Show($"Client with ID {CurrentClientID} not found.", "NOT FOUND", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    NavigationService?.GoBack();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show($"Client with ID {clientID} not found.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.NavigationService.GoBack();
+                MessageBox.Show($"Error loading client: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                NavigationService?.GoBack();
             }
         }
 
-        // Fungsi untuk menyimpan perubahan data client
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
-            // Validasi input kosong
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
             {
-                MessageBox.Show("Please enter client name.", "WARNING",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter client name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientName.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientContact.Text))
             {
-                MessageBox.Show("Please enter client contact.", "WARNING",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter client contact.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientContact.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientAddress.Text))
             {
-                MessageBox.Show("Please enter client address.", "WARNING",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter client address.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientAddress.Focus();
                 return;
             }
 
             if (cmbClientCategory.SelectedItem == null)
             {
-                MessageBox.Show("Please select a category.", "WARNING",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select a category.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var selectedItem = (ComboBoxItem)cmbClientCategory.SelectedItem;
-            string categoryEnum = selectedItem.Tag?.ToString()
-                                  ?? selectedItem.Content.ToString();
+            string categoryEnum = selectedItem.Tag?.ToString() ?? selectedItem.Content.ToString();
 
             Client updatedClient = new Client
             {
@@ -127,20 +105,39 @@ namespace FishCycleApp
                 ClientCategory = categoryEnum
             };
 
-            int result = dataManager.UpdateClient(updatedClient);
+            try
+            {
+                int result = dataManager.UpdateClient(updatedClient);
+                bool success = result != 0;
 
-            if (result == 1)
-            {
-                MessageBox.Show("Client updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                this.NavigationService.GoBack();
+                if (!success)
+                {
+                    var reloaded = dataManager.GetClientByID(CurrentClientID);
+                    success =
+                        reloaded != null &&
+                        string.Equals(reloaded.ClientName, updatedClient.ClientName, StringComparison.Ordinal) &&
+                        string.Equals(reloaded.ClientContact, updatedClient.ClientContact, StringComparison.Ordinal) &&
+                        string.Equals(reloaded.ClientAddress, updatedClient.ClientAddress, StringComparison.Ordinal) &&
+                        string.Equals(reloaded.ClientCategory, updatedClient.ClientCategory, StringComparison.Ordinal);
+                }
+
+                if (success)
+                {
+                    MessageBox.Show("Client updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ClientPage.NotifyDataChanged();
+                    NavigationService?.GoBack();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to update client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Failed to update client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Update error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // Fungsi untuk menghapus data client
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult confirmation = MessageBox.Show(
@@ -149,59 +146,63 @@ namespace FishCycleApp
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
-            if (confirmation == MessageBoxResult.Yes)
+            if (confirmation != MessageBoxResult.Yes) return;
+
+            try
             {
                 int result = dataManager.DeleteClient(CurrentClientID);
+                bool success = result != 0;
 
-                if (result == 1)
+                if (!success)
+                {
+                    var stillThere = dataManager.GetClientByID(CurrentClientID);
+                    success = (stillThere == null);
+                }
+
+                if (success)
                 {
                     MessageBox.Show("Client deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                    this.NavigationService.GoBack();
+                    ClientPage.NotifyDataChanged();
+                    NavigationService?.GoBack();
                 }
                 else
                 {
                     MessageBox.Show("Failed to delete client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Delete error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        // Fungsi untuk kembali ke halaman sebelumnya
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
-            if (this.NavigationService.CanGoBack)
-            {
-                this.NavigationService.GoBack();
-            }
+            if (NavigationService?.CanGoBack == true)
+                NavigationService.GoBack();
         }
 
         private void DisplayProfileData(Person profile)
         {
-            if (profile.Names != null && profile.Names.Count > 0)
-            {
-                lblUserName.Text = profile.Names[0].DisplayName;
-            }
-            else
-            {
-                lblUserName.Text = "Pengguna Tidak Dikenal";
-            }
+            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
+                ? profile.Names[0].DisplayName
+                : "Pengguna Tidak Dikenal";
 
             if (profile.Photos != null && profile.Photos.Count > 0)
             {
                 string photoUrl = profile.Photos[0].Url;
-
                 try
                 {
-                    BitmapImage bitmap = new BitmapImage();
+                    var bitmap = new BitmapImage();
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
                     bitmap.EndInit();
-
                     imgUserProfile.Source = bitmap;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Gagal memuat foto profil: {ex.Message}", "Error Foto", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Console.WriteLine($"Failed to load profile photo: {ex.Message}");
                 }
             }
         }
