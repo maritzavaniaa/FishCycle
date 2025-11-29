@@ -2,494 +2,230 @@
 using NpgsqlTypes;
 using System;
 using System.Data;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FishCycleApp.Models;
 
 namespace FishCycleApp.DataAccess
 {
-    public class EmployeeDataManager : DatabaseConnection
+    public class EmployeeDataManager
     {
+        private readonly string _connectionString;
         private readonly string _schema;
 
-        public EmployeeDataManager() : base()
+        public EmployeeDataManager()
         {
-            _schema = Environment.GetEnvironmentVariable("DB_SCHEMA") ?? "public";
+            // 1. LOAD FILE .ENV SECARA MANUAL
+            // (Agar Environment.GetEnvironmentVariable bisa membaca isi file .env)
+            LoadEnv();
+
+            // 2. AMBIL VARIABEL SESUAI NAMA DI FILE .ENV KAMU
+            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST is missing in .env");
+            var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME is missing in .env");
+            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD is missing in .env");
+            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "postgres";
+
+            // 3. RAKIT MENJADI CONNECTION STRING YANG VALID
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = host,
+                Port = int.Parse(port),
+                Username = username,
+                Password = password,
+                Database = database,
+
+                // Supaya koneksi tetap hidup (penting untuk Supabase/Cloud DB)
+                KeepAlive = 30,
+                Pooling = true
+            };
+
+            _connectionString = builder.ToString();
+            _schema = "public"; // Default schema
         }
 
+        // Helper untuk membaca file .env dan memuatnya ke memori aplikasi
+        private void LoadEnv()
+        {
+            try
+            {
+                // Mencari file .env di folder tempat aplikasi berjalan (bin/Debug/...)
+                // Atau mundur beberapa folder jika berjalan dari Visual Studio
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+
+                // Jika tidak ada di folder bin, coba cari di root project (saat development)
+                if (!File.Exists(path))
+                {
+                    string projectRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
+                    path = Path.Combine(projectRoot, ".env");
+                }
+
+                if (!File.Exists(path)) return; // Jika file tidak ada, biarkan (mungkin sudah diset di System Environment)
+
+                foreach (var line in File.ReadAllLines(path))
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
+                        continue; // Skip baris kosong atau komentar
+
+                    var parts = line.Split('=', 2);
+                    if (parts.Length != 2) continue;
+
+                    var key = parts[0].Trim();
+                    var value = parts[1].Trim();
+
+                    // Set ke environment variable process saat ini
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Failed to load .env file. {ex.Message}");
+            }
+        }
+
+        // Helper function schema
         private string Fn(string name) => $"{_schema}.{name}";
+
+        // ==========================================================
+        // METHOD DATA (Sama seperti sebelumnya)
+        // ==========================================================
 
         public async Task<DataTable> LoadEmployeeDataAsync(CancellationToken ct = default)
         {
             var dt = new DataTable();
+            // Ganti nama function sesuai database kamu (st_select_employee)
             string sql = $"select employee_id, name, google_account from {Fn("st_select_employee")}()";
+
             try
             {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct).ConfigureAwait(false);
+
                 await using var cmd = new NpgsqlCommand(sql, conn)
                 {
                     CommandType = CommandType.Text,
-                    CommandTimeout = 15
+                    CommandTimeout = 20
                 };
+
                 await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
                 dt.Load(rd);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Async] Error loading employee data: {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"[Async] Inner: {ex.InnerException.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
             }
             return dt;
         }
 
         public async Task<int> InsertEmployeeAsync(Employee employeeData, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_insert_employee")}(@p_id, @p_name, @p_ga)";
-            int result = 0;
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = employeeData.EmployeeName;
-                cmd.Parameters.Add("@p_ga", NpgsqlDbType.Varchar).Value = employeeData.GoogleAccount;
-
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Async] Insert error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return result;
+            return await ExecuteUpsertOrDeleteAsync("st_insert_employee", employeeData, ct);
         }
 
         public async Task<int> UpdateEmployeeAsync(Employee employeeData, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_update_employee")}(@p_id, @p_name, @p_ga)";
-            int result = 0;
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = employeeData.EmployeeName;
-                cmd.Parameters.Add("@p_ga", NpgsqlDbType.Varchar).Value = employeeData.GoogleAccount;
-
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Async] Update error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return result;
+            return await ExecuteUpsertOrDeleteAsync("st_update_employee", employeeData, ct);
         }
 
         public async Task<int> DeleteEmployeeAsync(string employeeID, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_delete_employee")}(@p_id)";
+            var dummyEmployee = new Employee { EmployeeID = employeeID, EmployeeName = "", GoogleAccount = "" };
+            return await ExecuteUpsertOrDeleteAsync("st_delete_employee", dummyEmployee, ct, isDelete: true);
+        }
+
+        private async Task<int> ExecuteUpsertOrDeleteAsync(string spName, Employee emp, CancellationToken ct, bool isDelete = false)
+        {
+            string sql = $"SELECT {Fn(spName)}(@p_id" + (isDelete ? ")" : ", @p_name, @p_ga)");
             int result = 0;
+
             try
             {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct).ConfigureAwait(false);
+
+                await using var cmd = new NpgsqlCommand(sql, conn) { CommandType = CommandType.Text };
+
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = emp.EmployeeID;
+                if (!isDelete)
                 {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeID;
+                    cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = emp.EmployeeName;
+                    cmd.Parameters.Add("@p_ga", NpgsqlDbType.Varchar).Value = emp.GoogleAccount;
+                }
 
                 var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
                 result = ConvertDbResultToInt(scalarResult);
 
                 if (result == 0)
                 {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeID;
+                    await using var verify = new NpgsqlCommand($"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = emp.EmployeeID;
                     var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
                     bool exists = existsObj is bool b && b;
-                    if (!exists) result = 1;
+
+                    if (!isDelete && exists) result = 1;
+                    if (isDelete && !exists) result = 1;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Async] Delete error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
+                Console.WriteLine($"[Async] {spName} error: {ex.Message}");
             }
             return result;
         }
 
         public async Task<Employee?> GetEmployeeByIDAsync(string employeeID, CancellationToken ct = default)
         {
-            Employee? employee = null;
-            string id = (employeeID ?? string.Empty).Trim();
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(employeeID)) return null;
 
-                await using (var cmd = new NpgsqlCommand($"select * from {Fn("st_select_employee_by_id")}(@p_id)", conn))
-                {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandTimeout = 15;
-                    cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = id;
-
-                    await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                    if (await rd.ReadAsync(ct).ConfigureAwait(false))
-                    {
-                        employee = new Employee
-                        {
-                            EmployeeID = rd["employee_id"].ToString(),
-                            EmployeeName = rd["name"].ToString(),
-                            GoogleAccount = rd["google_account"].ToString()
-                        };
-                    }
-                }
-
-                if (employee != null) return employee;
-
-                string normalizedParam = id
+            string id = employeeID.Trim();
+            string normalizedParam = id
                     .Replace("EMP-", "", StringComparison.OrdinalIgnoreCase)
                     .Replace("EID-", "", StringComparison.OrdinalIgnoreCase)
                     .Trim();
 
-                string tryEmp = id.StartsWith("EID-", StringComparison.OrdinalIgnoreCase)
-                    ? "EMP-" + normalizedParam
-                    : id;
-                string tryEid = id.StartsWith("EMP-", StringComparison.OrdinalIgnoreCase)
-                    ? "EID-" + normalizedParam
-                    : id;
+            string tryEmp = "EMP-" + normalizedParam;
+            string tryEid = "EID-" + normalizedParam;
 
-                string fallbackSql = $@"
-                    with data as (
-                        select employee_id, name, google_account from {Fn("st_select_employee")}()
-                    )
-                    select *
-                    from data
-                    where trim(employee_id) = @p_exact
-                       or trim(employee_id) = @p_try_emp
-                       or trim(employee_id) = @p_try_eid
-                       or replace(trim(employee_id),'EMP-','') = @p_norm
-                       or replace(trim(employee_id),'EID-','') = @p_norm
-                    limit 1";
+            string sql = $@"
+                SELECT employee_id, name, google_account 
+                FROM {Fn("st_select_employee")}()
+                WHERE employee_id = @p_exact 
+                   OR employee_id = @p_try_emp 
+                   OR employee_id = @p_try_eid
+                LIMIT 1";
 
-                await using (var fb = new NpgsqlCommand(fallbackSql, conn))
+            try
+            {
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct).ConfigureAwait(false);
+
+                await using var cmd = new NpgsqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("p_exact", id);
+                cmd.Parameters.AddWithValue("p_try_emp", tryEmp);
+                cmd.Parameters.AddWithValue("p_try_eid", tryEid);
+
+                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+                if (await rd.ReadAsync(ct).ConfigureAwait(false))
                 {
-                    fb.CommandType = CommandType.Text;
-                    fb.CommandTimeout = 15;
-                    fb.Parameters.Add("@p_exact", NpgsqlDbType.Varchar).Value = id;
-                    fb.Parameters.Add("@p_try_emp", NpgsqlDbType.Varchar).Value = tryEmp;
-                    fb.Parameters.Add("@p_try_eid", NpgsqlDbType.Varchar).Value = tryEid;
-                    fb.Parameters.Add("@p_norm", NpgsqlDbType.Varchar).Value = normalizedParam;
-
-                    await using var rd = await fb.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                    if (await rd.ReadAsync(ct).ConfigureAwait(false))
+                    return new Employee
                     {
-                        employee = new Employee
-                        {
-                            EmployeeID = rd["employee_id"].ToString(),
-                            EmployeeName = rd["name"].ToString(),
-                            GoogleAccount = rd["google_account"].ToString()
-                        };
-                    }
+                        EmployeeID = rd["employee_id"].ToString(),
+                        EmployeeName = rd["name"].ToString(),
+                        GoogleAccount = rd["google_account"].ToString()
+                    };
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Async] Get by ID error: {ex.Message}");
             }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return employee;
-        }
-
-        public DataTable LoadEmployeeData()
-        {
-            DataTable dt = new DataTable();
-            string sql = $"select * from {Fn("st_select_employee")}()";
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                using var rd = cmd.ExecuteReader();
-                dt.Load(rd);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading employee data: {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return dt;
-        }
-
-        public int InsertEmployee(Employee employeeData)
-        {
-            string sql = $"SELECT {Fn("st_insert_employee")}(@p_id, @p_name, @p_ga)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = employeeData.EmployeeName;
-                cmd.Parameters.Add("@p_ga", NpgsqlDbType.Varchar).Value = employeeData.GoogleAccount;
-
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                    var existsObj = verify.ExecuteScalar();
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Insert error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
-
-        public int UpdateEmployee(Employee employeeData)
-        {
-            string sql = $"SELECT {Fn("st_update_employee")}(@p_id, @p_name, @p_ga)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = employeeData.EmployeeName;
-                cmd.Parameters.Add("@p_ga", NpgsqlDbType.Varchar).Value = employeeData.GoogleAccount;
-
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeData.EmployeeID;
-                    var existsObj = verify.ExecuteScalar();
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Update error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
-
-        public int DeleteEmployee(string employeeID)
-        {
-            string sql = $"SELECT {Fn("st_delete_employee")}(@p_id)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeID;
-
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_employee_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = employeeID;
-                    var existsObj = verify.ExecuteScalar();
-                    bool exists = existsObj is bool b && b;
-                    if (!exists) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Delete error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
-
-        public Employee? GetEmployeeByID(string employeeID)
-        {
-            Employee? employee = null;
-            string id = (employeeID ?? string.Empty).Trim();
-            try
-            {
-                OpenConnection();
-
-                using (var cmd = new NpgsqlCommand($"select * from {Fn("st_select_employee_by_id")}(@p_id)", conn))
-                {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandTimeout = 30;
-                    cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = id;
-
-                    using var rd = cmd.ExecuteReader();
-                    if (rd.Read())
-                    {
-                        employee = new Employee
-                        {
-                            EmployeeID = rd["employee_id"].ToString(),
-                            EmployeeName = rd["name"].ToString(),
-                            GoogleAccount = rd["google_account"].ToString()
-                        };
-                    }
-                }
-                if (employee != null) return employee;
-
-                string normalizedParam = id
-                    .Replace("EMP-", "", StringComparison.OrdinalIgnoreCase)
-                    .Replace("EID-", "", StringComparison.OrdinalIgnoreCase)
-                    .Trim();
-
-                string tryEmp = id.StartsWith("EID-", StringComparison.OrdinalIgnoreCase)
-                    ? "EMP-" + normalizedParam
-                    : id;
-                string tryEid = id.StartsWith("EMP-", StringComparison.OrdinalIgnoreCase)
-                    ? "EID-" + normalizedParam
-                    : id;
-
-                string fallbackSql = $@"
-                    with data as (select * from {Fn("st_select_employee")}())
-                    select *
-                    from data
-                    where trim(employee_id) = @p_exact
-                       or trim(employee_id) = @p_try_emp
-                       or trim(employee_id) = @p_try_eid
-                       or replace(trim(employee_id),'EMP-','') = @p_norm
-                       or replace(trim(employee_id),'EID-','') = @p_norm
-                    limit 1";
-
-                using (var fb = new NpgsqlCommand(fallbackSql, conn))
-                {
-                    fb.CommandType = CommandType.Text;
-                    fb.CommandTimeout = 30;
-                    fb.Parameters.Add("@p_exact", NpgsqlDbType.Varchar).Value = id;
-                    fb.Parameters.Add("@p_try_emp", NpgsqlDbType.Varchar).Value = tryEmp;
-                    fb.Parameters.Add("@p_try_eid", NpgsqlDbType.Varchar).Value = tryEid;
-                    fb.Parameters.Add("@p_norm", NpgsqlDbType.Varchar).Value = normalizedParam;
-
-                    using var rd = fb.ExecuteReader();
-                    if (rd.Read())
-                    {
-                        employee = new Employee
-                        {
-                            EmployeeID = rd["employee_id"].ToString(),
-                            EmployeeName = rd["name"].ToString(),
-                            GoogleAccount = rd["google_account"].ToString()
-                        };
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Get by ID error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return employee;
-        }
-
-        private async Task OpenConnectionAsync(CancellationToken ct = default)
-        {
-            if (conn.State == ConnectionState.Closed)
-                await conn.OpenAsync(ct).ConfigureAwait(false);
-        }
-
-        private async Task CloseConnectionAsync()
-        {
-            if (conn.State == ConnectionState.Open)
-                await conn.CloseAsync().ConfigureAwait(false);
+            return null;
         }
 
         private static int ConvertDbResultToInt(object? scalarResult)
         {
-            if (scalarResult == null || scalarResult == DBNull.Value)
-                return 0;
+            if (scalarResult == null || scalarResult == DBNull.Value) return 0;
             return scalarResult switch
             {
                 int i => i,

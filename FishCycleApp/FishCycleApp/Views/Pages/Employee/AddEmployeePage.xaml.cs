@@ -13,6 +13,7 @@ namespace FishCycleApp
     {
         private readonly EmployeeDataManager dataManager = new EmployeeDataManager();
         private readonly Person currentUserProfile;
+        private bool isSaving = false; // Mencegah double click
 
         public AddEmployeePage(Person userProfile)
         {
@@ -21,8 +22,12 @@ namespace FishCycleApp
             DisplayProfileData(userProfile);
         }
 
-        private void btnSave_Click(object sender, RoutedEventArgs e)
+        // UBAH JADI ASYNC VOID
+        private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            if (isSaving) return;
+
+            // 1. Validasi Input
             if (string.IsNullOrWhiteSpace(txtEmployeeName.Text))
             {
                 MessageBox.Show("Please enter employee name.", "WARNING",
@@ -41,56 +46,70 @@ namespace FishCycleApp
 
             try
             {
+                // 2. Kunci UI agar tidak diklik berkali-kali
+                isSaving = true;
+                btnSave.IsEnabled = false;
+
+                // Opsional: Ubah kursor jadi loading
+                this.Cursor = System.Windows.Input.Cursors.Wait;
+
                 var newEmployee = new Employee
                 {
+                    // Generate ID Client Side
                     EmployeeID = "EMP-" + DateTime.UtcNow.ToString("yyMMddHHmmss"),
                     EmployeeName = txtEmployeeName.Text.Trim(),
                     GoogleAccount = txtGoogleAccount.Text.Trim()
                 };
 
-                int result = dataManager.InsertEmployee(newEmployee);
+                // 3. PANGGIL METHOD ASYNC (Gunakan await)
+                int result = await dataManager.InsertEmployeeAsync(newEmployee);
 
                 bool success = result != 0;
+
+                // Double check jika database return 0 tapi data masuk (kasus jarang)
                 if (!success)
                 {
-                    var fetched = dataManager.GetEmployeeByID(newEmployee.EmployeeID);
+                    var fetched = await dataManager.GetEmployeeByIDAsync(newEmployee.EmployeeID);
                     success = fetched != null;
                 }
 
                 if (success)
                 {
-                    MessageBox.Show($"Employee added successfully! (code: {result})",
+                    MessageBox.Show($"Employee added successfully!",
                                     "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    if (NavigationService != null)
+                    // 4. NAVIGASI YANG BENAR:
+                    // Beritahu EmployeePage bahwa ada data baru
+                    EmployeePage.NotifyDataChanged();
+
+                    // Kembali ke halaman sebelumnya (List Employee) daripada buat halaman baru
+                    if (NavigationService?.CanGoBack == true)
                     {
-                        var nav = NavigationService;
-                        nav.Navigated += RemoveAddPageFromBackStackOnce;
-                        nav.Navigate(new EmployeePage(currentUserProfile));
+                        NavigationService.GoBack();
+                    }
+                    else
+                    {
+                        // Fallback jika tidak bisa back (misal langsung buka halaman ini)
+                        NavigationService?.Navigate(new EmployeePage(currentUserProfile));
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add employee.\n\nPlease check:\n" +
-                                    "1. Database connection\n" +
-                                    "2. Stored procedure exists\n" +
-                                    "3. Check Output window for details",
+                    MessageBox.Show("Failed to add employee.\nCheck database connection.",
                                     "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Exception occurred:\n\n{ex.Message}\n\n{ex.StackTrace}",
+                MessageBox.Show($"Exception occurred:\n{ex.Message}",
                                 "EXCEPTION", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void RemoveAddPageFromBackStackOnce(object sender, NavigationEventArgs e)
-        {
-            if (sender is NavigationService nav)
+            finally
             {
-                nav.Navigated -= RemoveAddPageFromBackStackOnce;
-                try { nav.RemoveBackEntry(); } catch { /* ignore */ }
+                // 5. Buka kembali kunci UI
+                isSaving = false;
+                btnSave.IsEnabled = true;
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
         }
 
@@ -120,8 +139,8 @@ namespace FishCycleApp
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Gagal memuat foto profil: {ex.Message}",
-                                    "Profile Photo Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    // Silent fail for photo is better UX than popup warning
+                    Console.WriteLine($"Gagal memuat foto profil: {ex.Message}");
                 }
             }
         }

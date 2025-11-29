@@ -2,6 +2,8 @@
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 using System;
+using System.Threading; // WAJIB ADA: Untuk fitur pembatalan
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -14,75 +16,103 @@ namespace FishCycleApp
         private readonly EmployeeDataManager dataManager = new EmployeeDataManager();
         private readonly Person currentUserProfile;
         private Employee LoadedEmployee;
+        private string _currentEmployeeID;
+
+        // TOKEN PEMBATALAN: Ini kuncinya
+        private CancellationTokenSource _cts;
 
         public ViewEmployeePage(string employeeID, Person userProfile)
         {
             InitializeComponent();
             currentUserProfile = userProfile;
+            _currentEmployeeID = employeeID?.Trim();
+
             DisplayProfileData(userProfile);
 
             this.Loaded += ViewEmployeePage_Loaded;
             this.Unloaded += ViewEmployeePage_Unloaded;
-
-            LoadEmployeeDetails(employeeID?.Trim());
+            this.IsVisibleChanged += ViewEmployeePage_IsVisibleChanged;
         }
 
         private void ViewEmployeePage_Loaded(object sender, RoutedEventArgs e)
         {
-            EmployeePage.EmployeeDetailUpdated -= OnEmployeeUpdated;
-            EmployeePage.EmployeeDetailUpdated += OnEmployeeUpdated;
-
-            var pending = EmployeePage.LastUpdatedEmployee;
-            if (pending != null && LoadedEmployee != null &&
-                string.Equals(pending.EmployeeID, LoadedEmployee.EmployeeID, StringComparison.OrdinalIgnoreCase))
-            {
-                ApplyToUI(pending);
-                LoadedEmployee = pending;
-            }
+            // Load data saat halaman pertama kali dimuat
+            ReloadDataSafe(isSilent: false);
         }
 
         private void ViewEmployeePage_Unloaded(object sender, RoutedEventArgs e)
         {
-            EmployeePage.EmployeeDetailUpdated -= OnEmployeeUpdated;
+            // STOP! Batalkan semua loading jika user pindah halaman
+            _cts?.Cancel();
         }
 
-        private void OnEmployeeUpdated(Employee updated)
+        private void ViewEmployeePage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (LoadedEmployee != null &&
-                string.Equals(updated.EmployeeID, LoadedEmployee.EmployeeID, StringComparison.OrdinalIgnoreCase))
+            // Jika halaman kembali terlihat (misal habis tekan Back dari Edit)
+            if ((bool)e.NewValue == true)
             {
-                LoadedEmployee = updated;
-                ApplyToUI(updated);
+                // Reload diam-diam (silent) agar data terupdate
+                ReloadDataSafe(isSilent: true);
             }
         }
 
-        private void LoadEmployeeDetails(string employeeID)
+        // Fungsi aman untuk reload data dengan pembatalan
+        private void ReloadDataSafe(bool isSilent)
         {
-            LoadedEmployee = dataManager.GetEmployeeByID(employeeID);
+            // 1. Batalkan proses lama jika masih jalan
+            _cts?.Cancel();
+            // 2. Buat token baru untuk proses ini
+            _cts = new CancellationTokenSource();
 
-            if (LoadedEmployee == null)
+            // 3. Jalankan loading dengan token tersebut
+            _ = LoadEmployeeDetailsAsync(_currentEmployeeID, isSilent, _cts.Token);
+        }
+
+        private async Task LoadEmployeeDetailsAsync(string employeeID, bool isSilent, CancellationToken token)
+        {
+            try
             {
-                var suffix = employeeID?
-                    .Replace("EMP-", "", StringComparison.OrdinalIgnoreCase)
-                    .Replace("EID-", "", StringComparison.OrdinalIgnoreCase)
-                    .Trim();
+                if (!isSilent) this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                if (!string.IsNullOrEmpty(suffix))
+                // Gunakan Token saat memanggil database
+                var result = await dataManager.GetEmployeeByIDAsync(employeeID, token);
+
+                // CEK KRUSIAL: Apakah user sudah pindah halaman saat loading berjalan?
+                if (token.IsCancellationRequested) return; // Kalau ya, BERHENTI DI SINI. Jangan lanjut.
+
+                LoadedEmployee = result;
+
+                if (LoadedEmployee != null)
                 {
-                    LoadedEmployee = dataManager.GetEmployeeByID("EMP-" + suffix)
-                                    ?? dataManager.GetEmployeeByID("EID-" + suffix);
+                    ApplyToUI(LoadedEmployee);
+                }
+                else
+                {
+                    // Hanya tampilkan error jika halaman INI masih aktif dilihat user
+                    if (!isSilent && this.IsVisible)
+                    {
+                        this.Cursor = System.Windows.Input.Cursors.Arrow;
+                        MessageBox.Show($"Employee with ID {employeeID} not found.", "ERROR",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        GoBackOrNavigateList();
+                    }
                 }
             }
-
-            if (LoadedEmployee != null)
+            catch (OperationCanceledException)
             {
-                ApplyToUI(LoadedEmployee);
+                // Error ini normal terjadi saat dibatalkan, abaikan saja.
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show($"Employee with ID {employeeID} not found.", "ERROR",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                NavigateToEmployeeList();
+                // Hanya tampilkan error lain jika halaman masih terlihat
+                if (!isSilent && this.IsVisible)
+                    MessageBox.Show($"Error loading details: {ex.Message}");
+            }
+            finally
+            {
+                if (!isSilent && this.IsVisible)
+                    this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
         }
 
@@ -95,82 +125,58 @@ namespace FishCycleApp
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (LoadedEmployee == null)
-            {
-                MessageBox.Show("Employee data is not loaded.", "ERROR",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+            if (LoadedEmployee == null) return;
+            // Saat navigasi ke Edit, event Unloaded akan terpanggil dan membatalkan loading View
             this.NavigationService.Navigate(new EditEmployeePage(LoadedEmployee, currentUserProfile));
         }
 
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
-            EmployeePage.NotifyDataChanged();
-            NavigateToEmployeeList();
+            GoBackOrNavigateList();
         }
 
-        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (LoadedEmployee == null) return;
 
-            MessageBoxResult confirmation = MessageBox.Show(
-                $"Are you sure you want to delete this employee?\nEmployee ID: {LoadedEmployee.EmployeeID}",
-                "CONFIRM DELETE", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (confirmation == MessageBoxResult.Yes)
+            var confirm = MessageBox.Show($"Delete Employee {LoadedEmployee.EmployeeID}?", "CONFIRM", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (confirm == MessageBoxResult.Yes)
             {
-                int result = dataManager.DeleteEmployee(LoadedEmployee.EmployeeID);
-                bool success = result != 0;
-                if (!success)
+                try
                 {
-                    var stillThere = dataManager.GetEmployeeByID(LoadedEmployee.EmployeeID);
-                    success = (stillThere == null);
-                }
+                    btnDelete.IsEnabled = false;
+                    this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                if (success)
-                {
-                    MessageBox.Show("Employee deleted successfully!", "SUCCESS",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Kita tidak pakai token di sini karena proses delete harus tuntas
+                    await dataManager.DeleteEmployeeAsync(LoadedEmployee.EmployeeID);
 
-                    // Minta list reload dan kembali ke list baru agar pasti ter-load
                     EmployeePage.NotifyDataChanged();
-                    NavigateToEmployeeList();
+                    GoBackOrNavigateList();
                 }
-                else
+                finally
                 {
-                    MessageBox.Show("Failed to delete employee.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    btnDelete.IsEnabled = true;
+                    this.Cursor = System.Windows.Input.Cursors.Arrow;
                 }
             }
+        }
+
+        private void GoBackOrNavigateList()
+        {
+            if (NavigationService?.CanGoBack == true) NavigationService.GoBack();
+            else NavigateToEmployeeList();
         }
 
         private void NavigateToEmployeeList()
         {
-            if (NavigationService != null)
-            {
-                var nav = NavigationService;
-                nav.Navigated += RemoveThisPageFromBackStackOnce;
-                nav.Navigate(new EmployeePage(currentUserProfile));
-            }
-        }
-
-        private void RemoveThisPageFromBackStackOnce(object sender, NavigationEventArgs e)
-        {
-            if (sender is NavigationService nav)
-            {
-                nav.Navigated -= RemoveThisPageFromBackStackOnce;
-                try { nav.RemoveBackEntry(); } catch { /* ignore */ }
-            }
+            NavigationService?.Navigate(new EmployeePage(currentUserProfile));
         }
 
         private void DisplayProfileData(Person profile)
         {
-            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
-                ? profile.Names[0].DisplayName
-                : "Pengguna Tidak Dikenal";
+            if (profile?.Names?.Count > 0) lblUserName.Text = profile.Names[0].DisplayName;
 
-            if (profile.Photos != null && profile.Photos.Count > 0)
+            if (profile?.Photos?.Count > 0)
             {
                 try
                 {
@@ -181,10 +187,7 @@ namespace FishCycleApp
                     bitmap.EndInit();
                     imgUserProfile.Source = bitmap;
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Profile photo load error: {ex.Message}");
-                }
+                catch { /* Ignore */ }
             }
         }
     }
