@@ -2,183 +2,481 @@
 using NpgsqlTypes;
 using System;
 using System.Data;
-using System.Windows;
+using System.Threading;
+using System.Threading.Tasks;
 using FishCycleApp.Models;
 
 namespace FishCycleApp.DataAccess
 {
     public class SupplierDataManager : DatabaseConnection
     {
-        // LOAD ALL SUPPLIERS
-        public DataTable LoadSupplierData()
-        {
-            DataTable dt = new DataTable();
-            string sql = "select * from st_select_supplier()";
+        private readonly string _schema;
 
+        public SupplierDataManager() : base()
+        {
+            _schema = Environment.GetEnvironmentVariable("DB_SCHEMA") ?? "public";
+        }
+
+        private string Fn(string name) => $"{_schema}.{name}";
+        private string Tn(string name) => $"{_schema}.{name}";
+
+        public async Task<DataTable> LoadSupplierDataAsync(CancellationToken ct = default)
+        {
+            var dt = new DataTable();
+            string sql = $"select supplierid, supplier_type, supplier_name, supplier_phone, supplier_address from {Fn("st_select_supplier")}()";
             try
             {
-                OpenConnection();
-                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn))
-                using (NpgsqlDataReader rd = cmd.ExecuteReader())
+                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var cmd = new NpgsqlCommand(sql, conn)
                 {
-                    dt.Load(rd);
-                }
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+                dt.Load(rd);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading supplier data: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"[Async] Error loading supplier data: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"[Async] Inner: {ex.InnerException.Message}");
             }
             finally
             {
-                CloseConnection();
+                await CloseConnectionAsync().ConfigureAwait(false);
             }
-
             return dt;
         }
 
-        // INSERT SUPPLIER
-        public int InsertSupplier(Supplier supplier)
+        public async Task<int> InsertSupplierAsync(Supplier supplier, CancellationToken ct = default)
         {
-            string sql = "select * from st_insert_supplier(:_id, :_type, :_name, :_phone, :_address)";
+            string sql = $"SELECT {Fn("st_insert_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
             int result = 0;
-
             try
             {
-                OpenConnection();
-
-                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn))
+                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var cmd = new NpgsqlCommand(sql, conn)
                 {
-                    cmd.Parameters.Add(new NpgsqlParameter("_id", NpgsqlDbType.Varchar) { Value = supplier.SupplierID });
-                    cmd.Parameters.Add(new NpgsqlParameter("_type", NpgsqlDbType.Varchar) { Value = supplier.SupplierType });
-                    cmd.Parameters.Add(new NpgsqlParameter("_name", NpgsqlDbType.Varchar) { Value = supplier.SupplierName });
-                    cmd.Parameters.Add(new NpgsqlParameter("_phone", NpgsqlDbType.Varchar) { Value = supplier.SupplierPhone });
-                    cmd.Parameters.Add(new NpgsqlParameter("_address", NpgsqlDbType.Varchar) { Value = supplier.SupplierAddress });
-                    
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                cmd.Parameters.Add("@p_type", NpgsqlDbType.Varchar).Value = supplier.SupplierType;
+                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = supplier.SupplierName;
+                cmd.Parameters.Add("@p_phone", NpgsqlDbType.Varchar).Value = (object?)supplier.SupplierPhone ?? DBNull.Value;
+                cmd.Parameters.Add("@p_address", NpgsqlDbType.Text).Value = (object?)supplier.SupplierAddress ?? DBNull.Value;
 
-                    result = (int)cmd.ExecuteScalar();
+                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    await using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                    if (existsObj is bool b && b) result = 1;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error inserting supplier: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"[Async] Insert supplier error: {ex.Message}");
             }
             finally
             {
-                CloseConnection();
+                await CloseConnectionAsync().ConfigureAwait(false);
             }
-
             return result;
         }
 
-        // GET SUPPLIER BY ID
-        public Supplier GetSupplierByID(string id)
+        public async Task<int> UpdateSupplierAsync(Supplier supplier, CancellationToken ct = default)
         {
-            Supplier supplier = null;
-
-            string sql = "select * from st_select_supplier_by_id(:_id)";
-
+            string sql = $"SELECT {Fn("st_update_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
+            int result = 0;
             try
             {
-                OpenConnection();
-
-                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn))
+                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var cmd = new NpgsqlCommand(sql, conn)
                 {
-                    cmd.Parameters.AddWithValue("_id", id);
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                cmd.Parameters.Add("@p_type", NpgsqlDbType.Varchar).Value = supplier.SupplierType;
+                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = supplier.SupplierName;
+                cmd.Parameters.Add("@p_phone", NpgsqlDbType.Varchar).Value = (object?)supplier.SupplierPhone ?? DBNull.Value;
+                cmd.Parameters.Add("@p_address", NpgsqlDbType.Text).Value = (object?)supplier.SupplierAddress ?? DBNull.Value;
 
-                    using (NpgsqlDataReader rd = cmd.ExecuteReader())
-                    {
-                        if (rd.Read())
-                        {
-                            supplier = new Supplier
-                            {
-                                SupplierID = rd["supplierid"].ToString(),
-                                SupplierName = rd["supplier_name"].ToString(),
-                                SupplierPhone = rd["supplier_phone"].ToString(),
-                                SupplierAddress = rd["supplier_address"].ToString(),
-                                SupplierType = rd["supplier_type"].ToString()
-                            };
-                        }
-                    }
+                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    await using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                    if (existsObj is bool b && b) result = 1;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error retrieving supplier: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"[Async] Update supplier error: {ex.Message}");
+            }
+            finally
+            {
+                await CloseConnectionAsync().ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<int> DeleteSupplierAsync(string supplierID, CancellationToken ct = default)
+        {
+            string sql = $"SELECT {Fn("st_delete_supplier")}(@p_id)";
+            int result = 0;
+            try
+            {
+                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var cmd = new NpgsqlCommand(sql, conn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplierID;
+
+                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    await using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplierID;
+                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
+                    bool exists = existsObj is bool b && b;
+                    if (!exists) result = 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Async] Delete supplier error: {ex.Message}");
+            }
+            finally
+            {
+                await CloseConnectionAsync().ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public Supplier? GetSupplierByID(string supplierID)
+        {
+            Supplier? supplier = null;
+            string id = (supplierID ?? string.Empty).Trim();
+
+            string sql = $@"
+                select s.supplierid, s.supplier_type, s.supplier_name, s.supplier_phone, s.supplier_address
+                from {Tn("supplier")} s
+                where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                   or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                      regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                limit 1";
+
+            try
+            {
+                OpenConnection();
+                using var cmd = new NpgsqlCommand(sql, conn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 30
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = id;
+
+                using var rd = cmd.ExecuteReader();
+                if (rd.Read())
+                {
+                    supplier = MapSupplier(rd);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Get supplier by ID error: {ex.Message}");
             }
             finally
             {
                 CloseConnection();
             }
-
             return supplier;
         }
 
-        // UPDATE SUPPLIER
-        public int UpdateSupplier(Supplier supplier)
+        public async Task<Supplier?> GetSupplierByIDAsync(string supplierID, CancellationToken ct = default)
         {
-            string sql = @"
-                select * from st_update_supplier(:_id, :_type, :_name, :_phone, :_address)";
+            Supplier? supplier = null;
+            string id = (supplierID ?? string.Empty).Trim();
 
-            int result = 0;
+            string sql = $@"
+                select s.supplierid, s.supplier_type, s.supplier_name, s.supplier_phone, s.supplier_address
+                from {Tn("supplier")} s
+                where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                   or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                      regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                limit 1";
 
             try
             {
-                OpenConnection();
-
-                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn))
+                await OpenConnectionAsync(ct).ConfigureAwait(false);
+                await using var cmd = new NpgsqlCommand(sql, conn)
                 {
-                    cmd.Parameters.AddWithValue("_id", supplier.SupplierID);
-                    cmd.Parameters.AddWithValue("_type", supplier.SupplierType);
-                    cmd.Parameters.AddWithValue("_name", supplier.SupplierName);
-                    cmd.Parameters.AddWithValue("_phone", supplier.SupplierPhone);
-                    cmd.Parameters.AddWithValue("_address", supplier.SupplierAddress);                
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 15
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = id;
 
-                    result = (int)cmd.ExecuteScalar();
+                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+                if (await rd.ReadAsync(ct).ConfigureAwait(false))
+                {
+                    supplier = MapSupplier(rd);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating supplier: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"[Async] Get supplier by ID error: {ex.Message}");
+            }
+            finally
+            {
+                await CloseConnectionAsync().ConfigureAwait(false);
+            }
+            return supplier;
+        }
+
+        public DataTable LoadSupplierData()
+        {
+            var dt = new DataTable();
+            string sql = $"select supplierid, supplier_type, supplier_name, supplier_phone, supplier_address from {Fn("st_select_supplier")}()";
+            try
+            {
+                OpenConnection();
+                using var cmd = new NpgsqlCommand(sql, conn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 30
+                };
+                using var rd = cmd.ExecuteReader();
+                dt.Load(rd);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading supplier data: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
             }
             finally
             {
                 CloseConnection();
             }
+            return dt;
+        }
 
+        public int InsertSupplier(Supplier supplier)
+        {
+            string sql = $"SELECT {Fn("st_insert_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
+            int result = 0;
+            try
+            {
+                OpenConnection();
+                using var cmd = new NpgsqlCommand(sql, conn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 30
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                cmd.Parameters.Add("@p_type", NpgsqlDbType.Varchar).Value = supplier.SupplierType;
+                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = supplier.SupplierName;
+                cmd.Parameters.Add("@p_phone", NpgsqlDbType.Varchar).Value = (object?)supplier.SupplierPhone ?? DBNull.Value;
+                cmd.Parameters.Add("@p_address", NpgsqlDbType.Text).Value = (object?)supplier.SupplierAddress ?? DBNull.Value;
+
+                var scalarResult = cmd.ExecuteScalar();
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                    var existsObj = verify.ExecuteScalar();
+                    if (existsObj is bool b && b) result = 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Insert supplier error: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
             return result;
         }
 
-        // DELETE SUPPLIER
-        public int DeleteSupplier(string id)
+        public int UpdateSupplier(Supplier supplier)
         {
-            string sql = "select * from st_delete_supplier(:_id)";
+            string sql = $"SELECT {Fn("st_update_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
             int result = 0;
-
             try
             {
                 OpenConnection();
-
-                using (NpgsqlCommand cmd = new NpgsqlCommand(sql, conn))
+                using var cmd = new NpgsqlCommand(sql, conn)
                 {
-                    cmd.Parameters.AddWithValue("_id", id);
-                    result = (int)cmd.ExecuteScalar();
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 30
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                cmd.Parameters.Add("@p_type", NpgsqlDbType.Varchar).Value = supplier.SupplierType;
+                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = supplier.SupplierName;
+                cmd.Parameters.Add("@p_phone", NpgsqlDbType.Varchar).Value = (object?)supplier.SupplierPhone ?? DBNull.Value;
+                cmd.Parameters.Add("@p_address", NpgsqlDbType.Text).Value = (object?)supplier.SupplierAddress ?? DBNull.Value;
+
+                var scalarResult = cmd.ExecuteScalar();
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplier.SupplierID;
+                    var existsObj = verify.ExecuteScalar();
+                    if (existsObj is bool b && b) result = 1;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error deleting supplier: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"Update supplier error: {ex.Message}");
             }
             finally
             {
                 CloseConnection();
             }
-
             return result;
+        }
+
+        public int DeleteSupplier(string supplierID)
+        {
+            string sql = $"SELECT {Fn("st_delete_supplier")}(@p_id)";
+            int result = 0;
+            try
+            {
+                OpenConnection();
+                using var cmd = new NpgsqlCommand(sql, conn)
+                {
+                    CommandType = CommandType.Text,
+                    CommandTimeout = 30
+                };
+                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplierID;
+
+                var scalarResult = cmd.ExecuteScalar();
+                result = ConvertDbResultToInt(scalarResult);
+
+                if (result == 0)
+                {
+                    string verifySql = $@"
+                        select exists(
+                          select 1
+                          from {Tn("supplier")} s
+                          where lower(trim(s.supplierid)) = lower(trim(@p_id))
+                             or regexp_replace(lower(trim(s.supplierid)),'^(sid-|sup-|id-)','') =
+                                regexp_replace(lower(trim(@p_id)),'^(sid-|sup-|id-)','')
+                        )";
+                    using var verify = new NpgsqlCommand(verifySql, conn);
+                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = supplierID;
+                    var existsObj = verify.ExecuteScalar();
+                    bool exists = existsObj is bool b && b;
+                    if (!exists) result = 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Delete supplier error: {ex.Message}");
+            }
+            finally
+            {
+                CloseConnection();
+            }
+            return result;
+        }
+
+        private static Supplier MapSupplier(IDataRecord rd)
+        {
+            return new Supplier
+            {
+                SupplierID = rd["supplierid"].ToString() ?? string.Empty,
+                SupplierType = rd["supplier_type"].ToString() ?? string.Empty,
+                SupplierName = rd["supplier_name"].ToString() ?? string.Empty,
+                SupplierPhone = rd["supplier_phone"] == DBNull.Value ? null : rd["supplier_phone"].ToString(),
+                SupplierAddress = rd["supplier_address"] == DBNull.Value ? null : rd["supplier_address"].ToString()
+            };
+        }
+
+        private async Task OpenConnectionAsync(CancellationToken ct = default)
+        {
+            if (conn.State == ConnectionState.Closed)
+                await conn.OpenAsync(ct).ConfigureAwait(false);
+        }
+
+        private async Task CloseConnectionAsync()
+        {
+            if (conn.State == ConnectionState.Open)
+                await conn.CloseAsync().ConfigureAwait(false);
+        }
+
+        private static int ConvertDbResultToInt(object? scalarResult)
+        {
+            if (scalarResult == null || scalarResult == DBNull.Value)
+                return 0;
+            return scalarResult switch
+            {
+                int i => i,
+                long l => (int)l,
+                bool b => b ? 1 : 0,
+                decimal d => (int)d,
+                short s => s,
+                byte by => by,
+                string st when int.TryParse(st, out var parsed) => parsed,
+                _ => 0
+            };
         }
     }
 }

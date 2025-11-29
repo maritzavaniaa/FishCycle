@@ -6,8 +6,7 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="EmployeePage" Background="#E9ECEF"
-      IsVisibleChanged="EmployeePage_IsVisibleChanged">
+      Title="EmployeePage" Background="#E9ECEF">
 
     <Grid Margin="40,30,40,40">
         <Grid.RowDefinitions>

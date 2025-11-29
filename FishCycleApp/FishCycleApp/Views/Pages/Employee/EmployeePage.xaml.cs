@@ -1,58 +1,261 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
+using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Data;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.ComponentModel;
-using Google.Apis.PeopleService.v1.Data;
+using System.Windows.Threading;
 
 namespace FishCycleApp
 {
     public partial class EmployeePage : Page
     {
-        private Person currentUserProfile; // TAMBAHKAN INI
-        private EmployeeDataManager dataManager = new EmployeeDataManager();
-        private DataView EmployeeDataView;
-        private DataTable fullEmployeeTable;
+        // ==========================================
+        // STATICS / EVENTS
+        // ==========================================
+        public static bool PendingReload { get; private set; }
+        public static event Action? GlobalReloadRequested;
 
+        public static void NotifyDataChanged()
+        {
+            PendingReload = true;
+            GlobalReloadRequested?.Invoke();
+        }
+
+        // ==========================================
+        // FIELDS
+        // ==========================================
+        private readonly Person _currentUserProfile;
+        private readonly EmployeeDataManager _dataManager = new EmployeeDataManager();
+
+        private DataView? _employeeDataView;
+        private bool _isLoading;
+        private DateTime _lastSuccessUtc;
+
+        // ==========================================
+        // CONSTRUCTOR
+        // ==========================================
         public EmployeePage(Person userProfile)
         {
             InitializeComponent();
-            this.currentUserProfile = userProfile; // SIMPAN USER PROFILE
+            _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
-            LoadData();
+
+            this.Loaded += EmployeePage_Loaded;
+            this.Unloaded += EmployeePage_Unloaded;
+            this.IsVisibleChanged += EmployeePage_IsVisibleChanged;
         }
 
-        // Fungsi untuk Load Data Employee
-        private void LoadData()
+        // ==========================================
+        // LIFECYCLE EVENTS
+        // ==========================================
+        private async void EmployeePage_Loaded(object sender, RoutedEventArgs e)
         {
+            GlobalReloadRequested -= OnGlobalReloadRequested;
+            GlobalReloadRequested += OnGlobalReloadRequested;
+
+            // Jika ada pending reload atau data belum pernah dimuat
+            if (PendingReload || _employeeDataView == null)
+            {
+                PendingReload = false;
+                await LoadDataAsync();
+            }
+            else
+            {
+                // Jika data sudah ada di memori, refresh tampilan saja
+                dgvEmployees.ItemsSource = _employeeDataView;
+                UpdateResultInfo();
+            }
+        }
+
+        private void EmployeePage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            GlobalReloadRequested -= OnGlobalReloadRequested;
+        }
+
+        private async void EmployeePage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible && PendingReload)
+            {
+                PendingReload = false;
+                await LoadDataAsync();
+            }
+        }
+
+        private async void OnGlobalReloadRequested()
+        {
+            // Pastikan berjalan di UI Thread
+            await Dispatcher.InvokeAsync(async () => await LoadDataAsync());
+        }
+
+        // ==========================================
+        // DATA LOADING (CORE LOGIC)
+        // ==========================================
+        private async Task LoadDataAsync()
+        {
+            if (_isLoading) return;
+
             try
             {
-                fullEmployeeTable = dataManager.LoadEmployeeData();
-                EmployeeDataView = fullEmployeeTable.DefaultView;
+                _isLoading = true;
+                // Opsional: Tampilkan Loading Spinner jika ada, misal: LoadingBar.Visibility = Visibility.Visible;
 
-                dgvEmployees.ItemsSource = EmployeeDataView;
-                UpdateResultInfo();
+                // 1. Panggil method Async dari DataManager (Tidak akan memblokir UI)
+                DataTable newTable = await _dataManager.LoadEmployeeDataAsync();
+
+                if (newTable != null)
+                {
+                    _employeeDataView = newTable.DefaultView;
+                    dgvEmployees.ItemsSource = _employeeDataView;
+
+                    _lastSuccessUtc = DateTime.UtcNow;
+                    UpdateResultInfo();
+
+                    // Re-apply filter jika ada teks di kolom pencarian
+                    ApplySearchFilter();
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading employee data: " + ex.Message,
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                Console.WriteLine($"[EmployeePage] Error loading data: {ex.Message}");
+                txtResultInfo.Text = "Error loading data. Please refresh.";
+            }
+            finally
+            {
+                _isLoading = false;
+                // LoadingBar.Visibility = Visibility.Collapsed;
             }
         }
 
         private void UpdateResultInfo()
         {
-            if (EmployeeDataView != null)
+            if (_employeeDataView != null)
             {
-                int totalRecords = EmployeeDataView.Count;
-                int displayedRecords = Math.Min(10, totalRecords);
-                txtResultInfo.Text = $"showing 1-{displayedRecords} result from {totalRecords} results";
+                int totalRecords = _employeeDataView.Count; // Count rows after filter
+                int displayedRecords = Math.Min(10, totalRecords); // Just logic display
+                string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
+                txtResultInfo.Text = $"Total: {totalRecords} records found{suffix}";
+            }
+            else
+            {
+                txtResultInfo.Text = "No employee data available";
+            }
+        }
+
+        // ==========================================
+        // USER INTERACTIONS (BUTTONS)
+        // ==========================================
+        private async void btnLoad_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadDataAsync();
+            MessageBox.Show("Data refreshed successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void btnView_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is DataRowView row)
+            {
+                string employeeID = row["employee_id"].ToString();
+                this.NavigationService.Navigate(new ViewEmployeePage(employeeID, _currentUserProfile));
+            }
+        }
+
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        {
+            this.NavigationService.Navigate(new AddEmployeePage(_currentUserProfile));
+        }
+
+        private async void btnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is DataRowView row)
+            {
+                string employeeID = row["employee_id"].ToString();
+                string employeeName = row["name"].ToString();
+
+                MessageBoxResult confirmation = MessageBox.Show(
+                    $"Are you sure you want to delete Employee Name {employeeName}?",
+                    "CONFIRM DELETE",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirmation == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        // Panggil Method Delete Async
+                        int result = await _dataManager.DeleteEmployeeAsync(employeeID);
+
+                        if (result != 0)
+                        {
+                            MessageBox.Show("Employee deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                            NotifyDataChanged(); // Beritahu halaman lain
+                            await LoadDataAsync(); // Reload halaman ini
+                        }
+                        else
+                        {
+                            // Double check: Cek apakah user sudah hilang?
+                            var exists = await _dataManager.GetEmployeeByIDAsync(employeeID);
+                            if (exists == null)
+                            {
+                                // Sudah terhapus sebenarnya
+                                await LoadDataAsync();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to delete employee. Database returned 0 rows affected.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error deleting employee: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // SEARCH & FILTER LOGIC
+        // ==========================================
+        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplySearchFilter();
+        }
+
+        private void ApplySearchFilter()
+        {
+            if (_employeeDataView == null) return;
+
+            string searchText = txtSearch.Text.Trim();
+
+            // Handle placeholder text
+            if (searchText == "Search anything...") searchText = string.Empty;
+
+            try
+            {
+                if (string.IsNullOrEmpty(searchText))
+                {
+                    _employeeDataView.RowFilter = null;
+                }
+                else
+                {
+                    // Escape karakter petik satu (') agar tidak error syntax SQL/RowFilter
+                    string search = searchText.Replace("'", "''");
+
+                    _employeeDataView.RowFilter =
+                        $"employee_id LIKE '%{search}%' OR " +
+                        $"name LIKE '%{search}%' OR " +
+                        $"google_account LIKE '%{search}%'";
+                }
+                UpdateResultInfo();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Filter Error: {ex.Message}");
             }
         }
 
@@ -60,7 +263,7 @@ namespace FishCycleApp
         {
             if (txtSearch.Text == "Search anything...")
             {
-                txtSearch.Text = "";
+                txtSearch.Text = string.Empty;
                 txtSearch.Foreground = Brushes.Black;
             }
         }
@@ -74,149 +277,30 @@ namespace FishCycleApp
             }
         }
 
-        // Fungsi untuk Menyaring Data berdasarkan Teks Pencarian
-        private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (EmployeeDataView == null) return;
-
-            string searchText = txtSearch.Text.Trim();
-
-            if (searchText == "Search anything...")
-                searchText = "";
-
-            try
-            {
-                if (string.IsNullOrEmpty(searchText))
-                {
-                    EmployeeDataView.RowFilter = null;
-                }
-                else
-                {
-                    string search = searchText.Replace("'", "''"); // Escape single quotes
-
-                    string filterExpression = $"employee_id LIKE '%{search}%' OR " +
-                                              $"name LIKE '%{search}%' OR " +
-                                              $"google_account LIKE '%{search}%'";
-
-                    EmployeeDataView.RowFilter = filterExpression;
-                }
-
-                UpdateResultInfo();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error applying filter: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        // Fungsi untuk Refresh Data Grid
-        private void btnLoad_Click(object sender, RoutedEventArgs e)
-        {
-            LoadData();
-            MessageBox.Show("Data refreshed successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        // Fungsi untuk View Employee Detail
-        private void btnView_Click(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            if (button == null) return;
-
-            DataRowView selectedRow = button.DataContext as DataRowView;
-
-            if (selectedRow != null)
-            {
-                string employeeID = selectedRow["employee_id"].ToString();
-
-                // Navigasi ke halaman ViewEmployeePage
-                this.NavigationService.Navigate(new ViewEmployeePage(employeeID, this.currentUserProfile));
-            }
-            else
-            {
-                MessageBox.Show("Unable to retrieve employee details.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        // Fungsi untuk Add Employee
-        private void btnAdd_Click(object sender, RoutedEventArgs e)
-        {
-            // PASS currentUserProfile ke AddEmployeePage
-            this.NavigationService.Navigate(new AddEmployeePage(this.currentUserProfile));
-        }
-
-        // Fungsi untuk Delete Employee
-        private void btnDelete_Click(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            if (button == null) return;
-
-            DataRowView selectedRow = button.DataContext as DataRowView;
-
-            if (selectedRow != null)
-            {
-                string employeeID = selectedRow["employee_id"].ToString();
-                string employeeName = selectedRow["name"].ToString();
-
-                MessageBoxResult confirmation = MessageBox.Show($"Are you sure you want to delete Employee Name {employeeName}?", "CONFIRM DELETE", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (confirmation == MessageBoxResult.Yes)
-                {
-                    int result = dataManager.DeleteEmployee(employeeID);
-
-                    if (result == 1)
-                    {
-                        MessageBox.Show("Employee deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                        LoadData();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to delete employee.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Unable to retrieve employee details.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        // Fungsi untuk Menangani Perubahan Tampilan Halaman
-        private void EmployeePage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (this.IsVisible == true)
-            {
-                LoadData();
-            }
-        }
-
+        // ==========================================
+        // UI HELPERS
+        // ==========================================
         private void DisplayProfileData(Person profile)
         {
-            if (profile.Names != null && profile.Names.Count > 0)
-            {
-                lblUserName.Text = profile.Names[0].DisplayName;
-            }
-            else
-            {
-                lblUserName.Text = "Pengguna Tidak Dikenal";
-            }
+            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
+                ? profile.Names[0].DisplayName
+                : "Pengguna Tidak Dikenal";
 
             if (profile.Photos != null && profile.Photos.Count > 0)
             {
                 string photoUrl = profile.Photos[0].Url;
-
                 try
                 {
-                    BitmapImage bitmap = new BitmapImage();
+                    var bitmap = new BitmapImage();
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
                     bitmap.EndInit();
-
                     imgUserProfile.Source = bitmap;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    MessageBox.Show($"Gagal memuat foto profil: {ex.Message}", "Error Foto", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    // Ignore image error
                 }
             }
         }

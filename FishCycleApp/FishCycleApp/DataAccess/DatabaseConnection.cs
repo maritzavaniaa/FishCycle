@@ -23,24 +23,17 @@ namespace FishCycleApp.DataAccess
             string database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "";
 
             connstring = $"Host={host};Port={port};Username={username};" +
-                        $"Password={password};Database={database}";
+                        $"Password={password};Database={database};" +
+                        $"SSL Mode=Require;Trust Server Certificate=true;";
 
             conn = new NpgsqlConnection(connstring);
         }
 
         public void OpenConnection()
         {
-            try
+            if (conn.State == ConnectionState.Closed)
             {
-                if (conn.State == ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error opening database connection: " + ex.Message, 
-                    "FATAL ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                conn.Open();
             }
         }
 
