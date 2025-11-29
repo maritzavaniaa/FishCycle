@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using NpgsqlTypes;
 using System;
 using System.Data;
 using System.Threading;
@@ -8,428 +7,222 @@ using FishCycleApp.Models;
 
 namespace FishCycleApp.DataAccess
 {
-    public class ClientDataManager : DatabaseConnection
+    public class ClientDataManager
     {
+        private readonly string _connectionString;
         private readonly string _schema;
 
-        public ClientDataManager() : base()
+        public ClientDataManager()
         {
+            LoadEnv();
+
+            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST missing");
+            var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME missing");
+            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD missing");
+            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "postgres";
+
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = host,
+                Port = int.Parse(port),
+                Username = username,
+                Password = password,
+                Database = database,
+                KeepAlive = 30,
+                Pooling = true
+            };
+
+            _connectionString = builder.ToString();
             _schema = Environment.GetEnvironmentVariable("DB_SCHEMA") ?? "public";
+        }
+
+        private void LoadEnv()
+        {
+            try
+            {
+                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+
+                if (!System.IO.File.Exists(path))
+                {
+                    var root = System.IO.Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)
+                        ?.Parent?.Parent?.Parent?.FullName ?? "";
+                    path = System.IO.Path.Combine(root, ".env");
+                }
+
+                if (!System.IO.File.Exists(path)) return;
+
+                foreach (var line in System.IO.File.ReadAllLines(path))
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                        continue;
+
+                    var parts = line.Split('=', 2);
+                    if (parts.Length == 2)
+                        Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+                }
+            }
+            catch { }
         }
 
         private string Fn(string name) => $"{_schema}.{name}";
 
+        // ==========================================================
+        // LOAD LIST
+        // ==========================================================
         public async Task<DataTable> LoadClientDataAsync(CancellationToken ct = default)
         {
             var dt = new DataTable();
             string sql = $"select clientid, client_name, client_contact, client_address, client_category from {Fn("st_select_client")}()";
+
             try
             {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new NpgsqlCommand(sql, conn);
+                await using var rd = await cmd.ExecuteReaderAsync(ct);
+
                 dt.Load(rd);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Async] Error loading client data: {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"[Async] Inner: {ex.InnerException.Message}");
+                Console.WriteLine($"[Client] Load error: {ex.Message}");
             }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
+
             return dt;
         }
 
-        public async Task<int> InsertClientAsync(Client clientData, CancellationToken ct = default)
+        // ==========================================================
+        // INSERT
+        // ==========================================================
+        public async Task<int> InsertClientAsync(Client c, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_insert_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
-            int result = 0;
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = clientData.ClientName;
-                cmd.Parameters.Add("@p_contact", NpgsqlDbType.Varchar).Value = clientData.ClientContact;
-                cmd.Parameters.Add("@p_address", NpgsqlDbType.Varchar).Value = clientData.ClientAddress;
-                cmd.Parameters.Add("@p_category", NpgsqlDbType.Varchar).Value = clientData.ClientCategory;
-
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Async] Insert client error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return result;
+            string sql = $"select {Fn("st_insert_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
+            return await ExecuteAsync(sql, c, ct);
         }
 
-        public async Task<int> UpdateClientAsync(Client clientData, CancellationToken ct = default)
+        // ==========================================================
+        // UPDATE
+        // ==========================================================
+        public async Task<int> UpdateClientAsync(Client c, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_update_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
-            int result = 0;
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = clientData.ClientName;
-                cmd.Parameters.Add("@p_contact", NpgsqlDbType.Varchar).Value = clientData.ClientContact;
-                cmd.Parameters.Add("@p_address", NpgsqlDbType.Varchar).Value = clientData.ClientAddress;
-                cmd.Parameters.Add("@p_category", NpgsqlDbType.Varchar).Value = clientData.ClientCategory;
-
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Async] Update client error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return result;
+            string sql = $"select {Fn("st_update_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
+            return await ExecuteAsync(sql, c, ct);
         }
 
+        // ==========================================================
+        // DELETE
+        // ==========================================================
         public async Task<int> DeleteClientAsync(string clientID, CancellationToken ct = default)
         {
-            string sql = $"SELECT {Fn("st_delete_client")}(@p_id)";
-            int result = 0;
-            try
-            {
-                await OpenConnectionAsync(ct).ConfigureAwait(false);
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 15
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientID;
+            string sql = $"select {Fn("st_delete_client")}(@p_id)";
 
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
+            var dummy = new Client
+            {
+                ClientID = clientID,
+                ClientName = "",
+                ClientContact = "",
+                ClientAddress = "",
+                ClientCategory = ""
+            };
 
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    bool exists = existsObj is bool b && b;
-                    if (!exists) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Async] Delete client error: {ex.Message}");
-            }
-            finally
-            {
-                await CloseConnectionAsync().ConfigureAwait(false);
-            }
-            return result;
+            return await ExecuteAsync(sql, dummy, ct, isDelete: true);
         }
 
-        public DataTable LoadClientData()
+        // ==========================================================
+        // GET BY ID
+        // ==========================================================
+        public async Task<Client?> GetClientByIDAsync(string clientID, CancellationToken ct = default)
         {
-            var dt = new DataTable();
-            string sql = $"select clientid, client_name, client_contact, client_address, client_category from {Fn("st_select_client")}()";
+            Client? client = null;
+
+            string sql = $@"
+                select clientid, client_name, client_contact, client_address, client_category
+                from {Fn("client")}
+                where lower(trim(clientid)) = lower(trim(@p_id))
+                limit 1
+            ";
+
             try
             {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                using var rd = cmd.ExecuteReader();
-                dt.Load(rd);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading client data: {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return dt;
-        }
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct);
 
-        public int InsertClient(Client clientData)
-        {
-            string sql = $"SELECT {Fn("st_insert_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = clientData.ClientName;
-                cmd.Parameters.Add("@p_contact", NpgsqlDbType.Varchar).Value = clientData.ClientContact;
-                cmd.Parameters.Add("@p_address", NpgsqlDbType.Varchar).Value = clientData.ClientAddress;
-                cmd.Parameters.Add("@p_category", NpgsqlDbType.Varchar).Value = clientData.ClientCategory;
+                await using var cmd = new NpgsqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@p_id", clientID.Trim());
 
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
+                await using var rd = await cmd.ExecuteReaderAsync(ct);
 
-                if (result == 0)
+                if (await rd.ReadAsync(ct))
                 {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                    var existsObj = verify.ExecuteScalar();
-                    if (existsObj is bool b && b) result = 1;
+                    client = Map(rd);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Insert client error: {ex.Message}");
+                Console.WriteLine($"[Client] GetByID error: {ex.Message}");
             }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
 
-        public int UpdateClient(Client clientData)
-        {
-            string sql = $"SELECT {Fn("st_update_client")}(@p_id, @p_name, @p_contact, @p_address, @p_category)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                cmd.Parameters.Add("@p_name", NpgsqlDbType.Varchar).Value = clientData.ClientName;
-                cmd.Parameters.Add("@p_contact", NpgsqlDbType.Varchar).Value = clientData.ClientContact;
-                cmd.Parameters.Add("@p_address", NpgsqlDbType.Varchar).Value = clientData.ClientAddress;
-                cmd.Parameters.Add("@p_category", NpgsqlDbType.Varchar).Value = clientData.ClientCategory;
-
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientData.ClientID;
-                    var existsObj = verify.ExecuteScalar();
-                    if (existsObj is bool b && b) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Update client error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
-
-        public int DeleteClient(string clientID)
-        {
-            string sql = $"SELECT {Fn("st_delete_client")}(@p_id)";
-            int result = 0;
-            try
-            {
-                OpenConnection();
-                using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 30
-                };
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientID;
-
-                var scalarResult = cmd.ExecuteScalar();
-                result = ConvertDbResultToInt(scalarResult);
-
-                if (result == 0)
-                {
-                    using var verify = new NpgsqlCommand(
-                        $"select exists(select 1 from {Fn("st_select_client_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = clientID;
-                    var existsObj = verify.ExecuteScalar();
-                    bool exists = existsObj is bool b && b;
-                    if (!exists) result = 1;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Delete client error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
-            return result;
-        }
-
-        public Client GetClientByID(string clientID)
-        {
-            Client client = null;
-            string id = (clientID ?? string.Empty).Trim();
-            try
-            {
-                OpenConnection();
-
-                using (var cmd = new NpgsqlCommand($"select * from {Fn("st_select_client_by_id")}(@p_id)", conn))
-                {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandTimeout = 30;
-                    cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = id;
-
-                    using var rd = cmd.ExecuteReader();
-                    if (rd.Read())
-                    {
-                        client = new Client
-                        {
-                            ClientID = rd["clientid"].ToString(),
-                            ClientName = rd["client_name"].ToString(),
-                            ClientContact = rd["client_contact"].ToString(),
-                            ClientAddress = rd["client_address"].ToString(),
-                            ClientCategory = rd["client_category"].ToString()
-                        };
-                    }
-                }
-                if (client != null) return client;
-
-                string normalizedParam = id
-                    .Replace("CID-", "", StringComparison.OrdinalIgnoreCase)
-                    .Replace("CLI-", "", StringComparison.OrdinalIgnoreCase)
-                    .Replace("ID-", "", StringComparison.OrdinalIgnoreCase)
-                    .Trim();
-
-                string tryCid = id.StartsWith("CID-", StringComparison.OrdinalIgnoreCase) ? id : "CID-" + normalizedParam;
-                string tryCli = id.StartsWith("CLI-", StringComparison.OrdinalIgnoreCase) ? id : "CLI-" + normalizedParam;
-                string tryId = id.StartsWith("ID-", StringComparison.OrdinalIgnoreCase) ? id : "ID-" + normalizedParam;
-
-                string fallbackSql = $@"
-                    with data as (
-                        select clientid, client_name, client_contact, client_address, client_category from {Fn("st_select_client")}()
-                    )
-                    select *
-                    from data
-                    where trim(clientid) = @p_exact
-                       or trim(upper(clientid)) = upper(@p_exact)
-                       or trim(clientid) = @p_cid
-                       or trim(clientid) = @p_cli
-                       or trim(clientid) = @p_idpref
-                       or replace(trim(clientid),'CID-','') = @p_norm
-                       or replace(trim(clientid),'CLI-','') = @p_norm
-                       or replace(trim(clientid),'ID-','')  = @p_norm
-                    limit 1";
-
-                using (var fb = new NpgsqlCommand(fallbackSql, conn))
-                {
-                    fb.CommandType = CommandType.Text;
-                    fb.CommandTimeout = 30;
-                    fb.Parameters.Add("@p_exact", NpgsqlDbType.Varchar).Value = id;
-                    fb.Parameters.Add("@p_cid", NpgsqlDbType.Varchar).Value = tryCid;
-                    fb.Parameters.Add("@p_cli", NpgsqlDbType.Varchar).Value = tryCli;
-                    fb.Parameters.Add("@p_idpref", NpgsqlDbType.Varchar).Value = tryId;
-                    fb.Parameters.Add("@p_norm", NpgsqlDbType.Varchar).Value = normalizedParam;
-
-                    using var rd = fb.ExecuteReader();
-                    if (rd.Read())
-                    {
-                        client = new Client
-                        {
-                            ClientID = rd["clientid"].ToString(),
-                            ClientName = rd["client_name"].ToString(),
-                            ClientContact = rd["client_contact"].ToString(),
-                            ClientAddress = rd["client_address"].ToString(),
-                            ClientCategory = rd["client_category"].ToString()
-                        };
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Get client by ID error: {ex.Message}");
-            }
-            finally
-            {
-                CloseConnection();
-            }
             return client;
         }
 
-        private async Task OpenConnectionAsync(CancellationToken ct = default)
+        // ==========================================================
+        // SHARED EXECUTION
+        // ==========================================================
+        private async Task<int> ExecuteAsync(string sql, Client c, CancellationToken ct, bool isDelete = false)
         {
-            if (conn.State == ConnectionState.Closed)
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+            int result = 0;
+
+            try
+            {
+                await using var conn = new NpgsqlConnection(_connectionString);
+                await conn.OpenAsync(ct);
+
+                await using var cmd = new NpgsqlCommand(sql, conn);
+
+                cmd.Parameters.AddWithValue("@p_id", c.ClientID);
+
+                if (!isDelete)
+                {
+                    cmd.Parameters.AddWithValue("@p_name", c.ClientName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_contact", c.ClientContact ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_address", c.ClientAddress ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@p_category", c.ClientCategory ?? (object)DBNull.Value);
+                }
+
+                var scalar = await cmd.ExecuteScalarAsync(ct);
+                result = ConvertDbInt(scalar);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Client] Exec error: {ex.Message}");
+            }
+
+            return result;
         }
 
-        private async Task CloseConnectionAsync()
+        private static Client Map(IDataRecord rd)
         {
-            if (conn.State == ConnectionState.Open)
-                await conn.CloseAsync().ConfigureAwait(false);
+            return new Client
+            {
+                ClientID = rd["clientid"].ToString(),
+                ClientName = rd["client_name"].ToString(),
+                ClientContact = rd["client_contact"].ToString(),
+                ClientAddress = rd["client_address"].ToString(),
+                ClientCategory = rd["client_category"].ToString()
+            };
         }
 
-        private static int ConvertDbResultToInt(object? scalarResult)
+        private static int ConvertDbInt(object? value)
         {
-            if (scalarResult == null || scalarResult == DBNull.Value)
-                return 0;
-            return scalarResult switch
+            if (value == null || value == DBNull.Value) return 0;
+
+            return value switch
             {
                 int i => i,
                 long l => (int)l,
                 bool b => b ? 1 : 0,
-                decimal d => (int)d,
-                short s => s,
-                byte by => by,
-                string st when int.TryParse(st, out var parsed) => parsed,
                 _ => 0
             };
         }
