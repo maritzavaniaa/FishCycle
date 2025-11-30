@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -80,8 +77,9 @@ namespace FishCycleApp
                     if (!isSilent && this.IsVisible)
                     {
                         this.Cursor = System.Windows.Input.Cursors.Arrow;
-                        MessageBox.Show($"Employee with ID {employeeID} not found.", "ERROR",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"The employee with ID {employeeID} could not be found.", "Not Found", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+
 
                         GoBackOrNavigateList();
                     }
@@ -93,7 +91,9 @@ namespace FishCycleApp
             catch (Exception ex)
             {
                 if (!isSilent && this.IsVisible)
-                    MessageBox.Show($"Error loading details: {ex.Message}");
+                    MessageBox.Show($"An error occurred while loading the employee details:\n{ex.Message}", "Load Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+
             }
             finally
             {
@@ -124,7 +124,9 @@ namespace FishCycleApp
         {
             if (LoadedEmployee == null) return;
 
-            var confirm = MessageBox.Show($"Delete Employee {LoadedEmployee.EmployeeID}?", "CONFIRM", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var confirm = MessageBox.Show($"Are you sure you want to delete employee \"{LoadedEmployee.EmployeeID}\"?", "Confirm Deletion", 
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+
             if (confirm == MessageBoxResult.Yes)
             {
                 try
@@ -133,6 +135,9 @@ namespace FishCycleApp
                     this.Cursor = System.Windows.Input.Cursors.Wait;
 
                     await dataManager.DeleteEmployeeAsync(LoadedEmployee.EmployeeID);
+
+                    MessageBox.Show("The employee has been deleted successfully.", "Deleted Successfully",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
 
                     EmployeePage.NotifyDataChanged();
                     GoBackOrNavigateList();

@@ -1,11 +1,7 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq; 
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -117,7 +113,8 @@ namespace FishCycleApp
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
-            MessageBox.Show("Data refreshed successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Employee data has been refreshed successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
         }
 
         private void btnView_Click(object sender, RoutedEventArgs e)
@@ -137,7 +134,7 @@ namespace FishCycleApp
         {
             if (sender is Button button && button.DataContext is Employee emp)
             {
-                var confirm = MessageBox.Show($"Delete {emp.EmployeeName}?", "CONFIRM", MessageBoxButton.YesNo);
+                var confirm = MessageBox.Show($"Are you sure you want to delete employee \"{emp.EmployeeName}\"?", "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (confirm != MessageBoxResult.Yes) return;
 
                 try
@@ -149,12 +146,13 @@ namespace FishCycleApp
 
                     if (success)
                     {
-                        MessageBox.Show("Deleted!");
+                        MessageBox.Show("The employee has been deleted successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
                         NotifyDataChanged();
                     }
                     else
                     {
-                        MessageBox.Show("Failed to delete.");
+                        MessageBox.Show("Failed to delete the employee. Please try again.", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
                     }
                 }
                 finally

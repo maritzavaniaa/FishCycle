@@ -41,7 +41,6 @@ namespace FishCycleApp.Views.Pages.Transaction
 
             // Load dropdown data
             await LoadClientsAsync();
-            await LoadEmployeesAsync();
         }
 
         private string GenerateTransactionID()
@@ -79,32 +78,6 @@ namespace FishCycleApp.Views.Pages.Transaction
             }
         }
 
-        private async Task LoadEmployeesAsync()
-        {
-            try
-            {
-                var dt = await _employeeDataManager.LoadEmployeeDataAsync();
-
-                cmbEmployee.Items.Clear();
-                foreach (System.Data.DataRow row in dt.Rows)
-                {
-                    cmbEmployee.Items.Add(new
-                    {
-                        EmployeeID = row["employee_id"].ToString(),
-                        EmployeeName = row["name"].ToString()
-                    });
-                }
-
-                if (cmbEmployee.Items.Count > 0)
-                    cmbEmployee.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading employees: {ex.Message}");
-                MessageBox.Show("Failed to load employees. Please try again.", "WARNING",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
 
         // ==========================================
         // SAVE WITH FULL VALIDATION

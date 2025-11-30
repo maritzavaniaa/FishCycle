@@ -1,7 +1,5 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -25,50 +23,6 @@ namespace FishCycleApp
             PopulateFieldsFromModel();
         }
 
-        public EditEmployeePage(string employeeID, Person userProfile)
-        {
-            InitializeComponent();
-            currentUserProfile = userProfile;
-            DisplayProfileData(userProfile);
-
-            _ = LoadEmployeeByIdAsync(employeeID);
-        }
-
-        private async Task LoadEmployeeByIdAsync(string employeeID)
-        {
-            try
-            {
-                this.Cursor = System.Windows.Input.Cursors.Wait;
-                txtEmployeeName.IsEnabled = false; 
-
-                var found = await dataManager.GetEmployeeByIDAsync(employeeID?.Trim());
-
-                if (found == null)
-                {
-                    this.Cursor = System.Windows.Input.Cursors.Arrow;
-                    MessageBox.Show($"Employee with ID {employeeID} not found.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-
-                    if (NavigationService?.CanGoBack == true)
-                        NavigationService.GoBack();
-
-                    return;
-                }
-
-                WorkingEmployee = found;
-                PopulateFieldsFromModel();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading data: {ex.Message}");
-            }
-            finally
-            {
-                this.Cursor = System.Windows.Input.Cursors.Arrow;
-                txtEmployeeName.IsEnabled = true;
-            }
-        }
-
         private void PopulateFieldsFromModel()
         {
             if (WorkingEmployee == null) return;
@@ -85,14 +39,15 @@ namespace FishCycleApp
 
             if (string.IsNullOrWhiteSpace(txtEmployeeName.Text))
             {
-                MessageBox.Show("Please enter employee name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter employee name.", "Missing Information", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtEmployeeName.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtGoogleAccount.Text))
             {
-                MessageBox.Show("Please enter google account.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter the email.", "Missing Information", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtGoogleAccount.Focus();
                 return;
             }
@@ -122,7 +77,8 @@ namespace FishCycleApp
                 {
                     PopulateFieldsFromModel();
 
-                    MessageBox.Show("Employee updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Employee information has been updated successfully.", "Update Successful", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
 
                     EmployeePage.NotifyDataChanged();
 
@@ -131,7 +87,8 @@ namespace FishCycleApp
                 }
                 else
                 {
-                    MessageBox.Show("Failed to update employee. Connection might be lost.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to update employee. Connection might be lost.", "Update Failed", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -155,7 +112,7 @@ namespace FishCycleApp
 
             MessageBoxResult confirmation = MessageBox.Show(
                 $"Are you sure you want to delete this employee?\nID: {id}\nName: {name}",
-                "CONFIRM DELETE", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (confirmation == MessageBoxResult.Yes)
             {
@@ -174,7 +131,7 @@ namespace FishCycleApp
 
                     if (success)
                     {
-                        MessageBox.Show("Employee deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("The employee has been deleted successfully.", "Delete Successful", MessageBoxButton.OK, MessageBoxImage.Information);
 
                         EmployeePage.NotifyDataChanged();
 
@@ -183,7 +140,7 @@ namespace FishCycleApp
                     }
                     else
                     {
-                        MessageBox.Show("Failed to delete employee.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Failed to delete this employee. Please try again.", "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)

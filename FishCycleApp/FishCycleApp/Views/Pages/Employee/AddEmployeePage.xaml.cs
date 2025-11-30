@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -14,7 +13,7 @@ namespace FishCycleApp
     {
         private readonly EmployeeDataManager dataManager = new EmployeeDataManager();
         private readonly Person currentUserProfile;
-        private bool isSaving = false; // Mencegah double click
+        private bool isSaving = false;
 
         public AddEmployeePage(Person userProfile)
         {
@@ -23,14 +22,13 @@ namespace FishCycleApp
             DisplayProfileData(userProfile);
         }
 
-        // UBAH JADI ASYNC VOID
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (isSaving) return;
 
             if (string.IsNullOrWhiteSpace(txtEmployeeName.Text))
             {
-                MessageBox.Show("Please enter employee name.", "WARNING",
+                MessageBox.Show("Please enter the employee name.", "Missing Information", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtEmployeeName.Focus();
                 return;
@@ -38,7 +36,7 @@ namespace FishCycleApp
 
             if (string.IsNullOrWhiteSpace(txtGoogleAccount.Text))
             {
-                MessageBox.Show("Please enter Google account.", "WARNING",
+                MessageBox.Show("Please enter the employee's Email.", "Missing Information", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtGoogleAccount.Focus();
                 return;
@@ -67,8 +65,8 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Employee added successfully!", "SUCCESS");
-
+                    MessageBox.Show("The employee has been added successfully.", "Success", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
                     EmployeePage.NotifyDataChanged();
 
                     if (NavigationService?.CanGoBack == true)
@@ -80,7 +78,8 @@ namespace FishCycleApp
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add employee.", "ERROR");
+                    MessageBox.Show("Failed to add the employee. Please try again.", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -93,19 +92,6 @@ namespace FishCycleApp
                 btnSave.IsEnabled = true;
                 this.Cursor = Cursors.Arrow;
             }
-        }
-
-
-
-        private void GoBackOrNavigateList()
-        {
-            if (NavigationService?.CanGoBack == true) NavigationService.GoBack();
-            else NavigateToEmployeeList();
-        }
-
-        private void NavigateToEmployeeList()
-        {
-            NavigationService?.Navigate(new EmployeePage(currentUserProfile));
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -134,7 +120,6 @@ namespace FishCycleApp
                 }
                 catch (Exception ex)
                 {
-                    // Silent fail for photo is better UX than popup warning
                     Console.WriteLine($"Gagal memuat foto profil: {ex.Message}");
                 }
             }

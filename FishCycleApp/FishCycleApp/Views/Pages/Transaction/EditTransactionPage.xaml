@@ -79,115 +79,115 @@
 
                         <StackPanel Grid.Row="0" VerticalAlignment="Top">
 
-                            <Grid Margin="0,0,0,25">
+                        <Grid Margin="0,0,0,25">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Transaction ID Textbox -->
+                            <TextBlock Grid.Row="0" Text="Transaction ID" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
+                                <TextBox x:Name="txtTransactionID" 
+                                    BorderThickness="0" 
+                                    Padding="15,12" 
+                                    FontSize="14" 
+                                    VerticalContentAlignment="Center"
+                                    Background="Transparent"
+                                    IsReadOnly="True"
+                                    Foreground="#6C757D"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Employee and DateTime Row -->
+                        <Grid Margin="0,0,0,25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Employee Textbox -->
+                            <Grid Grid.Column="0">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-
-                                <!-- Transaction ID Textbox -->
-                                <TextBlock Grid.Row="0" Text="Transaction ID" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
-                                    <TextBox x:Name="txtTransactionID" 
-                                    BorderThickness="0" 
-                                    Padding="15,12" 
-                                    FontSize="14" 
-                                    VerticalContentAlignment="Center"
-                                    Background="Transparent"
-                                    IsReadOnly="True"
-                                    Foreground="#6C757D"/>
+                                <TextBlock Grid.Row="0" Text="Employee" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                    <ComboBox x:Name="cmbEmployee" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
                                 </Border>
                             </Grid>
 
-                            <!-- Employee and DateTime Row -->
-                            <Grid Margin="0,0,0,25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Employee Textbox -->
-                                <Grid Grid.Column="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Employee" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                        <ComboBox x:Name="cmbEmployee" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                    </Border>
-                                </Grid>
-
-                                <!-- Date and Time Textbox -->
-                                <Grid Grid.Column="2">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Date and Time" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
-                                        <TextBox x:Name="txtDateTime" 
+                            <!-- Date and Time Textbox -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Date and Time" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
+                                    <TextBox x:Name="txtDateTime" 
                                     BorderThickness="0" 
                                     Padding="15,12" 
                                     FontSize="14" 
                                     VerticalContentAlignment="Center"
                                     Background="Transparent"
                                     IsReadOnly="True"
-                                    Foreground="#6C757D"/>
-                                    </Border>
-                                </Grid>
+                                    Foreground="#6C757D"/>  
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Client Name and Contact Row -->
+                        <Grid Margin="0,0,0,25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Client Name Combobox -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Client" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                    <ComboBox x:Name="cmbClient" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
+                                </Border>
                             </Grid>
 
-                            <!-- Client Name and Contact Row -->
-                            <Grid Margin="0,0,0,25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Client Name Combobox -->
-                                <Grid Grid.Column="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Client" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                        <ComboBox x:Name="cmbClient" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                    </Border>
-                                </Grid>
-
-                                <!-- Client Contact Textbox -->
-                                <Grid Grid.Column="2">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Client Contact" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                        <TextBox x:Name="txtClientContact" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                    </Border>
-                                </Grid>
+                            <!-- Client Contact Textbox -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Client Contact" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                    <TextBox x:Name="txtClientContact" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
+                                </Border>
                             </Grid>
+                        </Grid>
 
-                            <!-- Address Row -->
-                            <Grid Margin="0,0,0,25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <!-- Address Row -->
+                        <Grid Margin="0,0,0,25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                                <Grid Grid.Column="0" Grid.ColumnSpan="3">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Address" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                        <TextBox x:Name="txtAddress" 
+                            <Grid Grid.Column="0" Grid.ColumnSpan="3">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Address" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                    <TextBox x:Name="txtAddress" 
                          BorderThickness="0" 
                          Padding="15,12" 
                          FontSize="14" 
@@ -196,30 +196,30 @@
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Height="45"/>
-                                    </Border>
-                                </Grid>
+                                </Border>
                             </Grid>
+                        </Grid>
 
-                            <!-- Payment Status Row -->
-                            <Grid Margin="0,0,0,25">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <!-- Payment Status Row -->
+                        <Grid Margin="0,0,0,25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                                <Grid Grid.Column="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Payment Status" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
-                                    <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
-                                        <ComboBox x:Name="cmbPaymentStatus" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
-                                    </Border>
-                                </Grid>
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Payment Status" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
+                                <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                                    <ComboBox x:Name="cmbPaymentStatus" BorderThickness="0" Padding="15,12" FontSize="14" VerticalContentAlignment="Center" Background="Transparent"/>
+                                </Border>
                             </Grid>
-                        </StackPanel>
+                        </Grid>
+                    </StackPanel>
                     </ScrollViewer>
 
                     <!-- Navigation Buttons -->
