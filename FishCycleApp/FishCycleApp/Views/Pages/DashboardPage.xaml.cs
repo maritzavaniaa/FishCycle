@@ -111,11 +111,11 @@ namespace FishCycleApp
         private string GetOperationalNotes(int fishingIndex, string seaSafety)
         {
             if (fishingIndex >= 75)
-                return "Kondisi laut baik.";
+                return "Kondisi laut baik";
             if (fishingIndex >= 50)
-                return "Aktivitas nelayan normal.";
+                return "Aktivitas nelayan normal";
             if (fishingIndex >= 30)
-                return "Potensi hasil tangkapan menurun.";
+                return "Potensi hasil tangkapan menurun";
 
             return $"Risiko stok rendah. {seaSafety} – pertimbangkan sumber suplai alternatif.";
         }
