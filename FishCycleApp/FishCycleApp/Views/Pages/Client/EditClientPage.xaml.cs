@@ -18,9 +18,6 @@ namespace FishCycleApp
         private Client WorkingClient;
         private bool isProcessing = false;
 
-        // ============================================================
-        // CONSTRUCTOR — from ID
-        // ============================================================
         public EditClientPage(string clientID, Person userProfile)
         {
             InitializeComponent();
@@ -32,9 +29,6 @@ namespace FishCycleApp
             _ = LoadClientByIdAsync(clientID);
         }
 
-        // ============================================================
-        // CONSTRUCTOR — from model (optional, mirip supplier)
-        // ============================================================
         public EditClientPage(Client client, Person userProfile)
         {
             InitializeComponent();
@@ -46,9 +40,6 @@ namespace FishCycleApp
             PopulateFieldsFromModel();
         }
 
-        // ============================================================
-        // CATEGORY OPTIONS
-        // ============================================================
         private void InitializeCategory()
         {
             cmbClientCategory.Items.Clear();
@@ -58,9 +49,6 @@ namespace FishCycleApp
             cmbClientCategory.Items.Add("Distributor");
         }
 
-        // ============================================================
-        // LOAD CLIENT BY ID (ASYNC)
-        // ============================================================
         private async Task LoadClientByIdAsync(string id)
         {
             try
@@ -91,9 +79,6 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // APPLY MODEL TO UI
-        // ============================================================
         private void PopulateFieldsFromModel()
         {
             if (WorkingClient == null) return;
@@ -103,16 +88,12 @@ namespace FishCycleApp
             txtClientContact.Text = WorkingClient.ClientContact ?? "";
             txtClientAddress.Text = WorkingClient.ClientAddress ?? "";
 
-            // match category
             var match = cmbClientCategory.Items.Cast<object>()
                 .FirstOrDefault(x => x.ToString() == WorkingClient.ClientCategory);
 
             cmbClientCategory.SelectedItem = match ?? WorkingClient.ClientCategory;
         }
 
-        // ============================================================
-        // SAVE — UPDATE DATA
-        // ============================================================
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (WorkingClient == null || isProcessing) return;
@@ -150,15 +131,12 @@ namespace FishCycleApp
                 btnSave.IsEnabled = false;
                 Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Update working model
                 WorkingClient.ClientName = txtClientName.Text.Trim();
                 WorkingClient.ClientContact = txtClientContact.Text.Trim();
                 WorkingClient.ClientAddress = txtClientAddress.Text.Trim();
                 WorkingClient.ClientCategory = cmbClientCategory.SelectedItem.ToString();
 
-                int result = await dataManager.UpdateClientAsync(WorkingClient);
-
-                bool success = result != 0;
+                bool success = await dataManager.UpdateClientAsync(WorkingClient);
 
                 if (!success)
                 {
@@ -195,9 +173,6 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // DELETE CLIENT
-        // ============================================================
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (WorkingClient == null || isProcessing) return;
@@ -242,17 +217,11 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // NAVIGATION
-        // ============================================================
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             NavigationService?.GoBack();
         }
 
-        // ============================================================
-        // PROFILE
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";

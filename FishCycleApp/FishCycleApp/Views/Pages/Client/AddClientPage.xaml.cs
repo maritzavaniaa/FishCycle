@@ -14,7 +14,7 @@ namespace FishCycleApp
     {
         private readonly ClientDataManager dataManager = new ClientDataManager();
         private readonly Person currentUserProfile;
-        private bool isSaving = false;   // anti double-click
+        private bool isSaving = false; 
 
         public AddClientPage(Person userProfile)
         {
@@ -25,9 +25,6 @@ namespace FishCycleApp
             InitializeCategoryComboBox();
         }
 
-        // ============================================================
-        // INIT COMBOBOX — dibuat sama kaya SupplierPage
-        // ============================================================
         private void InitializeCategoryComboBox()
         {
             cmbClientCategory.Items.Clear();
@@ -40,16 +37,10 @@ namespace FishCycleApp
             cmbClientCategory.SelectedIndex = 0;
         }
 
-        // ============================================================
-        // SAVE — disamakan strukturnya dengan AddSupplier
-        // ============================================================
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (isSaving) return;
 
-            // ---------------------
-            // VALIDATION
-            // ---------------------
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
             {
                 MessageBox.Show("Please enter client name.", "WARNING");
@@ -79,17 +70,14 @@ namespace FishCycleApp
 
             try
             {
-                // Lock UI (sama seperti AddSupplier)
                 isSaving = true;
                 btnSave.IsEnabled = false;
                 this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Ambil category (sama seperti supplier)
                 var item = (ComboBoxItem)cmbClientCategory.SelectedItem;
                 string category = item.Tag?.ToString() ?? item.Content.ToString();
 
-                // ID generator (versi panjang aman)
-                string clientID = "CID-" + DateTime.UtcNow.ToString("yyMMddHHmmssfff");
+                string clientID = "CID-" + DateTime.UtcNow.ToString("yyMMddHHmmss");
 
                 var newClient = new Client
                 {
@@ -100,11 +88,8 @@ namespace FishCycleApp
                     ClientCategory = category
                 };
 
-                // Call async insert
-                int result = await dataManager.InsertClientAsync(newClient);
-                bool success = result != 0;
+                bool success = await dataManager.InsertClientAsync(newClient);
 
-                // extra check bila DB return 0
                 if (!success)
                 {
                     var exists = await dataManager.GetClientByIDAsync(clientID);
@@ -117,7 +102,6 @@ namespace FishCycleApp
 
                     ClientPage.NotifyDataChanged();
 
-                    // Back same as Supplier
                     if (NavigationService?.CanGoBack == true)
                         NavigationService.GoBack();
                     else
@@ -140,18 +124,12 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // CANCEL
-        // ============================================================
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             if (NavigationService?.CanGoBack == true)
                 NavigationService.GoBack();
         }
 
-        // ============================================================
-        // USER PROFILE — sama dengan Supplier
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";
@@ -169,7 +147,7 @@ namespace FishCycleApp
                 }
                 catch
                 {
-                    // silent fail — UX lebih baik
+                   
                 }
             }
         }

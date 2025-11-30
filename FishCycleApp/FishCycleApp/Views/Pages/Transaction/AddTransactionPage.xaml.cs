@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-// Use alias to avoid namespace conflict
 using TransactionModel = FishCycleApp.Models.Transaction;
 
 namespace FishCycleApp.Views.Pages.Transaction
@@ -56,15 +55,19 @@ namespace FishCycleApp.Views.Pages.Transaction
         {
             try
             {
-                var dt = await _clientDataManager.LoadClientDataAsync();
+                // DataManager sekarang mengembalikan List<Client>, BUKAN DataTable
+                var clients = await _clientDataManager.LoadClientDataAsync();
 
                 cmbClient.Items.Clear();
-                foreach (System.Data.DataRow row in dt.Rows)
+
+                // Loop langsung ke dalam List (tanpa .Rows)
+                foreach (var client in clients)
                 {
                     cmbClient.Items.Add(new
                     {
-                        ClientID = row["clientid"].ToString(),
-                        ClientName = row["client_name"].ToString()
+                        // Akses property langsung pakai Huruf Besar (PascalCase) sesuai Model
+                        ClientID = client.ClientID,
+                        ClientName = client.ClientName
                     });
                 }
 
