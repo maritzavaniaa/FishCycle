@@ -10,6 +10,10 @@
 
   <ItemGroup>
     <None Remove="Resources\Images\bg_ikan.png" />
+    <None Remove="Resources\Images\Icons\icon_box.png" />
+    <None Remove="Resources\Images\Icons\icon_fish.png" />
+    <None Remove="Resources\Images\Icons\icon_note.png" />
+    <None Remove="Resources\Images\Icons\icon_wave.png" />
     <None Remove="Resources\Images\icon_cart.png" />
     <None Remove="Resources\Images\icon_client.png" />
     <None Remove="Resources\Images\icon_clients.png" />
@@ -39,6 +43,7 @@
 
   <ItemGroup>
     <Resource Include="Resources\Images\bg_ikan.png" />
+    <Resource Include="Resources\Images\Icons\icon_box.png" />
     <Resource Include="Resources\Images\Icons\icon_cart.png" />
     <Resource Include="Resources\Images\Icons\icon_client.png" />
     <Resource Include="Resources\Images\Icons\icon_clients.png" />
@@ -46,15 +51,18 @@
     <Resource Include="Resources\Images\Icons\icon_delete.png" />
     <Resource Include="Resources\Images\Icons\icon_edit.png" />
     <Resource Include="Resources\Images\Icons\icon_employee.png" />
+    <Resource Include="Resources\Images\Icons\icon_fish.png" />
     <Resource Include="Resources\Images\Icons\icon_logout.png" />
     <Resource Include="Resources\Images\Icons\icon_menu.png" />
     <Resource Include="Resources\Images\Icons\icon_money.png" />
+    <Resource Include="Resources\Images\Icons\icon_note.png" />
     <Resource Include="Resources\Images\Icons\icon_supplier.png" />
     <Resource Include="Resources\Images\Icons\icon_transaction.png" />
     <Resource Include="Resources\Images\Icons\icon_profile.png" />
     <Resource Include="Resources\Images\Icons\icon_stock.png" />
     <Resource Include="Resources\Images\Icons\icon_truck.png" />
     <Resource Include="Resources\Images\Icons\icon_view.png" />
+    <Resource Include="Resources\Images\Icons\icon_wave.png" />
     <Resource Include="Resources\Images\logo.png" />
     <Resource Include="Resources\Images\logo_lengkap.png" />
   </ItemGroup>

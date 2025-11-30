@@ -121,7 +121,7 @@
 
                                 <!-- SEA SAFETY -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Image Source="/Resources/Images/Icons/icon_safe.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <Image Source="/Resources/Images/Icons/icon_wave.png" Width="24" Height="24" Margin="0,0,10,0"/>
                                     <StackPanel>
                                         <TextBlock Text="Sea Safety" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
                                         <TextBlock x:Name="SeaSafetyText" FontSize="18" />
