@@ -102,13 +102,36 @@ namespace FishCycleApp.DataAccess
             try
             {
                 var client = await GetClientAsync();
+
                 await client.From<Product>().Update(p);
+
                 return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Product] Update error: {ex.Message}");
                 return false;
+            }
+        }
+
+        public async Task UpdateStockQuantityAsync(string productID, decimal quantitySold)
+        {
+            try
+            {
+                var client = await GetClientAsync();
+
+                var product = await GetProductByIDAsync(productID);
+
+                if (product != null)
+                {
+                    product.Quantity = product.Quantity - quantitySold;
+
+                    await client.From<Product>().Update(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Stock Update] Error: {ex.Message}");
             }
         }
 
@@ -159,6 +182,32 @@ namespace FishCycleApp.DataAccess
                 TotalStockValue = products.Sum(p => p.TotalValue),
                 LowStockCount = products.Count(p => p.Quantity < 10)
             };
+        }
+
+        public async Task IncreaseStockAsync(string productID, decimal quantityReturned)
+        {
+            try
+            {
+                var client = await GetClientAsync();
+
+                var product = await GetProductByIDAsync(productID);
+
+                if (product != null)
+                {
+                    product.Quantity += quantityReturned;
+
+                    await client.From<Product>().Update(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Restock] Error: {ex.Message}");
+            }
+        }
+
+        public async Task DecreaseStockAsync(string productID, decimal quantitySold)
+        {
+            await UpdateStockQuantityAsync(productID, quantitySold);
         }
     }
 }

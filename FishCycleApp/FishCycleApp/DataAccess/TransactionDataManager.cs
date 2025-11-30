@@ -1,42 +1,28 @@
-﻿using Npgsql;
-using NpgsqlTypes;
-using System;
-using System.Data;
-using System.IO;
-using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Threading; 
 using FishCycleApp.Models;
+using System.IO;
 
 namespace FishCycleApp.DataAccess
 {
     public class TransactionDataManager
     {
-        private readonly string _connectionString;
-        private readonly string _schema;
+        private static Supabase.Client? _supabaseClient;
+        private readonly ProductDataManager _productManager = new ProductDataManager();
 
-        public TransactionDataManager()
+        private async Task<Supabase.Client> GetClientAsync()
         {
+            if (_supabaseClient != null) return _supabaseClient;
             LoadEnv();
-
-            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST is missing in .env");
-            var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME is missing in .env");
-            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD is missing in .env");
-            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "postgres";
-
-            var builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = host,
-                Port = int.Parse(port),
-                Username = username,
-                Password = password,
-                Database = database,
-                KeepAlive = 30,
-                Pooling = true
-            };
-
-            _connectionString = builder.ToString();
-            _schema = "public";
+            var url = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? "";
+            var key = Environment.GetEnvironmentVariable("SUPABASE_KEY") ?? "";
+            var options = new Supabase.SupabaseOptions { AutoRefreshToken = true, AutoConnectRealtime = true };
+            _supabaseClient = new Supabase.Client(url, key, options);
+            await _supabaseClient.InitializeAsync();
+            return _supabaseClient;
         }
 
         private void LoadEnv()
@@ -44,254 +30,149 @@ namespace FishCycleApp.DataAccess
             try
             {
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-
                 if (!File.Exists(path))
                 {
-                    string projectRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
-                    path = Path.Combine(projectRoot, ".env");
+                    string root = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
+                    path = Path.Combine(root, ".env");
                 }
-
                 if (!File.Exists(path)) return;
-
                 foreach (var line in File.ReadAllLines(path))
                 {
-                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#"))
-                        continue;
-
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
                     var parts = line.Split('=', 2);
-                    if (parts.Length != 2) continue;
-
-                    var key = parts[0].Trim();
-                    var value = parts[1].Trim();
-
-                    Environment.SetEnvironmentVariable(key, value);
+                    if (parts.Length == 2) Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Warning: Failed to load .env file. {ex.Message}");
-            }
+            catch { }
         }
 
-        private string Fn(string name) => $"{_schema}.{name}";
-
-        // ==========================================
-        // LOAD ALL TRANSACTIONS
-        // ==========================================
-        public async Task<DataTable> LoadTransactionDataAsync(CancellationToken ct = default)
+        public async Task<List<Transaction>> LoadTransactionDataAsync()
         {
-            var dt = new DataTable();
-            string sql = $@"SELECT 
-                               transactionid as transaction_number,
-                               transaction_date as transaction_time,
-                               client_name,
-                               employee_name,
-                               payment_status,
-                               delivery_status,
-                               total_amount as sub_total
-                           FROM {Fn("st_select_transaction")}()";
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
-
-                await using var cmd = new NpgsqlCommand(sql, conn)
-                {
-                    CommandType = CommandType.Text,
-                    CommandTimeout = 20
-                };
-
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                dt.Load(rd);
+                var client = await GetClientAsync();
+                var result = await client.From<Transaction>().Select("*").Get();
+                return result.Models;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[TransactionDataManager] Error loading transaction data: {ex.Message}");
+                Console.WriteLine($"[Transaction] Load error: {ex.Message}");
+                return new List<Transaction>();
             }
-            return dt;
         }
 
-        // ==========================================
-        // GET TRANSACTION BY ID
-        // ==========================================
-        public async Task<Transaction?> GetTransactionByIDAsync(string transactionID, CancellationToken ct = default)
+        public async Task<bool> InsertTransactionAsync(Transaction t)
         {
-            if (string.IsNullOrWhiteSpace(transactionID)) return null;
-
-            // FIX: Add client_name, employee_name, delivery_status to SELECT
-            string sql = $@"SELECT 
-                               transactionid,
-                               adminid,
-                               clientid,
-                               total_amount,
-                               transaction_date,
-                               payment_status,
-                               delivery_status,
-                               client_name,
-                               employee_name
-                           FROM {Fn("st_select_transaction_by_id")}(@p_id)";
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
-
-                await using var cmd = new NpgsqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("p_id", transactionID.Trim());
-
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                if (await rd.ReadAsync(ct).ConfigureAwait(false))
-                {
-                    return new Transaction
-                    {
-                        TransactionID = rd["transactionid"].ToString() ?? "",
-                        AdminID = rd["adminid"].ToString() ?? "",
-                        ClientID = rd["clientid"].ToString() ?? "",
-                        TotalAmount = rd["total_amount"] != DBNull.Value ? Convert.ToDecimal(rd["total_amount"]) : 0,
-                        TransactionDate = rd["transaction_date"] != DBNull.Value ? Convert.ToDateTime(rd["transaction_date"]) : DateTime.Now,
-                        PaymentStatus = rd["payment_status"]?.ToString() ?? "Unknown",
-                        DeliveryStatus = rd["delivery_status"]?.ToString() ?? "Pending",
-                        ClientName = rd["client_name"]?.ToString() ?? "Unknown",
-                        EmployeeName = rd["employee_name"]?.ToString() ?? "Unknown"
-                    };
-                }
+                var client = await GetClientAsync();
+                await client.From<Transaction>().Insert(t);
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[TransactionDataManager] Get transaction by ID error: {ex.Message}");
+                Console.WriteLine($"[Transaction] Insert Header error: {ex.Message}");
+                return false; 
             }
-            return null;
         }
 
-        // ==========================================
-        // INSERT TRANSACTION
-        // ==========================================
-        public async Task<int> InsertTransactionAsync(Transaction transactionData, CancellationToken ct = default)
+        public async Task<bool> UpdateTransactionAsync(Transaction t)
         {
-            return await ExecuteUpsertOrDeleteAsync("st_insert_transaction", transactionData, ct);
-        }
-
-        // ==========================================
-        // UPDATE TRANSACTION
-        // ==========================================
-        public async Task<int> UpdateTransactionAsync(Transaction transactionData, CancellationToken ct = default)
-        {
-            return await ExecuteUpsertOrDeleteAsync("st_update_transaction", transactionData, ct);
-        }
-
-        // ==========================================
-        // DELETE TRANSACTION
-        // ==========================================
-        public async Task<int> DeleteTransactionAsync(string transactionID, CancellationToken ct = default)
-        {
-            var dummyTransaction = new Transaction { TransactionID = transactionID };
-            return await ExecuteUpsertOrDeleteAsync("st_delete_transaction", dummyTransaction, ct, isDelete: true);
-        }
-
-        // ==========================================
-        // PRIVATE HELPER - EXECUTE UPSERT/DELETE
-        // ==========================================
-        private async Task<int> ExecuteUpsertOrDeleteAsync(string spName, Transaction transaction, CancellationToken ct, bool isDelete = false)
-        {
-            string sql = isDelete
-                ? $"SELECT {Fn(spName)}(@p_id)"
-                : $"SELECT {Fn(spName)}(@p_id, @p_admin_id, @p_client_id, @p_total_amount, @p_transaction_date, @p_payment_status)";
-
-            int result = 0;
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+                var client = await GetClientAsync();
+                await client.From<Transaction>().Update(t);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Transaction] Update error: {ex.Message}");
+                return false;
+            }
+        }
 
-                await using var cmd = new NpgsqlCommand(sql, conn) { CommandType = CommandType.Text };
+        public async Task<bool> DeleteTransactionAsync(string transactionID)
+        {
+            try
+            {
+                var client = await GetClientAsync();
 
-                cmd.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = transaction.TransactionID ?? "";
+                var itemsResult = await client
+                    .From<TransactionItem>()
+                    .Select("*")
+                    .Where(x => x.TransactionID == transactionID)
+                    .Get();
 
-                if (!isDelete)
+                var itemsToRestore = itemsResult.Models;
+
+                foreach (var item in itemsToRestore)
                 {
-                    cmd.Parameters.Add("@p_admin_id", NpgsqlDbType.Varchar).Value = transaction.AdminID ?? "";
-                    cmd.Parameters.Add("@p_client_id", NpgsqlDbType.Varchar).Value = transaction.ClientID ?? "";
-                    cmd.Parameters.Add("@p_total_amount", NpgsqlDbType.Numeric).Value = transaction.TotalAmount;
-                    cmd.Parameters.Add("@p_transaction_date", NpgsqlDbType.Timestamp).Value = transaction.TransactionDate;
-                    cmd.Parameters.Add("@p_payment_status", NpgsqlDbType.Varchar).Value = transaction.PaymentStatus ?? "Pending";
+                    await _productManager.IncreaseStockAsync(item.ProductID, item.Quantity);
                 }
 
-                var scalarResult = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                result = ConvertDbResultToInt(scalarResult);
+                await client.From<Transaction>().Where(x => x.TransactionID == transactionID).Delete();
 
-                // FIX: Improved verification logic
-                if (result == 0)
-                {
-                    await using var verify = new NpgsqlCommand($"SELECT EXISTS(SELECT 1 FROM {Fn("st_select_transaction_by_id")}(@p_id))", conn);
-                    verify.Parameters.Add("@p_id", NpgsqlDbType.Varchar).Value = transaction.TransactionID;
-                    var existsObj = await verify.ExecuteScalarAsync(ct).ConfigureAwait(false);
-                    bool exists = existsObj is bool b && b;
-
-                    if (!isDelete && exists) result = 1;
-                    if (isDelete && !exists) result = 1;
-                }
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[TransactionDataManager] {spName} error: {ex.Message}");
+                Console.WriteLine($"[Transaction] Delete error: {ex.Message}");
+                return false;
             }
-            return result;
         }
 
-        // ==========================================
-        // SEARCH TRANSACTIONS
-        // ==========================================
-        public async Task<DataTable> SearchTransactionAsync(string searchText, string paymentStatus = null, CancellationToken ct = default)
+        public async Task<Transaction?> GetTransactionByIDAsync(string id, CancellationToken ct = default)
         {
-            var dt = new DataTable();
-            string sql = $@"SELECT 
-                               transactionid as transaction_number,
-                               transaction_date as transaction_time,
-                               client_name,
-                               employee_name,
-                               payment_status,
-                               delivery_status,
-                               total_amount as sub_total
-                           FROM {Fn("st_search_transaction")}(@p_search, @p_payment_status)";
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct).ConfigureAwait(false);
+                var client = await GetClientAsync();
+                var result = await client
+                    .From<Transaction>()
+                    .Select("*")
+                    .Where(x => x.TransactionID == id)
+                    .Get(ct);
 
-                await using var cmd = new NpgsqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("p_search", (object?)searchText ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("p_payment_status", (object?)paymentStatus ?? DBNull.Value);
+                return result.Models.FirstOrDefault();
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-                await using var rd = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                dt.Load(rd);
+        public async Task<List<TransactionItem>> GetTransactionItemsAsync(string transactionID)
+        {
+            try
+            {
+                var client = await GetClientAsync();
+                var result = await client
+                    .From<TransactionItem>()
+                    .Select("*")
+                    .Where(x => x.TransactionID == transactionID)
+                    .Get();
+
+                return result.Models;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[TransactionDataManager] Error searching transactions: {ex.Message}");
+                Console.WriteLine($"[Items] Error: {ex.Message}");
+                return new List<TransactionItem>();
             }
-            return dt;
         }
 
-        // ==========================================
-        // HELPER METHOD
-        // ==========================================
-        private static int ConvertDbResultToInt(object? scalarResult)
+        public async Task<bool> InsertTransactionItemsAsync(List<TransactionItem> items)
         {
-            if (scalarResult == null || scalarResult == DBNull.Value) return 0;
-            return scalarResult switch
+            try
             {
-                int i => i,
-                long l => (int)l,
-                bool b => b ? 1 : 0,
-                decimal d => (int)d,
-                short s => s,
-                byte by => by,
-                string st when int.TryParse(st, out var parsed) => parsed,
-                _ => 0
-            };
+                var client = await GetClientAsync();
+                await client.From<TransactionItem>().Insert(items);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TransactionItem] Insert Items Error: {ex.Message}");
+                return false;
+            }
         }
     }
 }

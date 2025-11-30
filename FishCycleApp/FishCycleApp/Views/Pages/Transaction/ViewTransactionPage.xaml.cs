@@ -1,4 +1,5 @@
 ﻿using FishCycleApp.DataAccess;
+using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Threading;
@@ -6,25 +7,25 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 
-// Use alias to avoid namespace conflict
 using TransactionModel = FishCycleApp.Models.Transaction;
 
 namespace FishCycleApp.Views.Pages.Transaction
 {
-    /// <summary>
-    /// Interaction logic for ViewTransactionPage.xaml
-    /// </summary>
     public partial class ViewTransactionPage : Page
     {
         private readonly TransactionDataManager _dataManager = new TransactionDataManager();
+        private readonly ClientDataManager _clientManager = new ClientDataManager();     
+        private readonly EmployeeDataManager _employeeManager = new EmployeeDataManager();
+        private readonly ProductDataManager _productManager = new ProductDataManager();
+
         private readonly Person _currentUserProfile;
         private TransactionModel? _loadedTransaction;
         private string _currentTransactionID;
 
         private CancellationTokenSource? _cts;
 
-        // Constructor with transaction ID and user profile
         public ViewTransactionPage(string transactionID, Person userProfile)
         {
             InitializeComponent();
@@ -73,74 +74,88 @@ namespace FishCycleApp.Views.Pages.Transaction
                 if (!isSilent) this.Cursor = System.Windows.Input.Cursors.Wait;
 
                 var result = await _dataManager.GetTransactionByIDAsync(transactionID, token);
-
                 if (token.IsCancellationRequested) return;
 
                 _loadedTransaction = result;
 
                 if (_loadedTransaction != null)
                 {
+                    await PopulateRelatedDataAsync(_loadedTransaction);
                     ApplyToUI(_loadedTransaction);
+
+                    var items = await _dataManager.GetTransactionItemsAsync(transactionID);
+
+                    foreach (var item in items)
+                    {
+                        var productInfo = await _productManager.GetProductByIDAsync(item.ProductID);
+
+                        if (productInfo != null)
+                        {
+                            item.ProductName = productInfo.ProductName;
+                            item.ProductGrade = productInfo.Grade;
+                        }
+                    }
+
+                    dgvItems.ItemsSource = items;
                 }
                 else
                 {
                     if (!isSilent && this.IsVisible)
                     {
-                        this.Cursor = System.Windows.Input.Cursors.Arrow;
-                        MessageBox.Show($"Transaction with ID {transactionID} not found.", "ERROR",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Transaction not found.", "ERROR");
                         GoBackOrNavigateList();
                     }
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Normal when cancelled, ignore
-            }
             catch (Exception ex)
             {
-                if (!isSilent && this.IsVisible)
-                    MessageBox.Show($"Error loading details: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                if (!isSilent) MessageBox.Show($"Error: {ex.Message}");
             }
             finally
             {
-                if (!isSilent && this.IsVisible)
-                    this.Cursor = System.Windows.Input.Cursors.Arrow;
+                if (!isSilent) this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
+        }
+
+        private async Task PopulateRelatedDataAsync(TransactionModel t)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(t.ClientID))
+                {
+                    var client = await _clientManager.GetClientByIDAsync(t.ClientID);
+                    if (client != null)
+                    {
+                        t.ClientName = client.ClientName;
+                        t.ClientContact = client.ClientContact;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(t.AdminID))
+                {
+                    var emp = await _employeeManager.GetEmployeeByIDAsync(t.AdminID);
+                    if (emp != null)
+                    {
+                        t.EmployeeName = emp.EmployeeName;
+                    }
+                }
+            }
+            catch { /* Ignore */ }
         }
 
         private void ApplyToUI(TransactionModel transaction)
         {
-            // Find controls by name and set values
-            var lblTransactionID = this.FindName("lblTransactionID") as TextBlock;
-            var lblTransactionDate = this.FindName("lblTransactionDate") as TextBlock;
-            var lblClientName = this.FindName("lblClientName") as TextBlock;
-            var lblEmployeeName = this.FindName("lblEmployeeName") as TextBlock;
-            var lblPaymentStatus = this.FindName("lblPaymentStatus") as TextBlock;
-            var lblDeliveryStatus = this.FindName("lblDeliveryStatus") as TextBlock;
-            var lblTotalAmount = this.FindName("lblTotalAmount") as TextBlock;
+            if (lblTransactionID != null) lblTransactionID.Text = transaction.TransactionID ?? "N/A";
 
-            // Safely update UI with null checks
-            if (lblTransactionID != null)
-                lblTransactionID.Text = transaction.TransactionID ?? "N/A";
+            if (lblTransactionDate != null) lblTransactionDate.Text = transaction.TransactionDate.ToLocalTime().ToString("dd MMM yyyy HH:mm");
 
-            if (lblTransactionDate != null)
-                lblTransactionDate.Text = transaction.TransactionDate.ToString("dd MMM yyyy HH:mm");
+            if (lblClientName != null) lblClientName.Text = transaction.ClientName ?? "-";
+            if (lblClientContact != null) lblClientContact.Text = transaction.ClientContact ?? "-";
+            if (lblEmployeeName != null) lblEmployeeName.Text = transaction.EmployeeName ?? "-";
 
-            if (lblClientName != null)
-                lblClientName.Text = transaction.ClientName ?? "Unknown Client";
-
-            if (lblEmployeeName != null)
-                lblEmployeeName.Text = transaction.EmployeeName ?? "Unknown Employee";
-
-            if (lblPaymentStatus != null)
-                lblPaymentStatus.Text = transaction.PaymentStatus ?? "Unknown";
-
-            if (lblDeliveryStatus != null)
-                lblDeliveryStatus.Text = transaction.DeliveryStatus ?? "Pending";
-
-            if (lblTotalAmount != null)
-                lblTotalAmount.Text = $"Rp {transaction.TotalAmount:N0}";
+            if (lblPaymentStatus != null) lblPaymentStatus.Text = transaction.PaymentStatus ?? "Unknown";
+            if (lblDeliveryStatus != null) lblDeliveryStatus.Text = transaction.DeliveryStatus ?? "Pending";
+            if (lblTotalAmount != null) lblTotalAmount.Text = $"Rp {transaction.TotalAmount:N0}";
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
@@ -154,9 +169,7 @@ namespace FishCycleApp.Views.Pages.Transaction
             if (_loadedTransaction == null) return;
 
             var confirm = MessageBox.Show(
-                $"Are you sure you want to delete transaction {_loadedTransaction.TransactionID}?\n\n" +
-                $"Client: {_loadedTransaction.ClientName ?? "Unknown"}\n" +
-                $"Amount: Rp {_loadedTransaction.TotalAmount:N0}",
+                $"Are you sure you want to delete transaction {_loadedTransaction.TransactionID}?",
                 "CONFIRM DELETE",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -169,9 +182,9 @@ namespace FishCycleApp.Views.Pages.Transaction
                     btnEdit.IsEnabled = false;
                     this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                    int result = await _dataManager.DeleteTransactionAsync(_loadedTransaction.TransactionID);
+                    bool success = await _dataManager.DeleteTransactionAsync(_loadedTransaction.TransactionID);
 
-                    if (result != 0)
+                    if (success)
                     {
                         MessageBox.Show("Transaction deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
                         TransactionPage.NotifyDataChanged();
@@ -179,18 +192,7 @@ namespace FishCycleApp.Views.Pages.Transaction
                     }
                     else
                     {
-                        // Verify if actually deleted
-                        var verify = await _dataManager.GetTransactionByIDAsync(_loadedTransaction.TransactionID);
-                        if (verify == null)
-                        {
-                            MessageBox.Show("Transaction deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                            TransactionPage.NotifyDataChanged();
-                            GoBackOrNavigateList();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Failed to delete transaction.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
+                        MessageBox.Show("Failed to delete transaction.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 catch (Exception ex)
@@ -221,9 +223,6 @@ namespace FishCycleApp.Views.Pages.Transaction
 
         private void DisplayProfileData(Person profile)
         {
-            var lblUserName = this.FindName("lblUserName") as TextBlock;
-            var imgUserProfile = this.FindName("imgUserProfile") as System.Windows.Controls.Image;
-
             if (lblUserName != null)
             {
                 lblUserName.Text = (profile?.Names?.Count > 0)
@@ -242,7 +241,7 @@ namespace FishCycleApp.Views.Pages.Transaction
                     bitmap.EndInit();
                     imgUserProfile.Source = bitmap;
                 }
-                catch { /* Ignore */ }
+                catch { }
             }
         }
     }

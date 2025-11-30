@@ -120,10 +120,17 @@ namespace FishCycleApp.Views.Pages.Stock
 
         private void UpdateStatisticsUI(StockStatistics stats)
         {
-            if (txtTotalTypes != null) txtTotalTypes.Text = $"{stats.TotalProductTypes} Jenis";
-            if (txtTotalStock != null) txtTotalStock.Text = $"{stats.TotalStockQuantity:N0} kg";
-            if (txtTotalValue != null) txtTotalValue.Text = $"Rp{stats.TotalStockValue:N0}";
-            if (txtLowStock != null) txtLowStock.Text = $"{stats.LowStockCount} Produk";
+            if (txtTotalTypes != null)
+                txtTotalTypes.Text = $"{stats.TotalProductTypes} Jenis";
+
+            if (txtTotalStock != null)
+                txtTotalStock.Text = $"{stats.TotalStockQuantity:N2} kg";
+
+            if (txtTotalValue != null)
+                txtTotalValue.Text = $"Rp{stats.TotalStockValue:N0}";
+
+            if (txtLowStock != null)
+                txtLowStock.Text = $"{stats.LowStockCount} Produk";
         }
 
         private void UpdateResultInfo(int count)
