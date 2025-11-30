@@ -1,4 +1,3 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -6,7 +5,6 @@ using System.Windows.Navigation;
 using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System.Threading.Tasks;
 
 namespace FishCycleApp
 {
@@ -43,28 +41,32 @@ namespace FishCycleApp
 
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
             {
-                MessageBox.Show("Please enter client name.", "WARNING");
+                MessageBox.Show("Please enter the client name.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientName.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientContact.Text))
             {
-                MessageBox.Show("Please enter client contact.", "WARNING");
+                MessageBox.Show("Please enter the client contact information.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientContact.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientAddress.Text))
             {
-                MessageBox.Show("Please enter client address.", "WARNING");
+                MessageBox.Show("Please enter the client address.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientAddress.Focus();
                 return;
             }
 
             if (cmbClientCategory.SelectedItem == null)
             {
-                MessageBox.Show("Please select a category.", "WARNING");
+                MessageBox.Show("Please select a client category.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -98,7 +100,8 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Client added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Client has been added successfully.", "Success",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
 
                     ClientPage.NotifyDataChanged();
 
@@ -109,7 +112,8 @@ namespace FishCycleApp
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add client.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Unable to add the client. Please try again.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -132,22 +136,25 @@ namespace FishCycleApp
 
         private void DisplayProfileData(Person profile)
         {
-            lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";
+            lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
+                ? profile.Names[0].DisplayName
+                : "Pengguna Tidak Dikenal";
 
-            if (profile?.Photos?.Count > 0)
+            if (profile.Photos != null && profile.Photos.Count > 0)
             {
+                string photoUrl = profile.Photos[0].Url;
                 try
                 {
-                    BitmapImage bmp = new BitmapImage();
-                    bmp.BeginInit();
-                    bmp.CacheOption = BitmapCacheOption.OnLoad;
-                    bmp.UriSource = new Uri(profile.Photos[0].Url);
-                    bmp.EndInit();
-                    imgUserProfile.Source = bmp;
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.UriSource = new Uri(photoUrl, UriKind.Absolute);
+                    bitmap.EndInit();
+                    imgUserProfile.Source = bitmap;
                 }
-                catch
+                catch (Exception ex)
                 {
-                   
+                    Console.WriteLine($"Gagal memuat foto profil: {ex.Message}");
                 }
             }
         }

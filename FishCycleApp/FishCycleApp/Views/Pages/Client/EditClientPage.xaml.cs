@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -17,17 +14,6 @@ namespace FishCycleApp
 
         private Client WorkingClient;
         private bool isProcessing = false;
-
-        public EditClientPage(string clientID, Person userProfile)
-        {
-            InitializeComponent();
-            currentUserProfile = userProfile;
-
-            DisplayProfileData(userProfile);
-            InitializeCategory();
-
-            _ = LoadClientByIdAsync(clientID);
-        }
 
         public EditClientPage(Client client, Person userProfile)
         {
@@ -47,36 +33,6 @@ namespace FishCycleApp
             cmbClientCategory.Items.Add("Restaurant");
             cmbClientCategory.Items.Add("Industry");
             cmbClientCategory.Items.Add("Distributor");
-        }
-
-        private async Task LoadClientByIdAsync(string id)
-        {
-            try
-            {
-                Cursor = System.Windows.Input.Cursors.Wait;
-
-                var c = await dataManager.GetClientByIDAsync(id?.Trim());
-                if (c == null)
-                {
-                    Cursor = System.Windows.Input.Cursors.Arrow;
-                    MessageBox.Show($"Client with ID {id} not found.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-
-                    NavigationService?.GoBack();
-                    return;
-                }
-
-                WorkingClient = c;
-                PopulateFieldsFromModel();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading client: {ex.Message}", "ERROR");
-            }
-            finally
-            {
-                Cursor = System.Windows.Input.Cursors.Arrow;
-            }
         }
 
         private void PopulateFieldsFromModel()
@@ -100,28 +56,32 @@ namespace FishCycleApp
 
             if (string.IsNullOrWhiteSpace(txtClientName.Text))
             {
-                MessageBox.Show("Please enter client name.", "WARNING");
+                MessageBox.Show("Please enter the client name.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientName.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientContact.Text))
             {
-                MessageBox.Show("Please enter client contact.", "WARNING");
+                MessageBox.Show("Please enter the client contact information.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientContact.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(txtClientAddress.Text))
             {
-                MessageBox.Show("Please enter client address.", "WARNING");
+                MessageBox.Show("Please enter the client address.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtClientAddress.Focus();
                 return;
             }
 
             if (cmbClientCategory.SelectedItem == null)
             {
-                MessageBox.Show("Please select a category.", "WARNING");
+                MessageBox.Show("Please select a client category.", "Warning",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -151,14 +111,16 @@ namespace FishCycleApp
                 if (success)
                 {
                     PopulateFieldsFromModel();
-                    MessageBox.Show("Client updated successfully!", "SUCCESS");
+                    MessageBox.Show("Client information has been updated successfully.", "Update Successful",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
 
                     ClientPage.NotifyDataChanged();
                     NavigationService?.GoBack();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to update client.", "ERROR");
+                    MessageBox.Show("Failed to update client. Connection might be lost.", "Update Failed",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -178,10 +140,10 @@ namespace FishCycleApp
             if (WorkingClient == null || isProcessing) return;
 
             var confirm = MessageBox.Show(
-                $"Are you sure you want to delete this client?\nID: {WorkingClient.ClientID}\nName: {WorkingClient.ClientName}",
-                "CONFIRM DELETE",
+                $"Are you sure you want to delete this client?\n\nID: {WorkingClient.ClientID}\nName: {WorkingClient.ClientName}",
+                "Confirm Deletion",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Question);
 
             if (confirm != MessageBoxResult.Yes) return;
 
@@ -197,13 +159,17 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Client deleted successfully!", "SUCCESS");
+                    MessageBox.Show("The client has been deleted successfully.", "Delete Successful", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+
                     ClientPage.NotifyDataChanged();
                     NavigationService?.GoBack();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete client.", "ERROR");
+                    MessageBox.Show("Unable to delete the client. Please try again.",
+                        "Delete Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
                 }
             }
             catch (Exception ex)

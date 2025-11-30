@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -122,10 +119,11 @@ namespace FishCycleApp
             if (LoadedClient == null) return;
 
             var confirm = MessageBox.Show(
-                $"Are you sure you want to delete client '{LoadedClient.ClientName}'?",
-                "CONFIRM DELETE",
+                $"Are you sure you want to delete this client?\n\nName: {LoadedClient.ClientName}",
+                "Confirm Deletion",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Question);
+
 
             if (confirm != MessageBoxResult.Yes) return;
 
@@ -141,7 +139,12 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Client deleted successfully!", "SUCCESS");
+                    MessageBox.Show(
+                        "The client has been deleted successfully.",
+                        "Delete Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     ClientPage.NotifyDataChanged();
                     GoBackOrNavigateList();
                 }

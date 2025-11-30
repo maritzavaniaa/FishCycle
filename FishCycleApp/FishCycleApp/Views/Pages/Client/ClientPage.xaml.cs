@@ -1,15 +1,10 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Linq;
 
 namespace FishCycleApp
 {
@@ -153,8 +148,9 @@ namespace FishCycleApp
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
-            MessageBox.Show("Data refreshed successfully!",
-                "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Client data has been refreshed successfully.", "Success", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
@@ -174,12 +170,16 @@ namespace FishCycleApp
         {
             if (sender is Button btn && btn.DataContext is Client c)
             {
-                var confirm = MessageBox.Show($"Delete {c.ClientName}?", "CONFIRM", MessageBoxButton.YesNo);
+                var confirm = MessageBox.Show($"Are you sure you want to delete client \"{c.ClientName}\"?", "Confirm Deletion",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question);
+
                 if (confirm != MessageBoxResult.Yes) return;
 
                 await dataManager.DeleteClientAsync(c.ClientID);
 
-                MessageBox.Show("Deleted!");
+                MessageBox.Show("Client has been deleted successfully.", "Success", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
                 NotifyDataChanged();
                 await LoadDataAsync();
             }
