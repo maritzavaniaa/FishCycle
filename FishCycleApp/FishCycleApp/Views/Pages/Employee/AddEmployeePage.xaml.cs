@@ -57,8 +57,7 @@ namespace FishCycleApp
                     GoogleAccount = txtGoogleAccount.Text.Trim()
                 };
 
-                int result = await dataManager.InsertEmployeeAsync(newEmployee);
-                bool success = result != 0;
+                bool success = await dataManager.InsertEmployeeAsync(newEmployee);
 
                 if (!success)
                 {

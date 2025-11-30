@@ -2,21 +2,21 @@
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq; 
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Windows.Input;
 
 namespace FishCycleApp
 {
     public partial class EmployeePage : Page
     {
-        // ==========================================
-        // STATICS / EVENTS
-        // ==========================================
         public static bool PendingReload { get; private set; }
         public static event Action? GlobalReloadRequested;
 
@@ -26,19 +26,13 @@ namespace FishCycleApp
             GlobalReloadRequested?.Invoke();
         }
 
-        // ==========================================
-        // FIELDS
-        // ==========================================
         private readonly Person _currentUserProfile;
         private readonly EmployeeDataManager _dataManager = new EmployeeDataManager();
 
-        private DataView? _employeeDataView;
+        private List<Employee> _allEmployees = new List<Employee>();
         private bool _isLoading;
         private DateTime _lastSuccessUtc;
 
-        // ==========================================
-        // CONSTRUCTOR
-        // ==========================================
         public EmployeePage(Person userProfile)
         {
             InitializeComponent();
@@ -50,25 +44,19 @@ namespace FishCycleApp
             this.IsVisibleChanged += EmployeePage_IsVisibleChanged;
         }
 
-        // ==========================================
-        // LIFECYCLE EVENTS
-        // ==========================================
         private async void EmployeePage_Loaded(object sender, RoutedEventArgs e)
         {
             GlobalReloadRequested -= OnGlobalReloadRequested;
             GlobalReloadRequested += OnGlobalReloadRequested;
 
-            // Jika ada pending reload atau data belum pernah dimuat
-            if (PendingReload || _employeeDataView == null)
+            if (PendingReload || _allEmployees.Count == 0)
             {
                 PendingReload = false;
                 await LoadDataAsync();
             }
             else
             {
-                // Jika data sudah ada di memori, refresh tampilan saja
-                dgvEmployees.ItemsSource = _employeeDataView;
-                UpdateResultInfo();
+                ApplySearchFilter();
             }
         }
 
@@ -88,13 +76,9 @@ namespace FishCycleApp
 
         private async void OnGlobalReloadRequested()
         {
-            // Pastikan berjalan di UI Thread
             await Dispatcher.InvokeAsync(async () => await LoadDataAsync());
         }
 
-        // ==========================================
-        // DATA LOADING (CORE LOGIC)
-        // ==========================================
         private async Task LoadDataAsync()
         {
             if (_isLoading) return;
@@ -102,53 +86,34 @@ namespace FishCycleApp
             try
             {
                 _isLoading = true;
-                // Opsional: Tampilkan Loading Spinner jika ada, misal: LoadingBar.Visibility = Visibility.Visible;
+                var data = await _dataManager.LoadEmployeeDataAsync();
 
-                // 1. Panggil method Async dari DataManager (Tidak akan memblokir UI)
-                DataTable newTable = await _dataManager.LoadEmployeeDataAsync();
-
-                if (newTable != null)
+                if (data != null)
                 {
-                    _employeeDataView = newTable.DefaultView;
-                    dgvEmployees.ItemsSource = _employeeDataView;
+                    _allEmployees = data;
 
                     _lastSuccessUtc = DateTime.UtcNow;
-                    UpdateResultInfo();
 
-                    // Re-apply filter jika ada teks di kolom pencarian
                     ApplySearchFilter();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[EmployeePage] Error loading data: {ex.Message}");
-                txtResultInfo.Text = "Error loading data. Please refresh.";
+                Console.WriteLine($"[EmployeePage] Error: {ex.Message}");
+                txtResultInfo.Text = "Error loading data.";
             }
             finally
             {
                 _isLoading = false;
-                // LoadingBar.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void UpdateResultInfo()
+        private void UpdateResultInfo(int count)
         {
-            if (_employeeDataView != null)
-            {
-                int totalRecords = _employeeDataView.Count; // Count rows after filter
-                int displayedRecords = Math.Min(10, totalRecords); // Just logic display
-                string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
-                txtResultInfo.Text = $"Total: {totalRecords} records found{suffix}";
-            }
-            else
-            {
-                txtResultInfo.Text = "No employee data available";
-            }
+            string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
+            txtResultInfo.Text = $"Total: {count} records found{suffix}";
         }
 
-        // ==========================================
-        // USER INTERACTIONS (BUTTONS)
-        // ==========================================
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
@@ -157,10 +122,9 @@ namespace FishCycleApp
 
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is DataRowView row)
+            if (sender is Button button && button.DataContext is Employee emp)
             {
-                string employeeID = row["employee_id"].ToString();
-                this.NavigationService.Navigate(new ViewEmployeePage(employeeID, _currentUserProfile));
+                this.NavigationService.Navigate(new ViewEmployeePage(emp.EmployeeID, _currentUserProfile));
             }
         }
 
@@ -171,50 +135,36 @@ namespace FishCycleApp
 
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is DataRowView row)
+            if (sender is Button button && button.DataContext is Employee emp)
             {
-                string employeeID = row["employee_id"].ToString();
-                string employeeName = row["name"].ToString();
-
-                var confirm = MessageBox.Show(
-                    $"Delete Employee {employeeName}?",
-                    "CONFIRM",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (confirm != MessageBoxResult.Yes)
-                    return;
+                var confirm = MessageBox.Show($"Delete {emp.EmployeeName}?", "CONFIRM", MessageBoxButton.YesNo);
+                if (confirm != MessageBoxResult.Yes) return;
 
                 try
                 {
                     button.IsEnabled = false;
-                    this.Cursor = System.Windows.Input.Cursors.Wait;
+                    this.Cursor = Cursors.Wait;
 
-                    // DELETE langsung (tanpa double check)
-                    await _dataManager.DeleteEmployeeAsync(employeeID);
+                    bool success = await _dataManager.DeleteEmployeeAsync(emp.EmployeeID);
 
-                    MessageBox.Show(
-                        "Employee deleted successfully!",
-                        "SUCCESS",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
-
-                    // Kasih tahu EmployeePage bahwa data berubah
-                    EmployeePage.NotifyDataChanged();
+                    if (success)
+                    {
+                        MessageBox.Show("Deleted!");
+                        NotifyDataChanged();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to delete.");
+                    }
                 }
                 finally
                 {
                     button.IsEnabled = true;
-                    this.Cursor = System.Windows.Input.Cursors.Arrow;
+                    this.Cursor = Cursors.Arrow;
                 }
             }
         }
 
-
-        // ==========================================
-        // SEARCH & FILTER LOGIC
-        // ==========================================
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             ApplySearchFilter();
@@ -222,35 +172,38 @@ namespace FishCycleApp
 
         private void ApplySearchFilter()
         {
-            if (_employeeDataView == null) return;
+            if (dgvEmployees == null || _allEmployees == null) return;
+            if (_allEmployees.Count == 0)
+            {
+                dgvEmployees.ItemsSource = null;
+                UpdateResultInfo(0);
+                return;
+            }
 
             string searchText = txtSearch.Text.Trim();
-
-            // Handle placeholder text
             if (searchText == "Search anything...") searchText = string.Empty;
 
-            try
-            {
-                if (string.IsNullOrEmpty(searchText))
-                {
-                    _employeeDataView.RowFilter = null;
-                }
-                else
-                {
-                    // Escape karakter petik satu (') agar tidak error syntax SQL/RowFilter
-                    string search = searchText.Replace("'", "''");
+            IEnumerable<Employee> filteredData;
 
-                    _employeeDataView.RowFilter =
-                        $"employee_id LIKE '%{search}%' OR " +
-                        $"name LIKE '%{search}%' OR " +
-                        $"google_account LIKE '%{search}%'";
-                }
-                UpdateResultInfo();
-            }
-            catch (Exception ex)
+            if (string.IsNullOrEmpty(searchText))
             {
-                Console.WriteLine($"Filter Error: {ex.Message}");
+                filteredData = _allEmployees;
             }
+            else
+            {
+                string lowerSearch = searchText.ToLower();
+
+                filteredData = _allEmployees.Where(emp =>
+                    (emp.EmployeeID != null && emp.EmployeeID.ToLower().Contains(lowerSearch)) ||
+                    (emp.EmployeeName != null && emp.EmployeeName.ToLower().Contains(lowerSearch)) ||
+                    (emp.GoogleAccount != null && emp.GoogleAccount.ToLower().Contains(lowerSearch))
+                );
+            }
+
+            var resultList = filteredData.ToList();
+            dgvEmployees.ItemsSource = resultList;
+
+            UpdateResultInfo(resultList.Count);
         }
 
         private void txtSearch_GotFocus(object sender, RoutedEventArgs e)
@@ -271,9 +224,6 @@ namespace FishCycleApp
             }
         }
 
-        // ==========================================
-        // UI HELPERS
-        // ==========================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
@@ -294,7 +244,6 @@ namespace FishCycleApp
                 }
                 catch
                 {
-                    // Ignore image error
                 }
             }
         }

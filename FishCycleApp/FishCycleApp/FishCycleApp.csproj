@@ -39,6 +39,7 @@
     <PackageReference Include="Google.Apis.PeopleService.v1" Version="1.69.0.3785" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Npgsql" Version="9.0.4" />
+    <PackageReference Include="Supabase" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>
