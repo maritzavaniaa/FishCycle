@@ -103,11 +103,12 @@
                           Background="Transparent" 
                           VerticalContentAlignment="Center" 
                           FontSize="14" 
-                          Padding="5,0,12,0" Margin="0,4,0,5">
-                        <ComboBoxItem Content="Date Range" IsSelected="True"/>
-                        <ComboBoxItem Content="Today"/>
-                        <ComboBoxItem Content="Last 7 Days"/>
-                        <ComboBoxItem Content="Last 30 Days"/>
+                          Padding="5,0,12,0" Margin="0,4,0,5"
+                          SelectionChanged="cmbDateRange_SelectionChanged">
+                        <ComboBoxItem Content="Date Range" Tag="All" IsSelected="True"/>
+                        <ComboBoxItem Content="Today" Tag="Today"/>
+                        <ComboBoxItem Content="Last 7 Days" Tag="Week"/>
+                        <ComboBoxItem Content="Last 30 Days" Tag="Month"/>
                     </ComboBox>
                 </Grid>
             </Border>
@@ -134,12 +135,13 @@
                           Background="Transparent" 
                           VerticalContentAlignment="Center" 
                           FontSize="14" 
-                          Padding="5,0,12,0" Margin="0,4,0,5">
-                        <ComboBoxItem Content="Status" IsSelected="True"/>
-                        <ComboBoxItem Content="All Status"/>
-                        <ComboBoxItem Content="Paid"/>
-                        <ComboBoxItem Content="Pending"/>
-                        <ComboBoxItem Content="Cancelled"/>
+                          Padding="5,0,12,0" Margin="0,4,0,5"
+                          SelectionChanged="cmbStatus_SelectionChanged">
+                        <ComboBoxItem Content="Status" Tag="All" IsSelected="True"/>
+                        <ComboBoxItem Content="All Status" Tag="All"/>
+                        <ComboBoxItem Content="Paid" Tag="Paid"/>
+                        <ComboBoxItem Content="Pending" Tag="Pending"/>
+                        <ComboBoxItem Content="Cancelled" Tag="Cancelled"/>
                     </ComboBox>
                 </Grid>
             </Border>
@@ -161,7 +163,8 @@
 
                 <!-- Add Transaction Button -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnAdd" Content="ADD TRANSACTION" Padding="20,10" Margin="0,0,0,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
+
+                    <Button x:Name="btnAdd" Content="ADD TRANSACTION" Padding="20,10" Margin="0,0,10,0" Background="#007ACC" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnAdd_Click">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">
@@ -181,6 +184,28 @@
                             </Style>
                         </Button.Style>
                     </Button>
+
+                    <Button x:Name="btnRefresh" Content="Refresh" Padding="20,10" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Click="btnRefresh_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
                 </StackPanel>
             </Grid>
         </Border>
@@ -246,111 +271,36 @@
                     </DataGrid.RowStyle>
 
                     <DataGrid.Columns>
+                        <DataGridTextColumn Header="Transaction ID" Binding="{Binding TransactionID}" Width="180" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Transaction Number" Binding="{Binding transaction_number}" Width="200" IsReadOnly="True">
+                        <DataGridTextColumn Header="Time" Binding="{Binding TransactionDate, StringFormat='dd MMM yyyy HH:mm'}" Width="150" IsReadOnly="True"/>
+
+                        <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="200" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#6C757D"/>
-                                    <Setter Property="FontWeight" Value="Normal"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Time" Binding="{Binding transaction_time}" Width="150" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="Normal"/>
-                                    <Setter Property="Foreground" Value="#212529"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Admin" Binding="{Binding EmployeeName}" Width="150" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Client Name" Binding="{Binding client_name}" Width="250" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Payment" Binding="{Binding PaymentStatus}" Width="120" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Employee Name" Binding="{Binding employee_name}" Width="200" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Delivery" Binding="{Binding DeliveryStatus}" Width="120" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Payment Status" Binding="{Binding payment_status}" Width="150" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat='Rp {0:N0}'}" Width="140" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Delivery Status" Binding="{Binding delivery_status}" Width="150" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="Sub Total" Binding="{Binding sub_total, StringFormat=C}" Width="*" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <!-- Action Button -->
                         <DataGridTemplateColumn Header="Action" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" 
-                                    HorizontalAlignment="Left" 
-                                    VerticalAlignment="Center"
-                                    Margin="10,0,0,0">
-                                        <Button Click="btnView_Click" 
-                                        Background="Transparent" 
-                                        BorderBrush="Transparent" 
-                                        Padding="0" 
-                                        Margin="0,0,12,0" 
-                                        Cursor="Hand" 
-                                        ToolTip="View Transaction Details">
-                                            <Image Source="/Resources/Images/Icons/icon_view.png" Width="20" Height="20"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
+                                        <Button Click="btnView_Click" Background="Transparent" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand" ToolTip="View">
+                                            <Image Source="pack://application:,,,/Resources/Images/Icons/icon_view.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Button>
-
-                                        <Button Click="btnDelete_Click" 
-                                        Background="Transparent" 
-                                        BorderBrush="Transparent" 
-                                        Padding="0" 
-                                        Cursor="Hand" 
-                                        ToolTip="Delete Transaction">
-                                            <Image Source="/Resources/Images/Icons/icon_delete.png" Width="20" Height="20"/>
+                                        <Button Click="btnDelete_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Delete">
+                                            <Image Source="pack://application:,,,/Resources/Images/Icons/icon_delete.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>

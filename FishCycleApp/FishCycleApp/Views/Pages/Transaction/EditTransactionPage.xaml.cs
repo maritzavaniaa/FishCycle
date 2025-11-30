@@ -1,6 +1,9 @@
 ﻿using FishCycleApp.DataAccess;
+using FishCycleApp.Models;
+using FishCycleApp.Views.Pages.Stock;
 using Google.Apis.PeopleService.v1.Data;
 using System;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,38 +11,49 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-// Use alias to avoid namespace conflict
 using TransactionModel = FishCycleApp.Models.Transaction;
 
 namespace FishCycleApp.Views.Pages.Transaction
 {
-    /// <summary>
-    /// Interaction logic for EditTransactionPage.xaml
-    /// </summary>
     public partial class EditTransactionPage : Page
     {
         private readonly TransactionDataManager _dataManager = new TransactionDataManager();
+        private readonly ProductDataManager _productManager = new ProductDataManager();
         private readonly Person _currentUserProfile;
         private TransactionModel? _workingTransaction;
         private bool _isProcessing = false;
 
-        // Constructor 1: Accept Transaction object directly
         public EditTransactionPage(TransactionModel transaction, Person userProfile)
         {
             InitializeComponent();
             _currentUserProfile = userProfile;
             _workingTransaction = transaction;
             DisplayProfileData(userProfile);
+            InitializeComboBoxes();
             PopulateFieldsFromModel();
         }
 
-        // Constructor 2: Accept transaction ID (needs to load data)
         public EditTransactionPage(string transactionID, Person userProfile)
         {
             InitializeComponent();
             _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
+            InitializeComboBoxes(); 
             _ = LoadTransactionByIdAsync(transactionID);
+        }
+
+        private void InitializeComboBoxes()
+        {
+            cmbPaymentStatus.Items.Clear();
+            cmbPaymentStatus.Items.Add(new ComboBoxItem { Content = "Pending" });
+            cmbPaymentStatus.Items.Add(new ComboBoxItem { Content = "Paid" });
+            cmbPaymentStatus.Items.Add(new ComboBoxItem { Content = "Cancelled" });
+
+            cmbDeliveryStatus.Items.Clear();
+            cmbDeliveryStatus.Items.Add(new ComboBoxItem { Content = "Pending" });
+            cmbDeliveryStatus.Items.Add(new ComboBoxItem { Content = "In Transit" });
+            cmbDeliveryStatus.Items.Add(new ComboBoxItem { Content = "Delivered" });
+            cmbDeliveryStatus.Items.Add(new ComboBoxItem { Content = "Cancelled" });
         }
 
         private async Task LoadTransactionByIdAsync(string transactionID)
@@ -47,17 +61,13 @@ namespace FishCycleApp.Views.Pages.Transaction
             try
             {
                 this.Cursor = Cursors.Wait;
-
                 var found = await _dataManager.GetTransactionByIDAsync(transactionID?.Trim());
 
                 if (found == null)
                 {
                     this.Cursor = Cursors.Arrow;
-                    MessageBox.Show($"Transaction with ID {transactionID} not found.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-
-                    if (NavigationService?.CanGoBack == true)
-                        NavigationService.GoBack();
+                    MessageBox.Show($"Transaction with ID {transactionID} not found.", "ERROR");
+                    if (NavigationService?.CanGoBack == true) NavigationService.GoBack();
                     return;
                 }
 
@@ -66,7 +76,7 @@ namespace FishCycleApp.Views.Pages.Transaction
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading data: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading data: {ex.Message}", "ERROR");
             }
             finally
             {
@@ -78,21 +88,29 @@ namespace FishCycleApp.Views.Pages.Transaction
         {
             if (_workingTransaction == null) return;
 
-            // Find and populate controls based on your XAML
-            var txtTransactionID = this.FindName("txtTransactionID") as TextBox;
-            var dpTransactionDate = this.FindName("dpTransactionDate") as DatePicker;
-            var cmbPaymentStatus = this.FindName("cmbPaymentStatus") as ComboBox;
+            txtTransactionID.Text = _workingTransaction.TransactionID;
+            txtTotal.Text = $"Rp {_workingTransaction.TotalAmount:N0}";
+            txtClient.Text = _workingTransaction.ClientName ?? "-";
 
-            if (txtTransactionID != null)
+            dpTransactionDate.SelectedDate = _workingTransaction.TransactionDate.ToLocalTime();
+
+            foreach (ComboBoxItem item in cmbPaymentStatus.Items)
             {
-                txtTransactionID.Text = _workingTransaction.TransactionID;
-                txtTransactionID.IsReadOnly = true;
+                if (item.Content.ToString() == _workingTransaction.PaymentStatus)
+                {
+                    cmbPaymentStatus.SelectedItem = item;
+                    break;
+                }
             }
 
-            if (dpTransactionDate != null)
-                dpTransactionDate.SelectedDate = _workingTransaction.TransactionDate;
-
-            // TODO: Set payment status combobox
+            foreach (ComboBoxItem item in cmbDeliveryStatus.Items)
+            {
+                if (item.Content.ToString() == _workingTransaction.DeliveryStatus)
+                {
+                    cmbDeliveryStatus.SelectedItem = item;
+                    break;
+                }
+            }
         }
 
         private async void btnSave_Click(object sender, RoutedEventArgs e)
@@ -105,39 +123,70 @@ namespace FishCycleApp.Views.Pages.Transaction
                 btnSave.IsEnabled = false;
                 this.Cursor = Cursors.Wait;
 
-                // Update transaction properties from UI controls
-                // _workingTransaction.PaymentStatus = ... get from combobox
+                string oldStatus = _workingTransaction.PaymentStatus;
 
-                int result = await _dataManager.UpdateTransactionAsync(_workingTransaction);
+                string newStatus = "Pending";
+                if (cmbPaymentStatus.SelectedItem is ComboBoxItem item)
+                    newStatus = item.Content.ToString() ?? "Pending";
 
-                bool success = result != 0;
-                if (!success)
+                if (oldStatus != newStatus)
                 {
-                    var verify = await _dataManager.GetTransactionByIDAsync(_workingTransaction.TransactionID);
-                    success = verify != null;
-                    if (success && verify != null)
+                    if (newStatus == "Cancelled")
                     {
-                        _workingTransaction = verify;
+                        var items = await _dataManager.GetTransactionItemsAsync(_workingTransaction.TransactionID);
+                        foreach (var i in items)
+                        {
+                            await _productManager.IncreaseStockAsync(i.ProductID, i.Quantity);
+                        }
+                        MessageBox.Show("Transaction Cancelled. Stock has been restored.", "INFO");
+                    }
+                    else if (oldStatus == "Cancelled")
+                    {
+                        var items = await _dataManager.GetTransactionItemsAsync(_workingTransaction.TransactionID);
+
+                        foreach (var i in items)
+                        {
+                            var prod = await _productManager.GetProductByIDAsync(i.ProductID);
+                            if (prod != null && prod.Quantity < i.Quantity)
+                            {
+                                MessageBox.Show($"Cannot reactivate! Not enough stock for {prod.ProductName}.", "ERROR");
+                                return; 
+                            }
+                        }
+
+                        foreach (var i in items)
+                        {
+                            await _productManager.DecreaseStockAsync(i.ProductID, i.Quantity);
+                        }
+                        MessageBox.Show("Transaction Reactivated. Stock has been deducted.", "INFO");
                     }
                 }
 
+                _workingTransaction.PaymentStatus = newStatus;
+                if (dpTransactionDate.SelectedDate.HasValue)
+                    _workingTransaction.TransactionDate = dpTransactionDate.SelectedDate.Value.ToUniversalTime();
+
+                if (cmbDeliveryStatus.SelectedItem is ComboBoxItem delItem)
+                    _workingTransaction.DeliveryStatus = delItem.Content.ToString();
+
+
+                bool success = await _dataManager.UpdateTransactionAsync(_workingTransaction);
+
                 if (success)
                 {
-                    PopulateFieldsFromModel();
-                    MessageBox.Show("Transaction updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Transaction updated successfully!", "SUCCESS");
                     TransactionPage.NotifyDataChanged();
-
-                    if (NavigationService?.CanGoBack == true)
-                        NavigationService.GoBack();
+                    StockPage.NotifyDataChanged();
+                    if (NavigationService?.CanGoBack == true) NavigationService.GoBack();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to update transaction.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to update transaction.", "ERROR");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Update Error: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error: {ex.Message}");
             }
             finally
             {
