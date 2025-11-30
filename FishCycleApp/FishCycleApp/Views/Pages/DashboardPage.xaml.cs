@@ -3,17 +3,8 @@ using FishCycleApp.Models;
 using FishCycleApp.Views.Pages.Stock;
 using FishCycleApp.Views.Pages.Transaction;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -28,6 +19,8 @@ namespace FishCycleApp
         private readonly Person _currentUserProfile;
         private readonly WeatherService weatherService = new WeatherService();
         private bool _isWeatherLoading;
+        private readonly TransactionDataManager _transactionDataManager = new TransactionDataManager();
+        private readonly ProductDataManager _productDataManager = new ProductDataManager();
 
         private async Task LoadWeatherPanelAsync()
         {
@@ -76,6 +69,69 @@ namespace FishCycleApp
                 _isWeatherLoading = false;
             }
         }
+
+        private async Task LoadDashboardStatsAsync()
+        {
+            int year = DateTime.Now.Year;
+            int month = DateTime.Now.Month;
+
+            var revenue = await _transactionDataManager.GetMonthlyRevenueAsync(year, month);
+            txtTotalRevenue.Text = $"Rp{revenue:N0}";
+
+            var totalTransactions = await _transactionDataManager.GetMonthlyTransactionCountAsync(year, month);
+            txtTotalTransaction.Text = totalTransactions.ToString();
+
+            var activeDelivery = await _transactionDataManager.GetActiveDeliveryTodayAsync();
+            txtActiveDelivery.Text = activeDelivery.ToString();
+        }
+
+        private async Task LoadFishStockAsync()
+        {
+            var totalStock = await _productDataManager.GetTotalStockQuantityAsync();
+            txtTotalFishStock.Text = $"{totalStock:N0} kg";
+
+            var top5 = await _productDataManager.GetTop5StockAsync();
+
+            // Bind ke UI
+            stockItem1Name.Text = top5.Count > 0 ? top5[0].ProductName : "-";
+            stockItem1Qty.Text = top5.Count > 0 ? $"{top5[0].Quantity:N0} kg" : "0 kg";
+
+            stockItem2Name.Text = top5.Count > 1 ? top5[1].ProductName : "-";
+            stockItem2Qty.Text = top5.Count > 1 ? $"{top5[1].Quantity:N0} kg" : "0 kg";
+
+            stockItem3Name.Text = top5.Count > 2 ? top5[2].ProductName : "-";
+            stockItem3Qty.Text = top5.Count > 2 ? $"{top5[2].Quantity:N0} kg" : "0 kg";
+
+            stockItem4Name.Text = top5.Count > 3 ? top5[3].ProductName : "-";
+            stockItem4Qty.Text = top5.Count > 3 ? $"{top5[3].Quantity:N0} kg" : "0 kg";
+
+            stockItem5Name.Text = top5.Count > 4 ? top5[4].ProductName : "-";
+            stockItem5Qty.Text = top5.Count > 4 ? $"{top5[4].Quantity:N0} kg" : "0 kg";
+        }
+
+        private async void LoadTodayTransactions()
+        {
+            try
+            {
+                var todayList = await _transactionDataManager.GetTodayTransactionsAsync();
+
+                var formatted = todayList.Select(t => new
+                {
+                    TransactionNumber = t.TransactionID,
+                    ClientName = t.ClientName,
+                    Amount = "Rp " + t.TotalAmount.ToString("N0"),
+                    TransactionStatus = t.PaymentStatus,
+                    DeliveryStatus = t.DeliveryStatus
+                }).ToList();
+
+                dgTodayTransactions.ItemsSource = formatted;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Dashboard] Error loading today's transactions: {ex.Message}");
+            }
+        }
+
 
         private string GetSeaSafetyLevel(double windKph)
         {
@@ -126,6 +182,7 @@ namespace FishCycleApp
             InitializeComponent();
             _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
+            LoadTodayTransactions();
 
             Loaded += DashboardPage_Loaded;   // tambahkan ini
         }
@@ -133,6 +190,8 @@ namespace FishCycleApp
         private async void DashboardPage_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadWeatherPanelAsync();
+            await LoadDashboardStatsAsync();
+            await LoadFishStockAsync();
         }
 
         private void btnDetailStock_Click(object sender, RoutedEventArgs e)

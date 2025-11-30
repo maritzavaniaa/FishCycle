@@ -209,5 +209,37 @@ namespace FishCycleApp.DataAccess
         {
             await UpdateStockQuantityAsync(productID, quantitySold);
         }
+
+        public async Task<List<Product>> GetTop5StockAsync()
+        {
+            try
+            {
+                var products = await LoadProductDataAsync();
+
+                return products
+                    .OrderByDescending(p => p.Quantity)
+                    .Take(5)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Stock] Top 5 load error: {ex.Message}");
+                return new List<Product>();
+            }
+        }
+        public async Task<decimal> GetTotalStockQuantityAsync()
+        {
+            try
+            {
+                var products = await LoadProductDataAsync();
+                return products.Sum(p => p.Quantity);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+
     }
 }

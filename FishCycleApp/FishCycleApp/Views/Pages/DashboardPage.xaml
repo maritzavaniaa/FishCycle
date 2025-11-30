@@ -6,13 +6,20 @@
       xmlns:local="clr-namespace:FishCycleApp"
       mc:Ignorable="d" 
       d:DesignHeight="768" d:DesignWidth="1366"
-      Title="DashboardPage" Background="#E9ECEF">
+      Title="DashboardPage"
+      Background="#E9ECEF">
 
     <Grid>
-        <ScrollViewer Grid.Column="1" Padding="10">
+
+        <ScrollViewer Padding="10">
             <StackPanel x:Name="MainContentStack">
 
-                <Grid x:Name="HeaderGrid" Margin="15,10,0,30">
+
+                <!-- ========================================================= -->
+                <!-- HEADER -->
+                <!-- ========================================================= -->
+
+                <Grid Margin="15,10,0,30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -25,218 +32,451 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
-                        <TextBlock x:Name="lblUserName" Text="Amira Syafika" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
+                        <TextBlock x:Name="lblUserName" FontWeight="SemiBold" FontSize="18"
+                                   Foreground="#212529" Margin="0,0,20,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
 
-                <Grid x:Name="StatCardsGrid" Margin="15,0,0,30">
+
+
+                <!-- ========================================================= -->
+                <!-- STAT CARDS -->
+                <!-- ========================================================= -->
+
+                <Grid Margin="15,0,0,30">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Height="135" CornerRadius="30" Background="White" Margin="-15,0,20,0" Padding="20">
+
+                    <!-- Total Revenue -->
+                    <Border Grid.Column="0" Height="135" CornerRadius="30" Background="White"
+                            Margin="-15,0,20,0" Padding="20">
+
                         <StackPanel>
-                            <Grid Margin="3,0,0,0">
+                            <Grid>
                                 <TextBlock Text="Total Revenue" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Resources/Images/Icons/icon_money.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_money.png" Width="22" HorizontalAlignment="Right"/>
                             </Grid>
-                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
+
+                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529"/>
+
                             <Grid Margin="3,10,0,0">
-                                <TextBlock Text="Rp1.560.000.000" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="txtTotalRevenue" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
                             </Grid>
                         </StackPanel>
+
                     </Border>
 
-                    <Border Grid.Column="1" Height="135" CornerRadius="30" Background="White" Margin="0,0,20,0" Padding="20">
+
+                    <!-- Total Transactions -->
+                    <Border Grid.Column="1" Height="135" CornerRadius="30" Background="White"
+                            Margin="0,0,20,0" Padding="20">
+
                         <StackPanel>
-                            <Grid Margin="3,0,0,0">
+                            <Grid>
                                 <TextBlock Text="Total Transaction" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Resources/Images/Icons/icon_cart.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_cart.png" Width="22" HorizontalAlignment="Right"/>
                             </Grid>
-                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
+
+                            <TextBlock Text="This Month" FontSize="13" Foreground="#212529"/>
+
                             <Grid Margin="3,10,0,0">
-                                <TextBlock Text="352" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="txtTotalTransaction" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
                             </Grid>
                         </StackPanel>
+
                     </Border>
 
-                    <Border Grid.Column="2" Height="135" CornerRadius="30" Background="White" Padding="20">
+
+
+                    <!-- Active Delivery -->
+                    <Border Grid.Column="2" Height="135" CornerRadius="30"
+                            Background="White" Padding="20">
+
                         <StackPanel>
-                            <Grid Margin="3,0,0,0">
+                            <Grid>
                                 <TextBlock Text="Active Delivery" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
-                                <Image Source="/Resources/Images/Icons/icon_truck.png" Width="22" Height="22" HorizontalAlignment="Right"/>
+                                <Image Source="/Resources/Images/Icons/icon_truck.png" Width="22" HorizontalAlignment="Right"/>
                             </Grid>
-                            <TextBlock Text="Today" FontSize="13" Foreground="#212529" Margin="3,0,0,0"/>
+
+                            <TextBlock Text="Today" FontSize="13" Foreground="#212529"/>
+
                             <Grid Margin="3,10,0,0">
-                                <TextBlock Text="17" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
-                                <TextBlock Text="+3.2%" FontSize="13" Foreground="#212529" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="txtActiveDelivery" FontSize="29" FontWeight="Bold" Foreground="#00334E"/>
                             </Grid>
                         </StackPanel>
+
                     </Border>
+
                 </Grid>
 
-                <Grid x:Name="WeatherAndStockGrid" Margin="0,0,0,30">
+
+
+
+                <!-- ========================================================= -->
+                <!-- WEATHER + FISH STOCK -->
+                <!-- ========================================================= -->
+
+                <Grid Margin="0,0,0,30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Height="300" CornerRadius="30" Background="White" Margin="0,0,20,0">
+
+
+                    <!-- WEATHER PANEL -->
+                    <Border Grid.Column="0" Height="300" CornerRadius="30"
+                            Background="White" Margin="0,0,20,0">
+
                         <Grid Margin="20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="2.5*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- LEFT COLUMN -->
+
+                            <!-- LEFT WEATHER -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Marine Weather" FontSize="26" FontWeight="Bold" Foreground="#00334E" Margin="0,0,0,10"/>
+
+                                <TextBlock Text="Marine Weather" FontSize="26" FontWeight="Bold" Foreground="#00334E"/>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                    <Image x:Name="WeatherIcon" Width="70" Height="70" Margin="0,0,20,0"/>
-                                    <TextBlock x:Name="WeatherTemp" FontSize="48" FontWeight="Bold" Foreground="#00334E" VerticalAlignment="Center"/>
+                                    <Image x:Name="WeatherIcon" Width="70" Height="70"/>
+                                    <TextBlock x:Name="WeatherTemp" FontSize="48" FontWeight="Bold"
+                                               Foreground="#00334E" VerticalAlignment="Center" Margin="20,0,0,0"/>
                                 </StackPanel>
 
-                                <TextBlock x:Name="WeatherCondition" FontSize="22" Foreground="#00334E" Margin="0,10,0,0"/>
-
-                                <TextBlock x:Name="WeatherLocationName" FontSize="18" Foreground="#505050" Margin="0,5,0,20"/>
+                                <TextBlock x:Name="WeatherCondition" FontSize="22" Foreground="#00334E"/>
+                                <TextBlock x:Name="WeatherLocationName" FontSize="18" Foreground="#505050"/>
 
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="Wind:" FontWeight="Bold" FontSize="18"/>
                                     <TextBlock x:Name="WeatherWind" FontSize="18" Margin="5,0,20,0"/>
-
                                     <TextBlock Text="Humidity:" FontWeight="Bold" FontSize="18"/>
                                     <TextBlock x:Name="WeatherHumidity" FontSize="18" Margin="5,0,0,0"/>
                                 </StackPanel>
 
                                 <TextBlock x:Name="WeatherStatus" FontSize="16" Foreground="Gray" Margin="0,10,0,0"/>
+
                             </StackPanel>
 
-                            <!-- RIGHT COLUMN (Insights) -->
-                            <StackPanel Grid.Column="1" Margin="40,20,0,0" VerticalAlignment="Top" >
 
-                                <!-- SEA SAFETY -->
+
+
+                            <!-- RIGHT WEATHER INFO -->
+                            <StackPanel Grid.Column="1" Margin="40,20,0,0">
+
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Image Source="/Resources/Images/Icons/icon_wave.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <Image Source="/Resources/Images/Icons/icon_wave.png" Width="24" Margin="0,0,10,0"/>
                                     <StackPanel>
                                         <TextBlock Text="Sea Safety" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
-                                        <TextBlock x:Name="SeaSafetyText" FontSize="18" />
+                                        <TextBlock x:Name="SeaSafetyText" FontSize="18"/>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- FISHING PRODUCTIVITY -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Image Source="/Resources/Images/Icons/icon_fish.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <Image Source="/Resources/Images/Icons/icon_fish.png" Width="24" Margin="0,0,10,0"/>
                                     <StackPanel>
                                         <TextBlock Text="Fishing Productivity" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
-                                        <TextBlock x:Name="FishingIndexText" FontSize="18" />
+                                        <TextBlock x:Name="FishingIndexText" FontSize="18"/>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- SUPPLIER FORECAST -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Image Source="/Resources/Images/Icons/icon_box.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <Image Source="/Resources/Images/Icons/icon_box.png" Width="24" Margin="0,0,10,0"/>
                                     <StackPanel>
                                         <TextBlock Text="Supplier Forecast" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
-                                        <TextBlock x:Name="SupplierForecastText" FontSize="18" TextWrapping="Wrap" Width="260"/>
+                                        <TextBlock x:Name="SupplierForecastText" FontSize="18" Width="260" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- OPERATIONAL NOTES -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Image Source="/Resources/Images/Icons/icon_note.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <Image Source="/Resources/Images/Icons/icon_note.png" Width="24" Margin="0,0,10,0"/>
                                     <StackPanel>
                                         <TextBlock Text="Operational Notes" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
-                                        <TextBlock x:Name="OperationalNotesText" FontSize="18" TextWrapping="Wrap" Width="260"/>
+                                        <TextBlock x:Name="OperationalNotesText" FontSize="18" Width="260" TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </StackPanel>
 
                             </StackPanel>
 
                         </Grid>
+
                     </Border>
 
-                    <Border Grid.Column="1" Height="300" CornerRadius="30" Background="White" Padding="20">
+
+
+
+                    <!-- STOCK PANEL -->
+                    <Border Grid.Column="1" Height="300" CornerRadius="30"
+                            Background="White" Padding="20">
+
                         <StackPanel>
+
+
+                            <!-- Stock Header -->
                             <Grid Margin="0,0,5,15">
-                                <TextBlock Text="Fish Stock" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" Foreground="#00334E"/>
-                                <Button x:Name="btnDetailStock" Content="DETAIL" HorizontalAlignment="Right" Style="{StaticResource DetailButtonStyle}" Click="btnDetailStock_Click"/>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Fish Stock" FontSize="22" FontWeight="Bold"
+                                           Foreground="#00334E" VerticalAlignment="Center"/>
+
+                                <Button x:Name="btnDetailStock"
+                                        Grid.Column="1"
+                                        Content="DETAIL"
+                                        Style="{StaticResource DetailButtonStyle}"
+                                        VerticalAlignment="Center"
+                                        Click="btnDetailStock_Click"/>
                             </Grid>
 
+
+                            <!-- Total Quantity -->
                             <Grid Margin="0,0,0,15">
-                                <TextBlock Text="Total Quantity" Foreground="#212529" FontSize="16" VerticalAlignment="Center"/>
-                                <TextBlock Text="280 kg" HorizontalAlignment="Right" FontWeight="Bold" FontSize="19" Foreground="#00334E"/>
+                                <TextBlock Text="Total Quantity" FontSize="16" Foreground="#212529"/>
+                                <TextBlock x:Name="txtTotalFishStock"
+                                           FontSize="19" FontWeight="Bold"
+                                           Foreground="#00334E"
+                                           HorizontalAlignment="Right"/>
                             </Grid>
 
+
+
+                            <!-- TOP 5 STOCK ITEMS -->
                             <StackPanel>
+
+                                <!-- ITEM TEMPLATE REPEATED -->
+                                <!-- ITEM 1 -->
                                 <Grid Margin="0,5,0,5">
-                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Kerapu" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="35 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20"/>
+                                    <TextBlock x:Name="stockItem1Name" Grid.Column="1" Margin="10,0,0,0"
+                                               FontSize="16" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <TextBlock x:Name="stockItem1Qty" Grid.Column="2"
+                                               FontWeight="SemiBold" Foreground="#00334E"/>
+                                </Grid>
+                                <Separator/>
+
+                                <!-- ITEM 2 -->
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20"/>
+                                    <TextBlock x:Name="stockItem2Name" Grid.Column="1" Margin="10,0,0,0"
+                                               FontSize="16" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <TextBlock x:Name="stockItem2Qty" Grid.Column="2"
+                                               FontWeight="SemiBold" Foreground="#00334E"/>
+                                </Grid>
+                                <Separator/>
+
+                                <!-- ITEM 3 -->
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20"/>
+                                    <TextBlock x:Name="stockItem3Name" Grid.Column="1" Margin="10,0,0,0"
+                                               FontSize="16" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <TextBlock x:Name="stockItem3Qty" Grid.Column="2"
+                                               FontWeight="SemiBold" Foreground="#00334E"/>
+                                </Grid>
+                                <Separator/>
+
+                                <!-- ITEM 4 -->
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20"/>
+                                    <TextBlock x:Name="stockItem4Name" Grid.Column="1" Margin="10,0,0,0"
+                                               FontSize="16" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <TextBlock x:Name="stockItem4Qty" Grid.Column="2"
+                                               FontWeight="SemiBold" Foreground="#00334E"/>
+                                </Grid>
+                                <Separator/>
+
+                                <!-- ITEM 5 -->
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20"/>
+                                    <TextBlock x:Name="stockItem5Name" Grid.Column="1" Margin="10,0,0,0"
+                                               FontSize="16" FontWeight="SemiBold" Foreground="#00334E"/>
+                                    <TextBlock x:Name="stockItem5Qty" Grid.Column="2"
+                                               FontWeight="SemiBold" Foreground="#00334E"/>
                                 </Grid>
 
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Tuna" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="23 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Kakap" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="19 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Salmon" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="13 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
-
-                                <Separator Margin="0,5,0,5" Height="1" Foreground="#BEBEBE"/>
-
-                                <Grid Margin="0,5,0,5">
-                                    <Image Source="/Resources/Images/Icons/icon_menu.png" Width="20" Height="20" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="Bawal" Foreground="#00334E" FontSize="16" FontWeight="SemiBold" Margin="35,0,0,3"/>
-                                    <TextBlock Text="7 kg" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#00334E"/>
-                                </Grid>
                             </StackPanel>
+
                         </StackPanel>
                     </Border>
-                </Grid>
 
-                <Border x:Name="TransactionsBorder" Height="300" CornerRadius="30" Background="White">
+                </Grid>
+                <!-- ========================================================= -->
+                <!-- TODAY'S TRANSACTIONS (IMPROVED VERSION LIKE SUPPLIER PAGE) -->
+                <!-- ========================================================= -->
+
+                <Border x:Name="TransactionsBorder"
+        Height="340"
+        CornerRadius="30"
+        Background="White"
+        Margin="0,-10,0,20"
+        BorderBrush="#E0E0E0"
+        BorderThickness="1">
+
                     <StackPanel>
-                        <Grid Margin="20,0,20,10">
-                            <TextBlock Text="Today's Transactions" FontSize="22" FontWeight="Bold" Margin="0,18,0,10" Foreground="#00334E"/>
-                            <Button x:Name="btnDetailTransactions" Content="DETAIL" HorizontalAlignment="Right" Style="{StaticResource DetailButtonStyle}" Margin="0,15,5,0" Click="btnDetailTransactions_Click"/>
+
+                        <!-- HEADER -->
+                        <Grid Margin="20,10,20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Today's Transactions"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="#00334E"/>
+
+                            <Button x:Name="btnDetailTransactions"
+                    Grid.Column="1"
+                    Content="DETAIL"
+                    Style="{StaticResource DetailButtonStyle}"
+                    VerticalAlignment="Center"
+                    Click="btnDetailTransactions_Click"/>
                         </Grid>
 
-                        <DataGrid Height="240" AutoGenerateColumns="False" HeadersVisibility="Column"
-                                  IsReadOnly="True" BorderThickness="0" GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#E0E0E0" ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
 
+                        <!-- TRANSACTION GRID -->
+                        <DataGrid x:Name="dgTodayTransactions"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  GridLinesVisibility="None"
+                  HeadersVisibility="Column"
+                  RowHeight="60"
+                  FontSize="13"
+                  RowHeaderWidth="0"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+
+                            <!-- HEADER STYLE -->
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Setter Property="Foreground" Value="#495057"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Padding" Value="20,12"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                                    <Setter Property="BorderBrush" Value="#E9ECEF"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+
+                            <!-- CELL STYLE -->
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="#333333"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="20,0">
+                                                    <ContentPresenter VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.CellStyle>
+
+                            <!-- ROW STYLE -->
+                            <DataGrid.RowStyle>
+                                <Style TargetType="DataGridRow">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F8F9FA"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="Background" Value="#F8F9FA"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
+
+                            <!-- COLUMNS -->
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Transaction Number" Width="1.5*" Binding="{Binding TransactionNumber}"/>
-                                <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}"/>
-                                <DataGridTextColumn Header="Amount" Width="*" Binding="{Binding Amount}"/>
-                                <DataGridTextColumn Header="Transaction Status" Width="*" Binding="{Binding TransactionStatus}"/>
-                                <DataGridTextColumn Header="Delivery Status" Width="*" Binding="{Binding DeliveryStatus}"/>
+
+                                <DataGridTextColumn Header="Transaction Number"
+                                    Binding="{Binding TransactionNumber}"
+                                    Width="1.5*"/>
+
+                                <DataGridTextColumn Header="Client" Binding="{Binding ClientName}" Width="200" IsReadOnly="True">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+
+                                <DataGridTextColumn Header="Amount"
+                                    Binding="{Binding Amount}"
+                                    Width="1*"/>
+
+                                <DataGridTextColumn Header="Transaction Status"
+                                    Binding="{Binding TransactionStatus}"
+                                    Width="1*"/>
+
+                                <DataGridTextColumn Header="Delivery Status"
+                                    Binding="{Binding DeliveryStatus}"
+                                    Width="1*"/>
+
                             </DataGrid.Columns>
+
                         </DataGrid>
+
                     </StackPanel>
                 </Border>
+
             </StackPanel>
         </ScrollViewer>
+
     </Grid>
+
 </Page>

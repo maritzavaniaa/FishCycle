@@ -174,5 +174,97 @@ namespace FishCycleApp.DataAccess
                 return false;
             }
         }
+        public async Task<decimal> GetMonthlyRevenueAsync(int year, int month)
+        {
+            try
+            {
+                var transactions = await LoadTransactionDataAsync();
+
+                var revenue = transactions
+                    .Where(t =>
+                        t.PaymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase) &&
+                        !t.DeliveryStatus.Equals("Cancelled", StringComparison.OrdinalIgnoreCase) &&
+                        t.TransactionDate.Month == month &&
+                        t.TransactionDate.Year == year
+                    )
+                    .Sum(t => t.TotalAmount);
+
+                return revenue;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Transaction] Revenue calculation error: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public async Task<int> GetMonthlyTransactionCountAsync(int year, int month)
+        {
+            try
+            {
+                var transactions = await LoadTransactionDataAsync();
+
+                var count = transactions
+                    .Count(t =>
+                        t.PaymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase) &&
+                        !t.DeliveryStatus.Equals("Cancelled", StringComparison.OrdinalIgnoreCase) &&
+                        t.TransactionDate.Month == month &&
+                        t.TransactionDate.Year == year
+                    );
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Transaction] Count error: {ex.Message}");
+                return 0;
+            }
+        }
+        public async Task<int> GetActiveDeliveryTodayAsync()
+        {
+            try
+            {
+                var transactions = await LoadTransactionDataAsync();
+
+                DateTime today = DateTime.Today;
+
+                var count = transactions
+                    .Count(t =>
+                        t.TransactionDate.Date == today &&
+                        !t.DeliveryStatus.Equals("Cancelled", StringComparison.OrdinalIgnoreCase) &&
+                        !t.DeliveryStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase)
+                    );
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Transaction] Active delivery error: {ex.Message}");
+                return 0;
+            }
+        }
+        public async Task<List<Transaction>> GetTodayTransactionsAsync()
+        {
+            try
+            {
+                var client = await GetClientAsync();
+
+                DateTime today = DateTime.Today;
+                DateTime tomorrow = today.AddDays(1);
+
+                var result = await client
+                    .From<Transaction>()
+                    .Select("*")
+                    .Where(x => x.TransactionDate >= today && x.TransactionDate < tomorrow)
+                    .Get();
+
+                return result.Models;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Transaction] Today load error: {ex.Message}");
+                return new List<Transaction>();
+            }
+        }
     }
 }
