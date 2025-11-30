@@ -40,7 +40,7 @@
 
             <Border Grid.Column="0" CornerRadius="20" Background="White" Padding="20" Margin="0,0,20,0">
                 <StackPanel>
-                    <TextBlock Text="Total Jenis Ikan" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock Text="Total SKU" FontSize="16" FontWeight="Bold"/>
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                         <Image Source="/Resources/Images/Icons/Card_Stock/fish.png" Width="28"/>
                         <TextBlock x:Name="txtTotalTypes" Text="0 Jenis" FontSize="22" FontWeight="Bold" Margin="10,0,0,0"/>

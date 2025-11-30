@@ -142,12 +142,56 @@
                     </ScrollViewer>
 
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button x:Name="btnNext1" Content="NEXT PAGE →" Padding="25,12" Background="#0077B6" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnNext1_Click">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="8"/>
+                        <Button x:Name="btnCancelSection1" Content="CANCEL" Padding="25,12" Margin="0,0,10,0"
+                                Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" 
+                                FontWeight="SemiBold" FontSize="12" Cursor="Hand" Click="btnCancel_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                                        CornerRadius="8" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                        </Trigger>
+                                    </Style.Triggers>
                                 </Style>
-                            </Button.Resources>
+                            </Button.Style>
+                        </Button>
+
+                        <Button x:Name="btnNext1" Content="NEXT PAGE →" Padding="25,12" 
+                                Background="#0077B6" Foreground="White" FontWeight="SemiBold" FontSize="12" 
+                                BorderThickness="0" Cursor="Hand" Click="btnNext1_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="8" 
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#006299"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                         </Button>
                     </StackPanel>
                 </Grid>
