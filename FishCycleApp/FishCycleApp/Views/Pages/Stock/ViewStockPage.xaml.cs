@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -151,10 +148,11 @@ namespace FishCycleApp.Views.Pages.Stock
             if (LoadedProduct == null) return;
 
             var confirm = MessageBox.Show(
-                $"Delete product {LoadedProduct.ProductName}?",
-                "CONFIRM DELETE",
+                $"Are you sure you want to delete the product \"{LoadedProduct.ProductName}\"?",
+                "Delete Confirmation",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning
+            );
 
             if (confirm == MessageBoxResult.Yes)
             {
@@ -165,7 +163,12 @@ namespace FishCycleApp.Views.Pages.Stock
 
                     await dataManager.DeleteProductAsync(LoadedProduct.ProductID);
 
-                    MessageBox.Show("Product deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "The product has been deleted successfully.",
+                        "Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None
+                    );
 
                     StockPage.NotifyDataChanged();
                     GoBackOrNavigateList();

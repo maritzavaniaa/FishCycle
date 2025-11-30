@@ -14,7 +14,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Page Title -->
         <Grid Grid.Row="0" Margin="0,0,0,25">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -26,16 +25,12 @@
                 <TextBlock Text="Stock > Add Stock" FontSize="14" Foreground="#6C757D" Margin="0,5,0,0"/>
             </StackPanel>
 
-            <!-- User Info (right side) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                <!-- Profile Picture -->
                 <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
-                <!-- User Name -->
                 <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
             </StackPanel>
         </Grid>
 
-        <!-- Form -->
         <Border Grid.Row="1" Background="White" CornerRadius="20" Padding="40" BorderBrush="#E0E0E0" BorderThickness="1">
             <Grid>
                 <Grid.RowDefinitions>
@@ -45,7 +40,6 @@
 
                 <StackPanel Grid.Row="0" VerticalAlignment="Top">
 
-                    <!-- Product Name & Supplier Row -->
                     <Grid Margin="0,0,0,25">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -53,7 +47,6 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Product Name Textbox -->
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -71,7 +64,6 @@
                             </Border>
                         </Grid>
 
-                        <!-- Supplier Combobox -->
                         <Grid Grid.Column="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -96,7 +88,6 @@
                         </Grid>
                     </Grid>
 
-                    <!-- Unit Price & Quantity Row -->
                     <Grid Margin="0,0,0,25">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -104,7 +95,6 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Unit Price Textbox -->
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -122,7 +112,6 @@
                             </Border>
                         </Grid>
 
-                        <!-- Quantity Textbox -->
                         <Grid Grid.Column="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -141,7 +130,6 @@
                         </Grid>
                     </Grid>
 
-                    <!-- Grade Row -->
                     <Grid Margin="0,0,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -155,7 +143,6 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- Grade Combobox -->
                             <TextBlock Grid.Row="0" Text="Grade" FontSize="14" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
                                 <ComboBox x:Name="cmbGrade" 
@@ -175,10 +162,7 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- Action Button -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
-
-                    <!-- Cancel Button -->
                     <Button x:Name="btnCancel" Content="CANCEL" Padding="25,12" Background="White" Foreground="#333333" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" Margin="0,0,10,0" Click="btnCancel_Click">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -204,7 +188,6 @@
                         </Button.Style>
                     </Button>
 
-                    <!-- Save Button -->
                     <Button x:Name="btnSave" Content="SAVE" Padding="35,12" Background="#C8E86C" Foreground="#2D5016" FontWeight="Bold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnSave_Click">
                         <Button.Style>
                             <Style TargetType="Button">

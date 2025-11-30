@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Data;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -70,9 +67,7 @@ namespace FishCycleApp.Views.Pages.Stock
             try
             {
                 var suppliers = await supplierDataManager.LoadSupplierDataAsync();
-
                 cmbSupplier.Items.Clear();
-
                 cmbSupplier.Items.Add(new ComboBoxItem { Content = "-- Select Supplier --", Tag = null });
 
                 foreach (var s in suppliers)
@@ -192,7 +187,11 @@ namespace FishCycleApp.Views.Pages.Stock
                 if (success)
                 {
                     PopulateFieldsFromModel();
-                    MessageBox.Show("Product updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "The product information has been successfully updated.",
+                        "Update Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
 
                     StockPage.NotifyDataChanged();
 
@@ -221,8 +220,8 @@ namespace FishCycleApp.Views.Pages.Stock
             if (WorkingProduct == null || isProcessing) return;
 
             var confirm = MessageBox.Show(
-                $"Delete product {WorkingProduct.ProductName}?",
-                "CONFIRM DELETE",
+                $"Are you sure you want to delete the product '{WorkingProduct.ProductName}'?",
+                "Confirm Deletion",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
@@ -236,7 +235,11 @@ namespace FishCycleApp.Views.Pages.Stock
 
                     await dataManager.DeleteProductAsync(WorkingProduct.ProductID);
 
-                    MessageBox.Show("Product deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "The product has been deleted successfully.",
+                        "Delete Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
 
                     StockPage.NotifyDataChanged();
                     GoBackOrNavigateList();
@@ -253,7 +256,6 @@ namespace FishCycleApp.Views.Pages.Stock
                 }
             }
         }
-
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             GoBackOrNavigateList();

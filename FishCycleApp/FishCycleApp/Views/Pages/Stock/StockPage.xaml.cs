@@ -1,11 +1,7 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
 using System.Data;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -139,7 +135,13 @@ namespace FishCycleApp.Views.Pages.Stock
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
-            MessageBox.Show("Data refreshed successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                "Data has been refreshed successfully.",
+                "Success",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
@@ -230,24 +232,27 @@ namespace FishCycleApp.Views.Pages.Stock
             }
         }
 
-        private void btnEdit_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is Product p)
-            {
-                this.NavigationService.Navigate(new EditStockPage(p, _currentUserProfile));
-            }
-        }
-
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is Product p)
             {
-                var confirm = MessageBox.Show($"Delete product {p.ProductName}?", "CONFIRM", MessageBoxButton.YesNo);
-                if (confirm != MessageBoxResult.Yes) return;
+                var confirm = MessageBox.Show(
+                    $"Are you sure you want to delete the product \"{p.ProductName}\"?",
+                    "Delete Confirmation",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
 
+                if (confirm != MessageBoxResult.Yes) return;
                 await _dataManager.DeleteProductAsync(p.ProductID);
 
-                MessageBox.Show("Deleted!");
+                MessageBox.Show(
+                    "The product has been deleted successfully.",
+                    "Success",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.None
+                );
+
                 NotifyDataChanged();
                 await LoadDataAsync();
             }

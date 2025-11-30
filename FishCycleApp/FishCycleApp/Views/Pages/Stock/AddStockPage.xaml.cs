@@ -1,10 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -57,7 +53,7 @@ namespace FishCycleApp.Views.Pages.Stock
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to load suppliers: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Failed to load suppliers: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.None);
             }
         }
 
@@ -76,28 +72,38 @@ namespace FishCycleApp.Views.Pages.Stock
 
             if (string.IsNullOrWhiteSpace(txtProductName.Text))
             {
-                MessageBox.Show("Please enter product name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter product name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.None);
                 txtProductName.Focus();
                 return;
             }
 
             if (!decimal.TryParse(txtUnitPrice.Text, out decimal unitPrice) || unitPrice <= 0)
             {
-                MessageBox.Show("Please enter valid unit price.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter valid unit price.", "WARNING", MessageBoxButton.OK, MessageBoxImage.None);
                 txtUnitPrice.Focus();
                 return;
             }
 
             if (!decimal.TryParse(txtQuantity.Text, out decimal quantity) || quantity < 0)
             {
-                MessageBox.Show("Please enter valid quantity.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter valid quantity.", "WARNING", MessageBoxButton.OK, MessageBoxImage.None);
                 txtQuantity.Focus();
                 return;
             }
 
             if (cmbGrade.SelectedItem == null)
             {
-                MessageBox.Show("Please select grade.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select grade.", "WARNING", MessageBoxButton.OK, MessageBoxImage.None);
+                return;
+            }
+
+            // Validasi Supplier tidak boleh kosong
+            if (cmbSupplier.SelectedItem == null ||
+                cmbSupplier.SelectedIndex == 0 ||
+                (cmbSupplier.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag == null))
+            {
+                MessageBox.Show("Please select a supplier.", "WARNING", MessageBoxButton.OK, MessageBoxImage.None);
+                cmbSupplier.Focus();
                 return;
             }
 
@@ -137,7 +143,12 @@ namespace FishCycleApp.Views.Pages.Stock
 
                 if (success)
                 {
-                    MessageBox.Show($"Product added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "The product has been added successfully.",
+                        "Add Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.None);
+
 
                     StockPage.NotifyDataChanged();
 
@@ -152,12 +163,12 @@ namespace FishCycleApp.Views.Pages.Stock
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add product.\nCheck database connection.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to add product.\nCheck database connection.", "ERROR", MessageBoxButton.OK, MessageBoxImage.None);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Exception occurred:\n{ex.Message}", "EXCEPTION", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Exception occurred:\n{ex.Message}", "EXCEPTION", MessageBoxButton.OK, MessageBoxImage.None);
             }
             finally
             {
