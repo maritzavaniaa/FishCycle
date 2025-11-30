@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using FishCycleApp.DataAccess;
@@ -27,7 +28,6 @@ namespace FishCycleApp
         {
             if (isSaving) return;
 
-            // 1. Validasi Input
             if (string.IsNullOrWhiteSpace(txtEmployeeName.Text))
             {
                 MessageBox.Show("Please enter employee name.", "WARNING",
@@ -46,71 +46,67 @@ namespace FishCycleApp
 
             try
             {
-                // 2. Kunci UI agar tidak diklik berkali-kali
                 isSaving = true;
                 btnSave.IsEnabled = false;
-
-                // Opsional: Ubah kursor jadi loading
                 this.Cursor = System.Windows.Input.Cursors.Wait;
 
                 var newEmployee = new Employee
                 {
-                    // Generate ID Client Side
                     EmployeeID = "EMP-" + DateTime.UtcNow.ToString("yyMMddHHmmss"),
                     EmployeeName = txtEmployeeName.Text.Trim(),
                     GoogleAccount = txtGoogleAccount.Text.Trim()
                 };
 
-                // 3. PANGGIL METHOD ASYNC (Gunakan await)
                 int result = await dataManager.InsertEmployeeAsync(newEmployee);
-
                 bool success = result != 0;
 
-                // Double check jika database return 0 tapi data masuk (kasus jarang)
                 if (!success)
                 {
-                    var fetched = await dataManager.GetEmployeeByIDAsync(newEmployee.EmployeeID);
-                    success = fetched != null;
+                    var check = await dataManager.GetEmployeeByIDAsync(newEmployee.EmployeeID);
+                    success = check != null;
                 }
 
                 if (success)
                 {
-                    MessageBox.Show($"Employee added successfully!",
-                                    "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Employee added successfully!", "SUCCESS");
 
-                    // 4. NAVIGASI YANG BENAR:
-                    // Beritahu EmployeePage bahwa ada data baru
                     EmployeePage.NotifyDataChanged();
 
-                    // Kembali ke halaman sebelumnya (List Employee) daripada buat halaman baru
                     if (NavigationService?.CanGoBack == true)
-                    {
                         NavigationService.GoBack();
-                    }
                     else
-                    {
-                        // Fallback jika tidak bisa back (misal langsung buka halaman ini)
                         NavigationService?.Navigate(new EmployeePage(currentUserProfile));
-                    }
+
+                    return;
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add employee.\nCheck database connection.",
-                                    "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to add employee.", "ERROR");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Exception occurred:\n{ex.Message}",
-                                "EXCEPTION", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Exception occurred:\n{ex.Message}", "EXCEPTION");
             }
             finally
             {
-                // 5. Buka kembali kunci UI
                 isSaving = false;
                 btnSave.IsEnabled = true;
-                this.Cursor = System.Windows.Input.Cursors.Arrow;
+                this.Cursor = Cursors.Arrow;
             }
+        }
+
+
+
+        private void GoBackOrNavigateList()
+        {
+            if (NavigationService?.CanGoBack == true) NavigationService.GoBack();
+            else NavigateToEmployeeList();
+        }
+
+        private void NavigateToEmployeeList()
+        {
+            NavigationService?.Navigate(new EmployeePage(currentUserProfile));
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

@@ -79,7 +79,7 @@
                     </Border>
                 </Grid>
 
-                <Grid x:Name="ChartAndStockGrid" Margin="0,0,0,30">
+                <Grid x:Name="WeatherAndStockGrid" Margin="0,0,0,30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
@@ -87,72 +87,76 @@
 
                     <Border Grid.Column="0" Height="300" CornerRadius="30" Background="White" Margin="0,0,20,0">
                         <Grid Margin="20">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2.5*"/>
+                            </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="Analytic Chart" Margin="0,0,0,30" FontSize="22" FontWeight="Bold" Foreground="#00334E"/>
+                            <!-- LEFT COLUMN -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Marine Weather" FontSize="26" FontWeight="Bold" Foreground="#00334E" Margin="0,0,0,10"/>
 
-                            <Grid Grid.Row="1">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <Image x:Name="WeatherIcon" Width="70" Height="70" Margin="0,0,20,0"/>
+                                    <TextBlock x:Name="WeatherTemp" FontSize="48" FontWeight="Bold" Foreground="#00334E" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-                                <Grid Grid.Row="0" Margin="40, 0, 0, 0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="WeatherCondition" FontSize="22" Foreground="#00334E" Margin="0,10,0,0"/>
 
-                                    <StackPanel VerticalAlignment="Top" Grid.ColumnSpan="7" Margin="0,0,0,0">
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,0,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,0"/>
-                                        <Border Height="1" Background="#E0E0E0" Margin="0,50,0,1"/>
-                                    </StackPanel>
+                                <TextBlock x:Name="WeatherLocationName" FontSize="18" Foreground="#505050" Margin="0,5,0,20"/>
 
-                                    <Rectangle Grid.Column="0" Height="152" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="1" Height="170" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="2" Height="155" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="3" Height="159" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="4" Height="120" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="5" Height="166" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                    <Rectangle Grid.Column="6" Height="168" VerticalAlignment="Bottom" Width="40" Style="{StaticResource ChartBarBaseStyle}"/>
-                                </Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Wind:" FontWeight="Bold" FontSize="18"/>
+                                    <TextBlock x:Name="WeatherWind" FontSize="18" Margin="5,0,20,0"/>
 
-                                <Grid Grid.Row="1" Margin="40, 5, 0, 0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Mon" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="1" Text="Tue" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="2" Text="Wed" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="3" Text="Thurs" FontSize="16" HorizontalAlignment="Center" Foreground="#727377"/>
-                                    <TextBlock Grid.Column="4" Text="Fri" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="5" Text="Sat" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                    <TextBlock Grid.Column="6" Text="Sun" FontSize="16" HorizontalAlignment="Center" Foreground="#727374"/>
-                                </Grid>
-                            </Grid>
+                                    <TextBlock Text="Humidity:" FontWeight="Bold" FontSize="18"/>
+                                    <TextBlock x:Name="WeatherHumidity" FontSize="18" Margin="5,0,0,0"/>
+                                </StackPanel>
 
-                            <StackPanel Grid.Row="1" VerticalAlignment="Top" Margin="0,0,0,0">
-                                <TextBlock Text="600" Foreground="#727374" Margin="0,-12,0,0" FontSize="16"/>
-                                <TextBlock Text="500" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
-                                <TextBlock Text="400" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
-                                <TextBlock Text="300" Foreground="#727374" Margin="0,30,0,0" FontSize="16"/>
+                                <TextBlock x:Name="WeatherStatus" FontSize="16" Foreground="Gray" Margin="0,10,0,0"/>
                             </StackPanel>
+
+                            <!-- RIGHT COLUMN (Insights) -->
+                            <StackPanel Grid.Column="1" Margin="40,20,0,0" VerticalAlignment="Top" >
+
+                                <!-- SEA SAFETY -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Image Source="/Resources/Images/Icons/icon_safe.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Sea Safety" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
+                                        <TextBlock x:Name="SeaSafetyText" FontSize="18" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- FISHING PRODUCTIVITY -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Image Source="/Resources/Images/Icons/icon_fish.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Fishing Productivity" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
+                                        <TextBlock x:Name="FishingIndexText" FontSize="18" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- SUPPLIER FORECAST -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Image Source="/Resources/Images/Icons/icon_box.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Supplier Forecast" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
+                                        <TextBlock x:Name="SupplierForecastText" FontSize="18" TextWrapping="Wrap" Width="260"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- OPERATIONAL NOTES -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Image Source="/Resources/Images/Icons/icon_note.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Operational Notes" FontWeight="Bold" FontSize="18" Foreground="#00334E"/>
+                                        <TextBlock x:Name="OperationalNotesText" FontSize="18" TextWrapping="Wrap" Width="260"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                            </StackPanel>
+
                         </Grid>
                     </Border>
 

@@ -176,47 +176,41 @@ namespace FishCycleApp
                 string employeeID = row["employee_id"].ToString();
                 string employeeName = row["name"].ToString();
 
-                MessageBoxResult confirmation = MessageBox.Show(
-                    $"Are you sure you want to delete Employee Name {employeeName}?",
-                    "CONFIRM DELETE",
+                var confirm = MessageBox.Show(
+                    $"Delete Employee {employeeName}?",
+                    "CONFIRM",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
-                if (confirmation == MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        // Panggil Method Delete Async
-                        int result = await _dataManager.DeleteEmployeeAsync(employeeID);
+                if (confirm != MessageBoxResult.Yes)
+                    return;
 
-                        if (result != 0)
-                        {
-                            MessageBox.Show("Employee deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                            NotifyDataChanged(); // Beritahu halaman lain
-                            await LoadDataAsync(); // Reload halaman ini
-                        }
-                        else
-                        {
-                            // Double check: Cek apakah user sudah hilang?
-                            var exists = await _dataManager.GetEmployeeByIDAsync(employeeID);
-                            if (exists == null)
-                            {
-                                // Sudah terhapus sebenarnya
-                                await LoadDataAsync();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to delete employee. Database returned 0 rows affected.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error deleting employee: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                try
+                {
+                    button.IsEnabled = false;
+                    this.Cursor = System.Windows.Input.Cursors.Wait;
+
+                    // DELETE langsung (tanpa double check)
+                    await _dataManager.DeleteEmployeeAsync(employeeID);
+
+                    MessageBox.Show(
+                        "Employee deleted successfully!",
+                        "SUCCESS",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+
+                    // Kasih tahu EmployeePage bahwa data berubah
+                    EmployeePage.NotifyDataChanged();
+                }
+                finally
+                {
+                    button.IsEnabled = true;
+                    this.Cursor = System.Windows.Input.Cursors.Arrow;
                 }
             }
         }
+
 
         // ==========================================
         // SEARCH & FILTER LOGIC
