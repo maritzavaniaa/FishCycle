@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -28,52 +25,12 @@ namespace FishCycleApp
             PopulateFieldsFromModel();
         }
 
-        public EditSupplierPage(string supplierID, Person userProfile)
-        {
-            InitializeComponent();
-            currentUserProfile = userProfile;
-
-            DisplayProfileData(userProfile);
-            InitializeCategory();
-
-            _ = LoadSupplierByIdAsync(supplierID);
-        }
-
         private void InitializeCategory()
         {
             cmbSupplierType.Items.Clear();
             cmbSupplierType.Items.Add("Fresh Catch");
             cmbSupplierType.Items.Add("First-Hand");
             cmbSupplierType.Items.Add("Reprocessed Stock");
-        }
-
-        private async Task LoadSupplierByIdAsync(string id)
-        {
-            try
-            {
-                Cursor = System.Windows.Input.Cursors.Wait;
-
-                var s = await supplierManager.GetSupplierByIDAsync(id?.Trim());
-                if (s == null)
-                {
-                    Cursor = System.Windows.Input.Cursors.Arrow;
-                    MessageBox.Show($"Supplier with ID {id} not found.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    NavigationService?.GoBack();
-                    return;
-                }
-
-                WorkingSupplier = s;
-                PopulateFieldsFromModel();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading supplier: {ex.Message}", "ERROR");
-            }
-            finally
-            {
-                Cursor = System.Windows.Input.Cursors.Arrow;
-            }
         }
 
         private void PopulateFieldsFromModel()
@@ -134,7 +91,11 @@ namespace FishCycleApp
                 if (success)
                 {
                     PopulateFieldsFromModel();
-                    MessageBox.Show("Supplier updated successfully!", "SUCCESS");
+                    MessageBox.Show(
+                        "The supplier information has been updated successfully.",
+                        "Update Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
 
                     SupplierPage.NotifyDataChanged();
                     NavigationService?.GoBack();
@@ -165,7 +126,7 @@ namespace FishCycleApp
 
             var confirm = MessageBox.Show(
                 $"Are you sure you want to delete this supplier?\nID: {id}\nName: {name}",
-                "CONFIRM DELETE",
+                "Confirm Deletion",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -183,7 +144,12 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Supplier deleted successfully!", "SUCCESS");
+                    MessageBox.Show(
+                        "The supplier has been deleted successfully.",
+                        "Delete Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     SupplierPage.NotifyDataChanged();
                     NavigationService?.GoBack();
                 }

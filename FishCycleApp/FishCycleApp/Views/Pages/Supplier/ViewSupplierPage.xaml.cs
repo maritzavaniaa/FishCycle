@@ -1,9 +1,6 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -79,7 +76,12 @@ namespace FishCycleApp
                 }
                 else if (!isSilent)
                 {
-                    MessageBox.Show($"Supplier with ID {supplierID} not found.", "NOT FOUND");
+                    MessageBox.Show(
+                        $"Supplier with ID \"{supplierID}\" was not found.",
+                        "Supplier Not Found",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
                     GoBackOrNavigateList();
                 }
             }
@@ -123,8 +125,8 @@ namespace FishCycleApp
             if (LoadedSupplier == null) return;
 
             var confirm = MessageBox.Show(
-                $"Are you sure you want to delete supplier '{LoadedSupplier.SupplierName}'?",
-                "CONFIRM DELETE",
+                $"Are you sure you want to delete the supplier \"{LoadedSupplier.SupplierName}\"?",
+                "Confirm Deletion",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -142,13 +144,23 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Supplier deleted successfully!", "SUCCESS");
+                    MessageBox.Show(
+                        "The supplier has been deleted successfully.",
+                        "Delete Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
                     SupplierPage.NotifyDataChanged();
                     GoBackOrNavigateList();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete supplier.", "ERROR");
+                    MessageBox.Show(
+                        "Failed to delete the supplier. The record may still exist or a system error occurred.",
+                        "Delete Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+
                 }
             }
             catch (Exception ex)

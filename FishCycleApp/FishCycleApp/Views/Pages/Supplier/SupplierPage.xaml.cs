@@ -1,15 +1,10 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using Google.Apis.PeopleService.v1.Data;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Linq;
 
 namespace FishCycleApp
 {
@@ -101,7 +96,6 @@ namespace FishCycleApp
                 _isLoading = false;
             }
         }
-
         private void UpdateResultInfo(int count)
         {
             string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
@@ -153,8 +147,11 @@ namespace FishCycleApp
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
-            MessageBox.Show("Data refreshed successfully!", "SUCCESS",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                "The data has been refreshed successfully.",
+                "Refresh Successful",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
@@ -174,12 +171,22 @@ namespace FishCycleApp
         {
             if (sender is Button btn && btn.DataContext is Supplier s)
             {
-                var confirm = MessageBox.Show($"Delete {s.SupplierName}?", "CONFIRM", MessageBoxButton.YesNo);
+                var confirm = MessageBox.Show(
+                    $"Are you sure you want to delete supplier \"{s.SupplierName}\"?",
+                    "Confirm Deletion",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
                 if (confirm != MessageBoxResult.Yes) return;
 
                 await supplierManager.DeleteSupplierAsync(s.SupplierID);
 
-                MessageBox.Show("Deleted!");
+                MessageBox.Show(
+                    "The supplier has been deleted successfully.",
+                    "Delete Successful",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
                 NotifyDataChanged();
                 await LoadDataAsync();
             }

@@ -15,7 +15,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Page Title -->
         <Grid Grid.Row="0" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -27,16 +26,12 @@
                 <TextBlock Text="Supplier > View Supplier" FontSize="14" Foreground="#6C757D" Margin="0,5,0,0"/>
             </StackPanel>
 
-            <!-- User Info (right side) -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                <!-- Profile Picture -->
                 <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
-                <!-- User Name -->
                 <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
             </StackPanel>
         </Grid>
 
-        <!-- Back Button Section -->
         <Grid Grid.Row="1" Margin="0,0,0,20">
             <Button x:Name="btnBack" Content="← BACK" Padding="15,10" Background="#E9ECEF" Foreground="#495057" BorderBrush="#CCCCCC" BorderThickness="1" FontWeight="SemiBold" FontSize="12" Cursor="Hand" HorizontalAlignment="Left" Click="btnBack_Click">
                 <Button.Style>
@@ -64,7 +59,6 @@
             </Button>
         </Grid>
 
-        <!-- Content Section -->
         <Border Grid.Row="2" Background="White" CornerRadius="20" Padding="40" BorderBrush="#E0E0E0" BorderThickness="1">
             <Grid>
                 <Grid.RowDefinitions>
@@ -72,7 +66,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Supplier Details -->
                 <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -81,7 +74,6 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Supplier ID -->
                     <Grid Grid.Row="0" Margin="0,0,0,25">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -91,7 +83,6 @@
                         <TextBlock Grid.Row="1" x:Name="lblSupplierID" Text="SID-000001" FontSize="16" Foreground="#212529" FontWeight="Normal"/>
                     </Grid>
 
-                    <!-- Name -->
                     <Grid Grid.Row="1" Margin="0,0,0,25">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -101,7 +92,6 @@
                         <TextBlock Grid.Row="1" x:Name="lblSupplierName" Text="PT Ikan Segar Indonesia" FontSize="16" Foreground="#212529" FontWeight="Normal"/>
                     </Grid>
 
-                    <!-- Phone and Category in Row -->
                     <Grid Grid.Row="2" Margin="0,0,0,25">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -109,7 +99,6 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Phone -->
                         <Grid Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -119,7 +108,6 @@
                             <TextBlock Grid.Row="1" x:Name="lblSupplierPhone" Text="081234567890" FontSize="16" Foreground="#212529" FontWeight="Normal"/>
                         </Grid>
 
-                        <!-- Category -->
                         <Grid Grid.Column="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -144,7 +132,6 @@
                         </Grid>
                     </Grid>
 
-                    <!-- Address -->
                     <Grid Grid.Row="3" Margin="0,0,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -155,9 +142,7 @@
                     </Grid>
                 </Grid>
 
-                <!-- Action Buttons -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,30,0,0">
-                    <!-- Delete Button -->
                     <Button x:Name="btnDelete" Content="DELETE" Padding="25,12" Background="#DC3545" Foreground="White" FontWeight="SemiBold" FontSize="12" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="btnDelete_Click">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -181,7 +166,6 @@
                         </Button.Style>
                     </Button>
 
-                    <!-- Edit Button -->
                     <Button x:Name="btnEdit" Content="EDIT" Padding="35,12" Background="#B794F6" Foreground="White" FontWeight="Bold" FontSize="12" BorderThickness="0" Cursor="Hand" Click="btnEdit_Click">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -205,9 +189,7 @@
                         </Button.Style>
                     </Button>
                 </StackPanel>
-
             </Grid>
         </Border>
-
     </Grid>
 </Page>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -81,8 +80,11 @@ namespace FishCycleApp
 
                 if (success)
                 {
-                    MessageBox.Show("Supplier added successfully!", "SUCCESS",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        "The supplier has been added successfully.",
+                        "Save Successful",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
 
                     SupplierPage.NotifyDataChanged();
 
@@ -93,8 +95,11 @@ namespace FishCycleApp
                 }
                 else
                 {
-                    MessageBox.Show("Failed to add supplier.", "ERROR",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        "Failed to add the supplier. Please try again.",
+                        "Save Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
