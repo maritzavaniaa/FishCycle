@@ -1,7 +1,7 @@
 ﻿using FishCycleApp.DataAccess;
 using FishCycleApp.Models;
 using System;
-using System.Threading.Tasks; // Wajib ada
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -14,9 +14,8 @@ namespace FishCycleApp
         private readonly EmployeeDataManager dataManager = new EmployeeDataManager();
         private readonly Person currentUserProfile;
         private Employee WorkingEmployee;
-        private bool isProcessing = false; // Mencegah double click
+        private bool isProcessing = false; 
 
-        // Constructor 1: Menerima Objek Employee (Langsung tampil)
         public EditEmployeePage(Employee employee, Person userProfile)
         {
             InitializeComponent();
@@ -26,15 +25,12 @@ namespace FishCycleApp
             PopulateFieldsFromModel();
         }
 
-        // Constructor 2: Menerima ID (Harus loading dulu)
         public EditEmployeePage(string employeeID, Person userProfile)
         {
             InitializeComponent();
             currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
 
-            // Karena Constructor tidak bisa Async, kita panggil method async secara terpisah
-            // Gunakan teknik "Fire and Forget" yang aman
             _ = LoadEmployeeByIdAsync(employeeID);
         }
 
@@ -42,9 +38,8 @@ namespace FishCycleApp
         {
             try
             {
-                // Tampilkan loading cursor
                 this.Cursor = System.Windows.Input.Cursors.Wait;
-                txtEmployeeName.IsEnabled = false; // Disable dulu inputan
+                txtEmployeeName.IsEnabled = false; 
 
                 var found = await dataManager.GetEmployeeByIDAsync(employeeID?.Trim());
 
@@ -84,7 +79,6 @@ namespace FishCycleApp
             txtGoogleAccount.Text = WorkingEmployee.GoogleAccount;
         }
 
-        // UBAH JADI ASYNC VOID
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (WorkingEmployee == null || isProcessing) return;
@@ -106,40 +100,30 @@ namespace FishCycleApp
             try
             {
                 isProcessing = true;
-                btnSave.IsEnabled = false; // Kunci tombol
+                btnSave.IsEnabled = false;
                 this.Cursor = System.Windows.Input.Cursors.Wait;
 
                 WorkingEmployee.EmployeeName = txtEmployeeName.Text.Trim();
                 WorkingEmployee.GoogleAccount = txtGoogleAccount.Text.Trim();
 
-                // 1. Panggil Update Async
-                int result = await dataManager.UpdateEmployeeAsync(WorkingEmployee);
+                bool success = await dataManager.UpdateEmployeeAsync(WorkingEmployee);
 
-                bool success = result != 0;
-
-                // 2. Double Check jika DB return 0
                 if (!success)
                 {
                     var verify = await dataManager.GetEmployeeByIDAsync(WorkingEmployee.EmployeeID);
                     success = verify != null;
-                    // Jika data masih ada, kita asumsikan update berhasil (idempotent) 
-                    // atau minimal datanya tidak hilang.
                     if (success && verify != null)
                     {
-                        // Optional: Cek apakah field berubah? 
-                        // Untuk simpelnya kita anggap sukses saja.
                         WorkingEmployee = verify;
                     }
                 }
 
                 if (success)
                 {
-                    // Update UI lagi untuk memastikan data sinkron
                     PopulateFieldsFromModel();
 
                     MessageBox.Show("Employee updated successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // 3. Notifikasi ke Halaman List
                     EmployeePage.NotifyDataChanged();
 
                     if (NavigationService?.CanGoBack == true)
@@ -162,7 +146,6 @@ namespace FishCycleApp
             }
         }
 
-        // UBAH JADI ASYNC VOID
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (WorkingEmployee == null || isProcessing) return;
@@ -181,22 +164,18 @@ namespace FishCycleApp
                     isProcessing = true;
                     btnDelete.IsEnabled = false;
 
-                    // 1. Panggil Delete Async
-                    int result = await dataManager.DeleteEmployeeAsync(id);
+                    bool success = await dataManager.DeleteEmployeeAsync(id);
 
-                    // Logic verifikasi
-                    bool success = result != 0;
                     if (!success)
                     {
                         var stillThere = await dataManager.GetEmployeeByIDAsync(id);
-                        success = (stillThere == null); // Sukses jika data sudah TIDAK ada
+                        success = (stillThere == null); 
                     }
 
                     if (success)
                     {
                         MessageBox.Show("Employee deleted successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                        // Notifikasi reload penuh karena data hilang
                         EmployeePage.NotifyDataChanged();
 
                         if (NavigationService?.CanGoBack == true)

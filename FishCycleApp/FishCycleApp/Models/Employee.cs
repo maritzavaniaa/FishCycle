@@ -1,20 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace FishCycleApp.Models
 {
-    public class Employee : Account
+    [Table("employee")]
+    public class Employee : BaseModel
     {
-        // Beri nilai default string.Empty agar tidak null saat objek baru dibuat
+        [PrimaryKey("employee_id", true)]
         public string EmployeeID { get; set; } = string.Empty;
 
+        [Column("name")]
         public string EmployeeName { get; set; } = string.Empty;
 
-        // Jika Google Account boleh kosong di database, 
-        // gunakan tanda tanya (?) untuk menandakan "Nullable"
+        [Column("google_account")]
         public string? GoogleAccount { get; set; }
     }
 }

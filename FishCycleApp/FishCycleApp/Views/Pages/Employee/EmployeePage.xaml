@@ -205,7 +205,7 @@
 
                     <DataGrid.Columns>
 
-                        <DataGridTextColumn Header="Employee ID" Binding="{Binding employee_id}" Width="150" IsReadOnly="True">
+                        <DataGridTextColumn Header="Employee ID" Binding="{Binding EmployeeID}" Width="150" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="#6C757D"/>
@@ -217,7 +217,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Name" Binding="{Binding name}" Width="*" IsReadOnly="True">
+                        <DataGridTextColumn Header="Name" Binding="{Binding EmployeeName}" Width="*" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -229,7 +229,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Google Account" Binding="{Binding google_account}" Width="*" IsReadOnly="True">
+                        <DataGridTextColumn Header="Google Account" Binding="{Binding GoogleAccount}" Width="*" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="#495057"/>
@@ -243,26 +243,11 @@
                         <DataGridTemplateColumn Header="Action" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" 
-                                                HorizontalAlignment="Left" 
-                                                VerticalAlignment="Center"
-                                                Margin="10,0,0,0">
-                                        <Button Click="btnView_Click" 
-                                                Background="Transparent" 
-                                                BorderBrush="Transparent" 
-                                                Padding="0" 
-                                                Margin="0,0,8,0" 
-                                                Cursor="Hand" 
-                                                ToolTip="View Employee Details">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Button Click="btnView_Click" Background="Transparent" BorderBrush="Transparent" Padding="0" Margin="0,0,8,0" Cursor="Hand" ToolTip="View Employee Details">
                                             <Image Source="/Resources/Images/Icons/icon_view.png" Width="20" Height="20"/>
                                         </Button>
-
-                                        <Button Click="btnDelete_Click" 
-                                                Background="Transparent" 
-                                                BorderBrush="Transparent" 
-                                                Padding="0" 
-                                                Cursor="Hand" 
-                                                ToolTip="Delete Employee">
+                                        <Button Click="btnDelete_Click" Background="Transparent" BorderBrush="Transparent" Padding="0" Cursor="Hand" ToolTip="Delete Employee">
                                             <Image Source="/Resources/Images/Icons/icon_delete.png" Width="20" Height="20"/>
                                         </Button>
                                     </StackPanel>
