@@ -9,14 +9,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace FishCycleApp
 {
     public partial class ClientPage : Page
     {
-        // ============================================================
-        // GLOBAL RELOAD
-        // ============================================================
         public static bool PendingReload { get; private set; }
         public static event Action? GlobalReloadRequested;
 
@@ -26,19 +24,12 @@ namespace FishCycleApp
             GlobalReloadRequested?.Invoke();
         }
 
-        // ============================================================
-        // FIELDS
-        // ============================================================
         private readonly Person currentUserProfile;
         private readonly ClientDataManager dataManager = new ClientDataManager();
 
-        private DataView? ClientDataView;
-        private bool _isLoading;
+        private List<Client> _allClients = new List<Client>(); private bool _isLoading;
         private DateTime _lastSuccessUtc;
 
-        // ============================================================
-        // CONSTRUCTOR
-        // ============================================================
         public ClientPage(Person userProfile)
         {
             InitializeComponent();
@@ -51,23 +42,19 @@ namespace FishCycleApp
             this.IsVisibleChanged += ClientPage_IsVisibleChanged;
         }
 
-        // ============================================================
-        // PAGE LIFECYCLE — IDENTIK DENGAN SupplierPage
-        // ============================================================
         private async void ClientPage_Loaded(object sender, RoutedEventArgs e)
         {
             GlobalReloadRequested -= OnGlobalReloadRequested;
             GlobalReloadRequested += OnGlobalReloadRequested;
 
-            if (PendingReload || ClientDataView == null)
+            if (PendingReload || _allClients.Count == 0)
             {
                 PendingReload = false;
                 await LoadDataAsync();
             }
             else
             {
-                dgvClients.ItemsSource = ClientDataView;
-                UpdateResultInfo();
+                ApplyFilter();
             }
         }
 
@@ -90,31 +77,24 @@ namespace FishCycleApp
             await Dispatcher.InvokeAsync(async () => await LoadDataAsync());
         }
 
-        // ============================================================
-        // LOAD DATA (robust & identik dengan SupplierPage)
-        // ============================================================
         private async Task LoadDataAsync()
         {
             if (_isLoading) return;
-
             try
             {
                 _isLoading = true;
+                var data = await dataManager.LoadClientDataAsync();
 
-                DataTable dt = await dataManager.LoadClientDataAsync();
-                ClientDataView = dt.DefaultView;
-
-                dgvClients.ItemsSource = ClientDataView;
-
-                _lastSuccessUtc = DateTime.UtcNow;
-
-                ApplyFilter();
-                UpdateResultInfo();
+                if (data != null)
+                {
+                    _allClients = data;
+                    _lastSuccessUtc = DateTime.UtcNow;
+                    ApplyFilter();
+                }
             }
             catch (Exception ex)
             {
-                txtResultInfo.Text = "Error loading client data.";
-                Console.WriteLine($"[ClientPage] Load error: {ex.Message}");
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -122,24 +102,12 @@ namespace FishCycleApp
             }
         }
 
-        private void UpdateResultInfo()
+        private void UpdateResultInfo(int count)
         {
-            if (ClientDataView != null)
-            {
-                int total = ClientDataView.Count;
-                string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
-
-                txtResultInfo.Text = $"Total: {total} clients found{time}";
-            }
-            else
-            {
-                txtResultInfo.Text = "No client data available";
-            }
+            string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
+            txtResultInfo.Text = $"Total: {count} clients found{time}";
         }
 
-        // ============================================================
-        // SEARCH + FILTER (identik formatnya dengan Supplier)
-        // ============================================================
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             ApplyFilter();
@@ -152,47 +120,36 @@ namespace FishCycleApp
 
         private void ApplyFilter()
         {
-            if (ClientDataView == null) return;
+            if (dgvClients == null || _allClients == null) return;
 
-            List<string> filters = new List<string>();
+            IEnumerable<Client> query = _allClients;
 
-            // text search
-            string search = txtSearch.Text.Trim();
-            if (search == "Search anything...") search = "";
-
-            if (!string.IsNullOrWhiteSpace(search))
+            string search = txtSearch.Text.Trim().ToLower();
+            if (!string.IsNullOrWhiteSpace(search) && search != "search anything...")
             {
-                string s = search.Replace("'", "''");
-
-                filters.Add(
-                    $"clientid LIKE '%{s}%' OR " +
-                    $"client_name LIKE '%{s}%' OR " +
-                    $"client_contact LIKE '%{s}%' OR " +
-                    $"client_address LIKE '%{s}%' OR " +
-                    $"client_category LIKE '%{s}%'"
+                query = query.Where(c =>
+                    (c.ClientID != null && c.ClientID.ToLower().Contains(search)) ||
+                    (c.ClientName != null && c.ClientName.ToLower().Contains(search)) ||
+                    (c.ClientContact != null && c.ClientContact.ToLower().Contains(search)) ||
+                    (c.ClientAddress != null && c.ClientAddress.ToLower().Contains(search)) ||
+                    (c.ClientCategory != null && c.ClientCategory.ToLower().Contains(search))
                 );
             }
 
-            // category filter
             if (cmbCategory.SelectedItem is ComboBoxItem item)
             {
                 string cat = item.Content.ToString();
                 if (cat != "All Categories" && cat != "Category")
                 {
-                    string esc = cat.Replace("'", "''");
-                    filters.Add($"client_category = '{esc}'");
+                    query = query.Where(c => c.ClientCategory == cat);
                 }
             }
 
-            ClientDataView.RowFilter =
-                filters.Count > 0 ? string.Join(" AND ", filters) : "";
-
-            UpdateResultInfo();
+            var resultList = query.ToList();
+            dgvClients.ItemsSource = resultList;
+            UpdateResultInfo(resultList.Count);
         }
 
-        // ============================================================
-        // BUTTONS
-        // ============================================================
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
@@ -207,52 +164,27 @@ namespace FishCycleApp
 
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Client c)
             {
-                string id = row["clientid"].ToString();
-                this.NavigationService.Navigate(new ViewClientPage(id, currentUserProfile));
+                this.NavigationService.Navigate(new ViewClientPage(c.ClientID, currentUserProfile));
             }
         }
 
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn || btn.DataContext is not DataRowView row)
-                return;
-
-            string id = row["clientid"].ToString();
-            string name = row["client_name"].ToString();
-
-            var confirm = MessageBox.Show(
-                $"Are you sure you want to delete Client \"{name}\"?",
-                "CONFIRM DELETE",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirm != MessageBoxResult.Yes) return;
-
-            await dataManager.DeleteClientAsync(id);
-
-            var stillExist = await dataManager.GetClientByIDAsync(id);
-            bool success = stillExist == null;
-
-            if (success)
+            if (sender is Button btn && btn.DataContext is Client c)
             {
-                MessageBox.Show("Client deleted successfully.",
-                    "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
+                var confirm = MessageBox.Show($"Delete {c.ClientName}?", "CONFIRM", MessageBoxButton.YesNo);
+                if (confirm != MessageBoxResult.Yes) return;
 
+                await dataManager.DeleteClientAsync(c.ClientID);
+
+                MessageBox.Show("Deleted!");
                 NotifyDataChanged();
                 await LoadDataAsync();
             }
-            else
-            {
-                MessageBox.Show("Failed to delete client.",
-                    "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
-        // ============================================================
-        // PROFILE
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "User";
@@ -272,9 +204,6 @@ namespace FishCycleApp
             catch { }
         }
 
-        // ============================================================
-        // Placeholder Behavior
-        // ============================================================
         private void txtSearch_GotFocus(object sender, RoutedEventArgs e)
         {
             if (txtSearch.Text == "Search anything...")

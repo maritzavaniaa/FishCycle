@@ -247,85 +247,42 @@
 
                     <DataGrid.Columns>
 
-                        <DataGridTextColumn Header="Supplier ID" Binding="{Binding supplierid}" Width="120" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#6C757D"/>
-                                    <Setter Property="FontWeight" Value="Normal"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Supplier ID" Binding="{Binding SupplierID}" Width="120" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Name" Binding="{Binding supplier_name}" Width="220" IsReadOnly="True">
+                        <DataGridTextColumn Header="Name" Binding="{Binding SupplierName}" Width="220" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="Foreground" Value="#212529"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Phone" Binding="{Binding supplier_phone}" Width="140" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Phone" Binding="{Binding SupplierPhone}" Width="140" IsReadOnly="True"/>
 
-                        <DataGridTextColumn Header="Address" Binding="{Binding supplier_address}" Width="*" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Address" Binding="{Binding SupplierAddress}" Width="*" IsReadOnly="True"/>
 
                         <DataGridTemplateColumn Header="Category" Width="*" MinWidth="200">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="CategoryBorder" 
-                                        CornerRadius="20" 
-                                        Padding="8,8" 
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Center"
-                                        Margin="10,0,0,0">
-                                        <TextBlock Text="{Binding supplier_type}" 
-                                       Foreground="White" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="11" 
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextTrimming="None" />
+                                    <Border x:Name="CategoryBorder" CornerRadius="20" Padding="8,8" HorizontalAlignment="Stretch" Margin="10,0,0,0">
+                                        <TextBlock Text="{Binding SupplierType}" Foreground="White" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center"/>
                                     </Border>
-
                                     <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding supplier_type}" Value="Fresh Catch">
+                                        <DataTrigger Binding="{Binding SupplierType}" Value="Fresh Catch">
                                             <Setter TargetName="CategoryBorder" Property="Background" Value="#B794F6"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding supplier_type}" Value="First-Hand">
+                                        <DataTrigger Binding="{Binding SupplierType}" Value="First-Hand">
                                             <Setter TargetName="CategoryBorder" Property="Background" Value="#FFB088"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding supplier_type}" Value="Reprocessed Stock">
+                                        <DataTrigger Binding="{Binding SupplierType}" Value="Reprocessed Stock">
                                             <Setter TargetName="CategoryBorder" Property="Background" Value="#FF8F8F"/>
                                         </DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
 
                         <DataGridTemplateColumn Header="Action" Width="120">
                             <DataGridTemplateColumn.CellTemplate>

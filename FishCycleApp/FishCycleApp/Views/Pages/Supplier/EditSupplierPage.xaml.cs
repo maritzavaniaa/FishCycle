@@ -119,9 +119,7 @@ namespace FishCycleApp
                 WorkingSupplier.SupplierPhone = string.IsNullOrWhiteSpace(txtSupplierPhone.Text) ? null : txtSupplierPhone.Text.Trim();
                 WorkingSupplier.SupplierAddress = string.IsNullOrWhiteSpace(txtSupplierAddress.Text) ? null : txtSupplierAddress.Text.Trim();
 
-                int result = await supplierManager.UpdateSupplierAsync(WorkingSupplier);
-
-                bool success = result != 0;
+                bool success = await supplierManager.UpdateSupplierAsync(WorkingSupplier);
 
                 if (!success)
                 {

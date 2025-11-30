@@ -4,6 +4,8 @@ using Google.Apis.PeopleService.v1.Data;
 using System;
 using System.Data;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,9 +15,6 @@ namespace FishCycleApp.Views.Pages.Stock
 {
     public partial class StockPage : Page
     {
-        // ==========================================
-        // STATICS / EVENTS
-        // ==========================================
         public static bool PendingReload { get; private set; }
         public static event Action? GlobalReloadRequested;
 
@@ -25,19 +24,13 @@ namespace FishCycleApp.Views.Pages.Stock
             GlobalReloadRequested?.Invoke();
         }
 
-        // ==========================================
-        // FIELDS
-        // ==========================================
         private readonly Person _currentUserProfile;
         private readonly ProductDataManager _dataManager = new ProductDataManager();
+        private readonly SupplierDataManager _supplierManager = new SupplierDataManager();
 
-        private DataView? _productDataView;
-        private bool _isLoading;
+        private List<Product> _allProducts = new List<Product>(); private bool _isLoading;
         private DateTime _lastSuccessUtc;
 
-        // ==========================================
-        // CONSTRUCTOR
-        // ==========================================
         public StockPage(Person userProfile)
         {
             InitializeComponent();
@@ -49,23 +42,19 @@ namespace FishCycleApp.Views.Pages.Stock
             this.IsVisibleChanged += StockPage_IsVisibleChanged;
         }
 
-        // ==========================================
-        // LIFECYCLE EVENTS
-        // ==========================================
         private async void StockPage_Loaded(object sender, RoutedEventArgs e)
         {
             GlobalReloadRequested -= OnGlobalReloadRequested;
             GlobalReloadRequested += OnGlobalReloadRequested;
 
-            if (PendingReload || _productDataView == null)
+            if (PendingReload || _allProducts.Count == 0)
             {
                 PendingReload = false;
                 await LoadDataAsync();
             }
             else
             {
-                dgvStock.ItemsSource = _productDataView;
-                UpdateResultInfo();
+                ApplySearchFilter();
             }
         }
 
@@ -88,37 +77,44 @@ namespace FishCycleApp.Views.Pages.Stock
             await Dispatcher.InvokeAsync(async () => await LoadDataAsync());
         }
 
-        // ==========================================
-        // DATA LOADING
-        // ==========================================
         private async Task LoadDataAsync()
         {
             if (_isLoading) return;
-
             try
             {
                 _isLoading = true;
 
-                // Load product data
-                DataTable newTable = await _dataManager.LoadProductDataAsync();
+                var taskProducts = _dataManager.LoadProductDataAsync();
+                var taskSuppliers = _supplierManager.LoadSupplierDataAsync();
 
-                if (newTable != null)
+                await Task.WhenAll(taskProducts, taskSuppliers);
+
+                var products = taskProducts.Result;
+                var suppliers = taskSuppliers.Result;
+
+                if (products != null)
                 {
-                    _productDataView = newTable.DefaultView;
-                    dgvStock.ItemsSource = _productDataView;
+                    foreach (var prod in products)
+                    {
+                        var match = suppliers.FirstOrDefault(s => s.SupplierID == prod.SupplierID);
+                        if (match != null)
+                        {
+                            prod.SupplierName = match.SupplierName;
+                        }
+                    }
 
+                    _allProducts = products;
                     _lastSuccessUtc = DateTime.UtcNow;
-                    UpdateResultInfo();
-                    ApplySearchFilter();
-                }
 
-                // Load statistics for cards
-                await LoadStatisticsAsync();
+                    ApplySearchFilter();
+
+                    var stats = _dataManager.CalculateStatistics(_allProducts);
+                    UpdateStatisticsUI(stats);
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[StockPage] Error loading data: {ex.Message}");
-                txtResultInfo.Text = "Error loading data. Please refresh.";
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -126,58 +122,20 @@ namespace FishCycleApp.Views.Pages.Stock
             }
         }
 
-        private async Task LoadStatisticsAsync()
+        private void UpdateStatisticsUI(StockStatistics stats)
         {
-            try
-            {
-                var stats = await _dataManager.GetStockStatisticsAsync();
-
-                if (stats != null)
-                {
-                    // Update Card 1 - Total Jenis Ikan
-                    var card1Text = this.FindName("txtTotalTypes") as TextBlock;
-                    if (card1Text != null)
-                        card1Text.Text = $"{stats.TotalProductTypes} Jenis";
-
-                    // Update Card 2 - Total Stok
-                    var card2Text = this.FindName("txtTotalStock") as TextBlock;
-                    if (card2Text != null)
-                        card2Text.Text = $"{stats.TotalStockQuantity:N2} kg";
-
-                    // Update Card 3 - Nilai Total Stok
-                    var card3Text = this.FindName("txtTotalValue") as TextBlock;
-                    if (card3Text != null)
-                        card3Text.Text = $"Rp{stats.TotalStockValue:N0}";
-
-                    // Update Card 4 - Stok Rendah
-                    var card4Text = this.FindName("txtLowStock") as TextBlock;
-                    if (card4Text != null)
-                        card4Text.Text = $"{stats.LowStockCount} Produk";
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[StockPage] Error loading statistics: {ex.Message}");
-            }
+            if (txtTotalTypes != null) txtTotalTypes.Text = $"{stats.TotalProductTypes} Jenis";
+            if (txtTotalStock != null) txtTotalStock.Text = $"{stats.TotalStockQuantity:N0} kg";
+            if (txtTotalValue != null) txtTotalValue.Text = $"Rp{stats.TotalStockValue:N0}";
+            if (txtLowStock != null) txtLowStock.Text = $"{stats.LowStockCount} Produk";
         }
 
-        private void UpdateResultInfo()
+        private void UpdateResultInfo(int count)
         {
-            if (_productDataView != null)
-            {
-                int totalRecords = _productDataView.Count;
-                string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
-                txtResultInfo.Text = $"Total: {totalRecords} products found{suffix}";
-            }
-            else
-            {
-                txtResultInfo.Text = "No stock data available";
-            }
+            string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
+            txtResultInfo.Text = $"Total: {count} products found{suffix}";
         }
 
-        // ==========================================
-        // USER INTERACTIONS
-        // ==========================================
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
@@ -189,9 +147,6 @@ namespace FishCycleApp.Views.Pages.Stock
             this.NavigationService.Navigate(new AddStockPage(_currentUserProfile));
         }
 
-        // ==========================================
-        // SEARCH & FILTER
-        // ==========================================
         private void txtSearch_GotFocus(object sender, RoutedEventArgs e)
         {
             if (txtSearch.Text == "Search anything...")
@@ -222,41 +177,30 @@ namespace FishCycleApp.Views.Pages.Stock
 
         private void ApplySearchFilter()
         {
-            if (_productDataView == null) return;
+            if (dgvStock == null || _allProducts == null) return;
 
-            string searchText = txtSearch.Text.Trim();
-            if (searchText == "Search anything...") searchText = string.Empty;
+            IEnumerable<Product> query = _allProducts;
 
-            string selectedGrade = (cmbCategory.SelectedItem as ComboBoxItem)?.Content?.ToString();
-
-            try
+            string searchText = txtSearch.Text.Trim().ToLower();
+            if (!string.IsNullOrWhiteSpace(searchText) && searchText != "search anything...")
             {
-                string filter = "";
-
-                if (!string.IsNullOrEmpty(searchText))
-                {
-                    string search = searchText.Replace("'", "''");
-                    filter = $"productid LIKE '%{search}%' OR product_name LIKE '%{search}%'";
-                }
-
-                if (!string.IsNullOrEmpty(selectedGrade) && selectedGrade != "All Grades")
-                {
-                    string gradeFilter = $"grade = '{selectedGrade}'";
-                    filter = string.IsNullOrEmpty(filter) ? gradeFilter : $"{filter} AND {gradeFilter}";
-                }
-
-                _productDataView.RowFilter = string.IsNullOrEmpty(filter) ? null : filter;
-                UpdateResultInfo();
+                query = query.Where(p =>
+                    (p.ProductID != null && p.ProductID.ToLower().Contains(searchText)) ||
+                    (p.ProductName != null && p.ProductName.ToLower().Contains(searchText))
+                );
             }
-            catch (Exception ex)
+
+            string selectedGrade = (cmbCategory.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All Grades";
+            if (selectedGrade != "All Grades" && !string.IsNullOrEmpty(selectedGrade))
             {
-                Console.WriteLine($"Filter Error: {ex.Message}");
+                query = query.Where(p => p.Grade == selectedGrade);
             }
+
+            var resultList = query.ToList();
+            dgvStock.ItemsSource = resultList;
+            UpdateResultInfo(resultList.Count);
         }
 
-        // ==========================================
-        // UI HELPERS
-        // ==========================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
@@ -278,78 +222,34 @@ namespace FishCycleApp.Views.Pages.Stock
             }
         }
 
-        // ==========================================
-        // ACTION HANDLERS
-        // ==========================================
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Product p)
             {
-                string productID = row["productid"].ToString();
-                this.NavigationService.Navigate(new ViewStockPage(productID, _currentUserProfile));
+                this.NavigationService.Navigate(new ViewStockPage(p.ProductID, _currentUserProfile));
             }
         }
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Product p)
             {
-                var product = new Product
-                {
-                    ProductID = row["productid"].ToString(),
-                    ProductName = row["product_name"].ToString(),
-                    Grade = row["grade"].ToString(),
-                    Quantity = Convert.ToDecimal(row["quantity"]),
-                    UnitPrice = Convert.ToDecimal(row["unit_price"]),
-                    SupplierID = row["supplierid"] != DBNull.Value ? row["supplierid"].ToString() : null
-                };
-                this.NavigationService.Navigate(new EditStockPage(product, _currentUserProfile));
+                this.NavigationService.Navigate(new EditStockPage(p, _currentUserProfile));
             }
         }
 
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Product p)
             {
-                string productID = row["productid"].ToString();
-                string productName = row["product_name"].ToString();
+                var confirm = MessageBox.Show($"Delete product {p.ProductName}?", "CONFIRM", MessageBoxButton.YesNo);
+                if (confirm != MessageBoxResult.Yes) return;
 
-                MessageBoxResult confirmation = MessageBox.Show(
-                    $"Are you sure you want to delete product {productName}?",
-                    "CONFIRM DELETE",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                await _dataManager.DeleteProductAsync(p.ProductID);
 
-                if (confirmation == MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        int result = await _dataManager.DeleteProductAsync(productID);
-
-                        if (result != 0)
-                        {
-                            MessageBox.Show("Product deleted successfully.", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-                            NotifyDataChanged();
-                            await LoadDataAsync();
-                        }
-                        else
-                        {
-                            var exists = await _dataManager.GetProductByIDAsync(productID);
-                            if (exists == null)
-                            {
-                                await LoadDataAsync();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to delete product.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error deleting product: {ex.Message}", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
+                MessageBox.Show("Deleted!");
+                NotifyDataChanged();
+                await LoadDataAsync();
             }
         }
     }

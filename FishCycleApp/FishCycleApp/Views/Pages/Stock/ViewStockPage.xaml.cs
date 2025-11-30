@@ -71,6 +71,17 @@ namespace FishCycleApp.Views.Pages.Stock
 
                 if (LoadedProduct != null)
                 {
+                    if (!string.IsNullOrEmpty(LoadedProduct.SupplierID))
+                    {
+                        var suppManager = new SupplierDataManager();
+                        var supplier = await suppManager.GetSupplierByIDAsync(LoadedProduct.SupplierID);
+
+                        if (supplier != null)
+                        {
+                            LoadedProduct.SupplierName = supplier.SupplierName;
+                        }
+                    }
+
                     ApplyToUI(LoadedProduct);
                 }
                 else
@@ -85,7 +96,6 @@ namespace FishCycleApp.Views.Pages.Stock
             }
             catch (OperationCanceledException)
             {
-                // Normal when cancelled
             }
             catch (Exception ex)
             {
@@ -108,7 +118,6 @@ namespace FishCycleApp.Views.Pages.Stock
             lblQuantity.Text = product.Quantity.ToString("N2");
             lblGrade.Text = product.Grade;
 
-            // Set grade color
             switch (product.Grade?.ToUpper())
             {
                 case "A":

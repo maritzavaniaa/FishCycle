@@ -9,14 +9,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Linq;
 
 namespace FishCycleApp
 {
     public partial class SupplierPage : Page
     {
-        // ============================================================
-        // GLOBAL RELOAD MECHANISM (IDENTIK DENGAN EMPLOYEE PAGE)
-        // ============================================================
         public static bool PendingReload { get; private set; }
         public static event Action? GlobalReloadRequested;
 
@@ -26,19 +24,12 @@ namespace FishCycleApp
             GlobalReloadRequested?.Invoke();
         }
 
-        // ============================================================
-        // FIELDS
-        // ============================================================
         private readonly Person currentUserProfile;
         private readonly SupplierDataManager supplierManager = new SupplierDataManager();
 
-        private DataView? SupplierDataView;
-        private DateTime _lastSuccessUtc;
+        private List<Supplier> _allSuppliers = new List<Supplier>(); private DateTime _lastSuccessUtc;
         private bool _isLoading;
 
-        // ============================================================
-        // CONSTRUCTOR
-        // ============================================================
         public SupplierPage(Person userProfile)
         {
             InitializeComponent();
@@ -51,24 +42,19 @@ namespace FishCycleApp
             this.IsVisibleChanged += SupplierPage_IsVisibleChanged;
         }
 
-        // ============================================================
-        // PAGE LIFECYCLE (IDENTIK DENGAN EMPLOYEE PAGE)
-        // ============================================================
         private async void SupplierPage_Loaded(object sender, RoutedEventArgs e)
         {
             GlobalReloadRequested -= OnGlobalReloadRequested;
             GlobalReloadRequested += OnGlobalReloadRequested;
 
-            // Jika pertama kali load, atau data belum ada, atau habis update/delete/add
-            if (PendingReload || SupplierDataView == null)
+            if (PendingReload || _allSuppliers.Count == 0)
             {
                 PendingReload = false;
                 await LoadDataAsync();
             }
             else
             {
-                dgvSuppliers.ItemsSource = SupplierDataView;
-                UpdateResultInfo();
+                ApplyFilter(); 
             }
         }
 
@@ -79,7 +65,6 @@ namespace FishCycleApp
 
         private async void SupplierPage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            // Silent reload saat user kembali dari View/Edit
             if (IsVisible && PendingReload)
             {
                 PendingReload = false;
@@ -92,31 +77,24 @@ namespace FishCycleApp
             await Dispatcher.InvokeAsync(async () => await LoadDataAsync());
         }
 
-        // ============================================================
-        // LOAD DATA (PERSIS EMPLOYEE PAGE)
-        // ============================================================
         private async Task LoadDataAsync()
         {
             if (_isLoading) return;
-
             try
             {
                 _isLoading = true;
+                var data = await supplierManager.LoadSupplierDataAsync();
 
-                DataTable dt = await supplierManager.LoadSupplierDataAsync();
-
-                SupplierDataView = dt.DefaultView;
-                dgvSuppliers.ItemsSource = SupplierDataView;
-
-                _lastSuccessUtc = DateTime.UtcNow;
-                UpdateResultInfo();
-
-                ApplyFilter();
+                if (data != null)
+                {
+                    _allSuppliers = data;
+                    _lastSuccessUtc = DateTime.UtcNow;
+                    ApplyFilter();
+                }
             }
             catch (Exception ex)
             {
-                txtResultInfo.Text = "Error loading supplier data.";
-                Console.WriteLine($"[SupplierPage] Load error: {ex.Message}");
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -124,24 +102,12 @@ namespace FishCycleApp
             }
         }
 
-        private void UpdateResultInfo()
+        private void UpdateResultInfo(int count)
         {
-            if (SupplierDataView != null)
-            {
-                int total = SupplierDataView.Count;
-                string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
-
-                txtResultInfo.Text = $"Total: {total} suppliers found{time}";
-            }
-            else
-            {
-                txtResultInfo.Text = "No supplier data available";
-            }
+            string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
+            txtResultInfo.Text = $"Total: {count} suppliers found{time}";
         }
 
-        // ============================================================
-        // SEARCH & FILTER
-        // ============================================================
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             ApplyFilter();
@@ -154,47 +120,36 @@ namespace FishCycleApp
 
         private void ApplyFilter()
         {
-            if (SupplierDataView == null) return;
+            if (dgvSuppliers == null || _allSuppliers == null) return;
 
-            List<string> filters = new List<string>();
+            IEnumerable<Supplier> query = _allSuppliers;
 
-            // text search
-            string search = txtSearch.Text.Trim();
-            if (search == "Search anything...") search = "";
-
-            if (!string.IsNullOrWhiteSpace(search))
+            string search = txtSearch.Text.Trim().ToLower();
+            if (!string.IsNullOrWhiteSpace(search) && search != "search anything...")
             {
-                string s = search.Replace("'", "''");
-                filters.Add(
-                    $"supplierid LIKE '%{s}%' OR " +
-                    $"supplier_type LIKE '%{s}%' OR " +
-                    $"supplier_name LIKE '%{s}%' OR " +
-                    $"supplier_phone LIKE '%{s}%' OR " +
-                    $"supplier_address LIKE '%{s}%'"
+                query = query.Where(s =>
+                    (s.SupplierID != null && s.SupplierID.ToLower().Contains(search)) ||
+                    (s.SupplierName != null && s.SupplierName.ToLower().Contains(search)) ||
+                    (s.SupplierPhone != null && s.SupplierPhone.ToLower().Contains(search)) ||
+                    (s.SupplierAddress != null && s.SupplierAddress.ToLower().Contains(search)) ||
+                    (s.SupplierType != null && s.SupplierType.ToLower().Contains(search))
                 );
             }
 
-            // category filter
             if (cmbCategory.SelectedItem is ComboBoxItem item)
             {
                 string cat = item.Content.ToString();
                 if (cat != "All Categories" && cat != "Category")
                 {
-                    string esc = cat.Replace("'", "''");
-                    filters.Add($"supplier_type = '{esc}'");
+                    query = query.Where(s => s.SupplierType == cat);
                 }
             }
 
-            SupplierDataView.RowFilter = filters.Count > 0
-                ? string.Join(" AND ", filters)
-                : "";
-
-            UpdateResultInfo();
+            var resultList = query.ToList();
+            dgvSuppliers.ItemsSource = resultList;
+            UpdateResultInfo(resultList.Count);
         }
 
-        // ============================================================
-        // BUTTON HANDLERS
-        // ============================================================
         private async void btnLoad_Click(object sender, RoutedEventArgs e)
         {
             await LoadDataAsync();
@@ -209,54 +164,27 @@ namespace FishCycleApp
 
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Supplier s)
             {
-                string id = row["supplierid"].ToString();
-                this.NavigationService.Navigate(new ViewSupplierPage(id, currentUserProfile));
+                this.NavigationService.Navigate(new ViewSupplierPage(s.SupplierID, currentUserProfile));
             }
         }
 
         private async void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is DataRowView row)
+            if (sender is Button btn && btn.DataContext is Supplier s)
             {
-                string id = row["supplierid"].ToString();
-                string name = row["supplier_name"].ToString();
-
-                var confirm = MessageBox.Show(
-                    $"Are you sure you want to delete Supplier \"{name}\"?",
-                    "CONFIRM DELETE",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
+                var confirm = MessageBox.Show($"Delete {s.SupplierName}?", "CONFIRM", MessageBoxButton.YesNo);
                 if (confirm != MessageBoxResult.Yes) return;
 
-                // Delete supplier
-                await supplierManager.DeleteSupplierAsync(id);
+                await supplierManager.DeleteSupplierAsync(s.SupplierID);
 
-                // VALID WAY → cek apakah sudah tidak ada di database
-                var stillExists = await supplierManager.GetSupplierByIDAsync(id);
-                bool success = stillExists == null;
-
-                if (success)
-                {
-                    MessageBox.Show("Supplier deleted successfully.",
-                        "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    NotifyDataChanged();
-                    await LoadDataAsync();
-                }
-                else
-                {
-                    MessageBox.Show("Failed to delete supplier.",
-                        "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                MessageBox.Show("Deleted!");
+                NotifyDataChanged();
+                await LoadDataAsync();
             }
         }
 
-        // ============================================================
-        // PROFILE DISPLAY
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "User";
@@ -276,7 +204,6 @@ namespace FishCycleApp
             catch { }
         }
 
-        // search placeholder
         private void txtSearch_GotFocus(object sender, RoutedEventArgs e)
         {
             if (txtSearch.Text == "Search anything...")

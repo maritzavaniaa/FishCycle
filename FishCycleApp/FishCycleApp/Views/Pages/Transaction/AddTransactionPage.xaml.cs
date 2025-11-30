@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-// Use alias to avoid namespace conflict
 using TransactionModel = FishCycleApp.Models.Transaction;
 
 namespace FishCycleApp.Views.Pages.Transaction
@@ -41,6 +40,7 @@ namespace FishCycleApp.Views.Pages.Transaction
 
             // Load dropdown data
             await LoadClientsAsync();
+            await LoadEmployeesAsync();
         }
 
         private string GenerateTransactionID()
@@ -55,15 +55,19 @@ namespace FishCycleApp.Views.Pages.Transaction
         {
             try
             {
-                var dt = await _clientDataManager.LoadClientDataAsync();
+                // DataManager sekarang mengembalikan List<Client>, BUKAN DataTable
+                var clients = await _clientDataManager.LoadClientDataAsync();
 
                 cmbClient.Items.Clear();
-                foreach (System.Data.DataRow row in dt.Rows)
+
+                // Loop langsung ke dalam List (tanpa .Rows)
+                foreach (var client in clients)
                 {
                     cmbClient.Items.Add(new
                     {
-                        ClientID = row["clientid"].ToString(),
-                        ClientName = row["client_name"].ToString()
+                        // Akses property langsung pakai Huruf Besar (PascalCase) sesuai Model
+                        ClientID = client.ClientID,
+                        ClientName = client.ClientName
                     });
                 }
 
@@ -78,6 +82,36 @@ namespace FishCycleApp.Views.Pages.Transaction
             }
         }
 
+        private async Task LoadEmployeesAsync()
+        {
+            try
+            {
+                // DataManager sekarang mengembalikan List<Employee>
+                var employees = await _employeeDataManager.LoadEmployeeDataAsync();
+
+                cmbEmployee.Items.Clear();
+
+                // Loop langsung ke dalam List
+                foreach (var emp in employees)
+                {
+                    cmbEmployee.Items.Add(new
+                    {
+                        // Akses property langsung
+                        EmployeeID = emp.EmployeeID,
+                        EmployeeName = emp.EmployeeName
+                    });
+                }
+
+                if (cmbEmployee.Items.Count > 0)
+                    cmbEmployee.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading employees: {ex.Message}");
+                MessageBox.Show("Failed to load employees. Please try again.", "WARNING",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // ==========================================
         // SAVE WITH FULL VALIDATION

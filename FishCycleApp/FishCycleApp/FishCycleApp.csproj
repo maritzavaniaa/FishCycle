@@ -10,6 +10,10 @@
 
   <ItemGroup>
     <None Remove="Resources\Images\bg_ikan.png" />
+    <None Remove="Resources\Images\Icons\Card_Stock\fish.png" />
+    <None Remove="Resources\Images\Icons\Card_Stock\low.png" />
+    <None Remove="Resources\Images\Icons\Card_Stock\stock.png" />
+    <None Remove="Resources\Images\Icons\Card_Stock\value.png" />
     <None Remove="Resources\Images\Icons\icon_box.png" />
     <None Remove="Resources\Images\Icons\icon_fish.png" />
     <None Remove="Resources\Images\Icons\icon_note.png" />
@@ -44,6 +48,10 @@
 
   <ItemGroup>
     <Resource Include="Resources\Images\bg_ikan.png" />
+    <Resource Include="Resources\Images\Icons\Card_Stock\fish.png" />
+    <Resource Include="Resources\Images\Icons\Card_Stock\low.png" />
+    <Resource Include="Resources\Images\Icons\Card_Stock\stock.png" />
+    <Resource Include="Resources\Images\Icons\Card_Stock\value.png" />
     <Resource Include="Resources\Images\Icons\icon_box.png" />
     <Resource Include="Resources\Images\Icons\icon_cart.png" />
     <Resource Include="Resources\Images\Icons\icon_client.png" />

@@ -37,20 +37,18 @@ namespace FishCycleApp.Views.Pages.Stock
         {
             try
             {
-                // Load suppliers from database
-                var suppliersTable = await supplierDataManager.LoadSupplierDataAsync();
+                var suppliers = await supplierDataManager.LoadSupplierDataAsync();
 
                 cmbSupplier.Items.Clear();
 
-                // Add empty option
                 cmbSupplier.Items.Add(new ComboBoxItem { Content = "-- Select Supplier --", Tag = null });
 
-                foreach (DataRow row in suppliersTable.Rows)
+                foreach (var s in suppliers)
                 {
                     var item = new ComboBoxItem
                     {
-                        Content = row["supplier_name"].ToString(),
-                        Tag = row["supplierid"].ToString()
+                        Content = s.SupplierName,
+                        Tag = s.SupplierID
                     };
                     cmbSupplier.Items.Add(item);
                 }
@@ -76,7 +74,6 @@ namespace FishCycleApp.Views.Pages.Stock
         {
             if (isSaving) return;
 
-            // Validation
             if (string.IsNullOrWhiteSpace(txtProductName.Text))
             {
                 MessageBox.Show("Please enter product name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -110,17 +107,14 @@ namespace FishCycleApp.Views.Pages.Stock
                 btnSave.IsEnabled = false;
                 this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Generate new product ID (format: PID-XXXXX)
                 string productID = await GenerateProductIDAsync();
 
-                // Get selected supplier
                 string? supplierID = null;
                 if (cmbSupplier.SelectedItem is ComboBoxItem selectedSupplier && selectedSupplier.Tag != null)
                 {
                     supplierID = selectedSupplier.Tag.ToString();
                 }
 
-                // Get selected grade
                 string grade = ((ComboBoxItem)cmbGrade.SelectedItem).Tag.ToString();
 
                 var newProduct = new Product
@@ -133,11 +127,8 @@ namespace FishCycleApp.Views.Pages.Stock
                     SupplierID = supplierID
                 };
 
-                int result = await dataManager.InsertProductAsync(newProduct);
+                bool success = await dataManager.InsertProductAsync(newProduct);
 
-                bool success = result != 0;
-
-                // Double check
                 if (!success)
                 {
                     var fetched = await dataManager.GetProductByIDAsync(newProduct.ProductID);
@@ -148,10 +139,8 @@ namespace FishCycleApp.Views.Pages.Stock
                 {
                     MessageBox.Show($"Product added successfully!", "SUCCESS", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // Notify StockPage
                     StockPage.NotifyDataChanged();
 
-                    // Navigate back
                     if (NavigationService?.CanGoBack == true)
                     {
                         NavigationService.GoBack();
@@ -185,9 +174,10 @@ namespace FishCycleApp.Views.Pages.Stock
                 var allProducts = await dataManager.LoadProductDataAsync();
                 int maxNumber = 0;
 
-                foreach (DataRow row in allProducts.Rows)
+                foreach (var prod in allProducts)
                 {
-                    string productID = row["productid"].ToString() ?? "";
+                    string productID = prod.ProductID ?? "";
+
                     if (productID.StartsWith("PID-") && productID.Length > 4)
                     {
                         if (int.TryParse(productID.Substring(4), out int num))

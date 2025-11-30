@@ -3,19 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
+using Newtonsoft.Json;
 
 namespace FishCycleApp.Models
 {
-    public class Product
+    [Table("product")]
+    public class Product : BaseModel
     {
-        public string? ProductID { get; set; }
-        public string? ProductName { get; set; }
-        public string? Grade { get; set; }
+        [PrimaryKey("productid", true)]
+        public string ProductID { get; set; } = string.Empty;
+
+        [Column("product_name")]
+        public string ProductName { get; set; } = string.Empty;
+
+        [Column("grade")]
+        public string Grade { get; set; } = "A";
+
+        [Column("quantity")]
         public decimal Quantity { get; set; }
+
+        [Column("unit_price")]
         public decimal UnitPrice { get; set; }
-        public decimal TotalValue => Quantity * UnitPrice;
+
+        [Column("supplierid")]
         public string? SupplierID { get; set; }
-        public string? SupplierName { get; set; }
+
+        [JsonIgnore]
+        public string SupplierName { get; set; } = "-";
+
+        [JsonIgnore]
+        public decimal TotalValue => Quantity * UnitPrice;
     }
 
     public class StockStatistics

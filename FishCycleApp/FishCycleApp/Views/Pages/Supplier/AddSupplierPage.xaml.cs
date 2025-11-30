@@ -13,7 +13,7 @@ namespace FishCycleApp
     {
         private readonly SupplierDataManager supplierManager = new SupplierDataManager();
         private readonly Person currentUserProfile;
-        private bool isSaving = false; // Anti double-click
+        private bool isSaving = false;
 
         public AddSupplierPage(Person userProfile)
         {
@@ -23,9 +23,6 @@ namespace FishCycleApp
             InitializeCategoryComboBox();
         }
 
-        // ============================================================
-        // ComboBox Initialization
-        // ============================================================
         private void InitializeCategoryComboBox()
         {
             cmbSupplierCategory.Items.Clear();
@@ -37,14 +34,10 @@ namespace FishCycleApp
             cmbSupplierCategory.SelectedIndex = 0;
         }
 
-        // ============================================================
-        // SAVE BUTTON — ASYNC & MIRIP AddEmployeePage versi optimal
-        // ============================================================
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (isSaving) return;
 
-            // Validation
             if (string.IsNullOrWhiteSpace(txtSupplierName.Text))
             {
                 MessageBox.Show("Please enter supplier name.", "WARNING",
@@ -62,7 +55,6 @@ namespace FishCycleApp
 
             try
             {
-                // Lock UI
                 isSaving = true;
                 btnSave.IsEnabled = false;
                 this.Cursor = System.Windows.Input.Cursors.Wait;
@@ -79,12 +71,8 @@ namespace FishCycleApp
                     SupplierType = supplierType
                 };
 
-                // Async insert
-                int result = await supplierManager.InsertSupplierAsync(newSupplier);
+                bool success = await supplierManager.InsertSupplierAsync(newSupplier);
 
-                bool success = result != 0;
-
-                // Double check if DB returns affected = 0
                 if (!success)
                 {
                     var exists = await supplierManager.GetSupplierByIDAsync(newSupplier.SupplierID);
@@ -96,10 +84,8 @@ namespace FishCycleApp
                     MessageBox.Show("Supplier added successfully!", "SUCCESS",
                         MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // Notify SupplierPage to reload list
                     SupplierPage.NotifyDataChanged();
 
-                    // Proper navigation (consistent with AddEmployeePage)
                     if (NavigationService?.CanGoBack == true)
                         NavigationService.GoBack();
                     else
@@ -118,25 +104,18 @@ namespace FishCycleApp
             }
             finally
             {
-                // unlock
                 isSaving = false;
                 btnSave.IsEnabled = true;
                 this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
         }
 
-        // ============================================================
-        // CANCEL
-        // ============================================================
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             if (NavigationService?.CanGoBack == true)
                 NavigationService.GoBack();
         }
 
-        // ============================================================
-        // USER PROFILE (Identical to Employee)
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = (profile.Names != null && profile.Names.Count > 0)
@@ -159,7 +138,6 @@ namespace FishCycleApp
                 }
                 catch
                 {
-                    // ignored — better UX than popup
                 }
             }
         }

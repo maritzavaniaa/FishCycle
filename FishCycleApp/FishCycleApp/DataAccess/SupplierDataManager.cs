@@ -5,222 +5,135 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using FishCycleApp.Models;
+using System.Collections.Generic;
+using System.Linq;
+using FishCycleApp.Models;
+using System.IO;
 
 namespace FishCycleApp.DataAccess
 {
     public class SupplierDataManager
     {
-        private readonly string _connectionString;
-        private readonly string _schema;
+        private static Supabase.Client? _supabaseClient;
 
-        public SupplierDataManager()
+        private async Task<Supabase.Client> GetClientAsync()
         {
-            // Load env (sama seperti Employee)
+            if (_supabaseClient != null) return _supabaseClient;
+
             LoadEnv();
+            var url = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? "";
+            var key = Environment.GetEnvironmentVariable("SUPABASE_KEY") ?? "";
 
-            var host = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST missing");
-            var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-            var username = Environment.GetEnvironmentVariable("DB_USERNAME") ?? throw new Exception("DB_USERNAME missing");
-            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD missing");
-            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "postgres";
-
-            var builder = new NpgsqlConnectionStringBuilder
+            var options = new Supabase.SupabaseOptions
             {
-                Host = host,
-                Port = int.Parse(port),
-                Username = username,
-                Password = password,
-                Database = database,
-                KeepAlive = 30,
-                Pooling = true
+                AutoRefreshToken = true,
+                AutoConnectRealtime = true
             };
 
-            _connectionString = builder.ToString();
-            _schema = Environment.GetEnvironmentVariable("DB_SCHEMA") ?? "public";
+            _supabaseClient = new Supabase.Client(url, key, options);
+            await _supabaseClient.InitializeAsync();
+            return _supabaseClient;
         }
 
         private void LoadEnv()
         {
             try
             {
-                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-                if (!System.IO.File.Exists(path))
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+                if (!File.Exists(path))
                 {
-                    var root = System.IO.Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
-                    path = System.IO.Path.Combine(root, ".env");
+                    string projectRoot = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
+                    path = Path.Combine(projectRoot, ".env");
                 }
+                if (!File.Exists(path)) return;
 
-                if (!System.IO.File.Exists(path)) return;
-
-                foreach (var line in System.IO.File.ReadAllLines(path))
+                foreach (var line in File.ReadAllLines(path))
                 {
-                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
-                    var parts = line.Split("=", 2);
-                    if (parts.Length != 2) continue;
-
-                    Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+                    if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#")) continue;
+                    var parts = line.Split('=', 2);
+                    if (parts.Length == 2) Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
                 }
             }
             catch { }
         }
 
-        private string Fn(string name) => $"{_schema}.{name}";
-
-        // ==========================================================
-        // LOAD LIST
-        // ==========================================================
-        public async Task<DataTable> LoadSupplierDataAsync(CancellationToken ct = default)
+        public async Task<List<Supplier>> LoadSupplierDataAsync()
         {
-            var dt = new DataTable();
-            string sql = $"select supplierid, supplier_type, supplier_name, supplier_phone, supplier_address from {Fn("st_select_supplier")}()";
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct);
-
-                await using var cmd = new NpgsqlCommand(sql, conn);
-                await using var rd = await cmd.ExecuteReaderAsync(ct);
-
-                dt.Load(rd);
+                var client = await GetClientAsync();
+                var result = await client.From<Supplier>().Select("*").Get();
+                return result.Models;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Supplier] Load error: {ex.Message}");
+                return new List<Supplier>();
             }
-
-            return dt;
         }
 
-        // ==========================================================
-        // INSERT
-        // ==========================================================
-        public async Task<int> InsertSupplierAsync(Supplier s, CancellationToken ct = default)
+        public async Task<bool> InsertSupplierAsync(Supplier s)
         {
-            string sql = $"select {Fn("st_insert_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
-            return await ExecuteAsync(sql, s, ct);
-        }
-
-        // ==========================================================
-        // UPDATE
-        // ==========================================================
-        public async Task<int> UpdateSupplierAsync(Supplier s, CancellationToken ct = default)
-        {
-            string sql = $"select {Fn("st_update_supplier")}(@p_id, @p_type, @p_name, @p_phone, @p_address)";
-            return await ExecuteAsync(sql, s, ct);
-        }
-
-        // ==========================================================
-        // DELETE
-        // ==========================================================
-        public async Task<int> DeleteSupplierAsync(string supplierID, CancellationToken ct = default)
-        {
-            string sql = $"select {Fn("st_delete_supplier")}(@p_id)";
-            var dummy = new Supplier
-            {
-                SupplierID = supplierID,
-                SupplierName = "",
-                SupplierType = "",
-                SupplierPhone = null,
-                SupplierAddress = null
-            };
-
-            return await ExecuteAsync(sql, dummy, ct, isDelete: true);
-        }
-
-        // ==========================================================
-        // GET BY ID
-        // ==========================================================
-        public async Task<Supplier?> GetSupplierByIDAsync(string supplierID, CancellationToken ct = default)
-        {
-            Supplier? supplier = null;
-            string id = supplierID?.Trim() ?? "";
-
-            string sql = $@"
-                select supplierid, supplier_type, supplier_name, supplier_phone, supplier_address
-                from {Fn("supplier")}
-                where lower(trim(supplierid)) = lower(trim(@p_id))
-                limit 1
-            ";
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct);
-
-                await using var cmd = new NpgsqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@p_id", id);
-
-                await using var rd = await cmd.ExecuteReaderAsync(ct);
-
-                if (await rd.ReadAsync(ct))
-                    supplier = Map(rd);
+                var client = await GetClientAsync();
+                await client.From<Supplier>().Insert(s);
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Supplier] GetByID error: {ex.Message}");
+                Console.WriteLine($"[Supplier] Insert error: {ex.Message}");
+                throw;
             }
-
-            return supplier;
         }
 
-        // ==========================================================
-        // SHARED EXECUTION FOR INSERT / UPDATE / DELETE
-        // ==========================================================
-        private async Task<int> ExecuteAsync(string sql, Supplier s, CancellationToken ct, bool isDelete = false)
+        public async Task<bool> UpdateSupplierAsync(Supplier s)
         {
-            int result = 0;
-
             try
             {
-                await using var conn = new NpgsqlConnection(_connectionString);
-                await conn.OpenAsync(ct);
-
-                await using var cmd = new NpgsqlCommand(sql, conn);
-
-                cmd.Parameters.AddWithValue("@p_id", s.SupplierID);
-
-                if (!isDelete)
-                {
-                    cmd.Parameters.AddWithValue("@p_type", (object?)s.SupplierType ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@p_name", (object?)s.SupplierName ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@p_phone", (object?)s.SupplierPhone ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@p_address", (object?)s.SupplierAddress ?? DBNull.Value);
-                }
-
-                var scalar = await cmd.ExecuteScalarAsync(ct);
-                result = ConvertDbInt(scalar);
+                var client = await GetClientAsync();
+                await client.From<Supplier>().Update(s);
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Supplier] Exec error: {ex.Message}");
+                Console.WriteLine($"[Supplier] Update error: {ex.Message}");
+                return false;
             }
-
-            return result;
         }
 
-        private static Supplier Map(IDataRecord rd)
+        public async Task<bool> DeleteSupplierAsync(string supplierID)
         {
-            return new Supplier
+            try
             {
-                SupplierID = rd["supplierid"].ToString(),
-                SupplierType = rd["supplier_type"].ToString(),
-                SupplierName = rd["supplier_name"].ToString(),
-                SupplierPhone = rd["supplier_phone"] == DBNull.Value ? null : rd["supplier_phone"].ToString(),
-                SupplierAddress = rd["supplier_address"] == DBNull.Value ? null : rd["supplier_address"].ToString()
-            };
+                var client = await GetClientAsync();
+                await client.From<Supplier>().Where(x => x.SupplierID == supplierID).Delete();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Supplier] Delete error: {ex.Message}");
+                return false;
+            }
         }
 
-        private static int ConvertDbInt(object? value)
+        public async Task<Supplier?> GetSupplierByIDAsync(string supplierID)
         {
-            if (value == null || value == DBNull.Value) return 0;
-            return value switch
+            try
             {
-                int i => i,
-                long l => (int)l,
-                bool b => b ? 1 : 0,
-                _ => 0
-            };
+                var client = await GetClientAsync();
+                var result = await client
+                    .From<Supplier>()
+                    .Select("*")
+                    .Where(x => x.SupplierID == supplierID)
+                    .Get();
+
+                return result.Models.FirstOrDefault();
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

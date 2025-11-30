@@ -34,9 +34,6 @@ namespace FishCycleApp
             IsVisibleChanged += ViewClientPage_IsVisibleChanged;
         }
 
-        // ============================================================
-        // PAGE EVENTS
-        // ============================================================
         private void ViewClientPage_Loaded(object sender, RoutedEventArgs e)
         {
             ReloadDataSafe(false);
@@ -53,9 +50,6 @@ namespace FishCycleApp
                 ReloadDataSafe(true);
         }
 
-        // ============================================================
-        // SAFE RELOAD (prevent double load)
-        // ============================================================
         private void ReloadDataSafe(bool isSilent)
         {
             _cts?.Cancel();
@@ -64,9 +58,6 @@ namespace FishCycleApp
             _ = LoadClientDetailsAsync(_currentClientID, isSilent, _cts.Token);
         }
 
-        // ============================================================
-        // LOAD CLIENT DATA
-        // ============================================================
         private async Task LoadClientDetailsAsync(string clientID, bool isSilent, CancellationToken token)
         {
             try
@@ -82,7 +73,7 @@ namespace FishCycleApp
 
                 if (LoadedClient != null)
                 {
-                    _currentClientID = LoadedClient.ClientID; // update ID jika ada perubahan
+                    _currentClientID = LoadedClient.ClientID;
                     ApplyToUI(LoadedClient);
                 }
                 else if (!isSilent)
@@ -93,7 +84,6 @@ namespace FishCycleApp
             }
             catch (OperationCanceledException)
             {
-                // ignored (normal saat navigate)
             }
             catch (Exception ex)
             {
@@ -107,9 +97,6 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // APPLY TO UI
-        // ============================================================
         private void ApplyToUI(Client c)
         {
             lblClientID.Text = c.ClientID;
@@ -119,9 +106,6 @@ namespace FishCycleApp
             lblClientAddress.Text = c.ClientAddress ?? "-";
         }
 
-        // ============================================================
-        // BUTTONS
-        // ============================================================
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             GoBackOrNavigateList();
@@ -130,7 +114,6 @@ namespace FishCycleApp
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             if (LoadedClient == null) return;
-            // Saat navigasi ke Edit, event Unloaded akan terpanggil dan membatalkan loading View
             this.NavigationService.Navigate(new EditClientPage(LoadedClient, currentUserProfile));
         }
 
@@ -151,10 +134,8 @@ namespace FishCycleApp
                 btnDelete.IsEnabled = false;
                 Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Delete command
                 await clientManager.DeleteClientAsync(LoadedClient.ClientID);
 
-                // VALID WAY — cek sudah terhapus
                 var stillThere = await clientManager.GetClientByIDAsync(LoadedClient.ClientID);
                 bool success = stillThere == null;
 
@@ -180,9 +161,6 @@ namespace FishCycleApp
             }
         }
 
-        // ============================================================
-        // NAVIGATION LOGIC (mirror Supplier)
-        // ============================================================
         private void GoBackOrNavigateList()
         {
             if (NavigationService?.CanGoBack == true)
@@ -191,9 +169,6 @@ namespace FishCycleApp
                 NavigationService?.Navigate(new ClientPage(currentUserProfile));
         }
 
-        // ============================================================
-        // PROFILE DISPLAY
-        // ============================================================
         private void DisplayProfileData(Person profile)
         {
             lblUserName.Text = profile?.Names?[0]?.DisplayName ?? "Unknown User";
@@ -211,7 +186,6 @@ namespace FishCycleApp
                 }
                 catch
                 {
-                    // ignore for UX
                 }
             }
         }
