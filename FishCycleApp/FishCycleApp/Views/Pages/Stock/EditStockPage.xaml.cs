@@ -39,7 +39,6 @@ namespace FishCycleApp.Views.Pages.Stock
                 await LoadSuppliersAsync();
                 LoadGrades();
 
-                // Load fresh data from database
                 if (WorkingProduct != null)
                 {
                     var found = await dataManager.GetProductByIDAsync(WorkingProduct.ProductID);
@@ -70,20 +69,16 @@ namespace FishCycleApp.Views.Pages.Stock
         {
             try
             {
-                // 1. Ambil data (Sekarang tipe datanya List<Supplier>)
                 var suppliers = await supplierDataManager.LoadSupplierDataAsync();
 
                 cmbSupplier.Items.Clear();
 
-                // Tambah opsi default
                 cmbSupplier.Items.Add(new ComboBoxItem { Content = "-- Select Supplier --", Tag = null });
 
-                // 2. Loop langsung ke object (JANGAN pakai .Rows lagi)
                 foreach (var s in suppliers)
                 {
                     var item = new ComboBoxItem
                     {
-                        // 3. Akses property pakai Titik (Bukan ["string"])
                         Content = s.SupplierName,
                         Tag = s.SupplierID
                     };
@@ -115,7 +110,6 @@ namespace FishCycleApp.Views.Pages.Stock
             txtUnitPrice.Text = WorkingProduct.UnitPrice.ToString("0.##");
             txtQuantity.Text = WorkingProduct.Quantity.ToString("0.##");
 
-            // Set grade
             foreach (ComboBoxItem item in cmbGrade.Items)
             {
                 if (item.Tag?.ToString() == WorkingProduct.Grade)
@@ -125,7 +119,6 @@ namespace FishCycleApp.Views.Pages.Stock
                 }
             }
 
-            // Set supplier
             if (!string.IsNullOrEmpty(WorkingProduct.SupplierID))
             {
                 foreach (ComboBoxItem item in cmbSupplier.Items)
@@ -143,7 +136,6 @@ namespace FishCycleApp.Views.Pages.Stock
         {
             if (WorkingProduct == null || isProcessing) return;
 
-            // Validation
             if (string.IsNullOrWhiteSpace(txtProductName.Text))
             {
                 MessageBox.Show("Please enter product name.", "WARNING", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -171,14 +163,12 @@ namespace FishCycleApp.Views.Pages.Stock
                 btnSave.IsEnabled = false;
                 this.Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Get selected supplier
                 string? supplierID = null;
                 if (cmbSupplier.SelectedItem is ComboBoxItem selectedSupplier && selectedSupplier.Tag != null)
                 {
                     supplierID = selectedSupplier.Tag.ToString();
                 }
 
-                // Get selected grade
                 string grade = ((ComboBoxItem)cmbGrade.SelectedItem).Tag.ToString();
 
                 WorkingProduct.ProductName = txtProductName.Text.Trim();
@@ -187,10 +177,8 @@ namespace FishCycleApp.Views.Pages.Stock
                 WorkingProduct.UnitPrice = unitPrice;
                 WorkingProduct.SupplierID = supplierID;
 
-                int result = await dataManager.UpdateProductAsync(WorkingProduct);
-                bool success = result != 0;
+                bool success = await dataManager.UpdateProductAsync(WorkingProduct);
 
-                // Double check
                 if (!success)
                 {
                     var verify = await dataManager.GetProductByIDAsync(WorkingProduct.ProductID);

@@ -320,98 +320,60 @@
 
                     <!-- ================= COLUMNS ================= -->
                     <DataGrid.Columns>
-
-                        <DataGridTextColumn Header="Product ID" Binding="{Binding productid}" Width="120">
+                        <DataGridTextColumn Header="Product ID" Binding="{Binding ProductID}" Width="120">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Foreground" Value="#6C757D"/>
-                                    <Setter Property="FontWeight" Value="Normal"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Name" Binding="{Binding product_name}" Width="220">
+                        <DataGridTextColumn Header="Name" Binding="{Binding ProductName}" Width="220">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="Foreground" Value="#212529"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- GRADE (Simple Text Column) -->
-                        <DataGridTextColumn Header="Grade" Binding="{Binding grade}" Width="150">
+                        <DataGridTextColumn Header="Grade" Binding="{Binding Grade}" Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Quantity (kg)" Binding="{Binding quantity}" Width="140">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Qty (kg)" Binding="{Binding Quantity, StringFormat=N2}" Width="100"/>
 
-                        <DataGridTextColumn Header="Unit Price (Rp)" Binding="{Binding unit_price}" Width="140">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Price (Rp)" Binding="{Binding UnitPrice, StringFormat=N0}" Width="120"/>
 
-                        <DataGridTextColumn Header="Total Value (Rp)" Binding="{Binding total_value}" Width="160">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Total (Rp)" Binding="{Binding TotalValue, StringFormat=N0}" Width="140"/>
 
-                        <DataGridTextColumn Header="Supplier" Binding="{Binding supplier_name}" Width="200">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#495057"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Supplier" Binding="{Binding SupplierName}" Width="200"/>
 
-                        <!-- ACTION ICONS -->
-                        <DataGridTemplateColumn Header="Action" Width="120">
+                        <DataGridTemplateColumn Header="Action" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
-                                        <Button Click="btnView_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="View Product">
-                                            <Image Width="20" Height="20" Source="/Resources/Images/Icons/icon_view.png"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
+                                        <Button Click="btnView_Click" Background="Transparent" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand" ToolTip="View">
+                                            <Image Source="pack://application:,,,/Resources/Images/Icons/icon_view.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Button>
-                                        <Button Click="btnEdit_Click" Background="Transparent" BorderThickness="0" Margin="12,0,0,0" Cursor="Hand" ToolTip="Edit Product">
-                                            <Image Width="20" Height="20" Source="/Resources/Images/Icons/icon_edit.png"/>
-                                        </Button>
-                                        <Button Click="btnDelete_Click" Background="Transparent" BorderThickness="0" Margin="12,0,0,0" Cursor="Hand" ToolTip="Delete Product">
-                                            <Image Width="20" Height="20" Source="/Resources/Images/Icons/icon_delete.png"/>
+                                        <Button Click="btnDelete_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Delete">
+                                            <Image Source="pack://application:,,,/Resources/Images/Icons/icon_delete.png" Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
                     </DataGrid.Columns>
                 </DataGrid>
             </ScrollViewer>
         </Border>
-
     </Grid>
 </Page>
