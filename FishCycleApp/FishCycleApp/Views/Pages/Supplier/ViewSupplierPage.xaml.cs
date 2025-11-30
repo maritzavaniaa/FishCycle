@@ -73,7 +73,6 @@ namespace FishCycleApp
 
                 if (LoadedSupplier != null)
                 {
-                    // update current ID biar selalu benar
                     _currentSupplierID = LoadedSupplier.SupplierID;
 
                     ApplyToUI(LoadedSupplier);
@@ -116,7 +115,6 @@ namespace FishCycleApp
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             if (LoadedSupplier == null) return;
-            // Saat navigasi ke Edit, event Unloaded akan terpanggil dan membatalkan loading View
             this.NavigationService.Navigate(new EditSupplierPage(LoadedSupplier, currentUserProfile));
         }
 
@@ -137,10 +135,8 @@ namespace FishCycleApp
                 btnDelete.IsEnabled = false;
                 Cursor = System.Windows.Input.Cursors.Wait;
 
-                // Delete in database
                 await supplierManager.DeleteSupplierAsync(LoadedSupplier.SupplierID);
 
-                // VALID WAY: cek apakah data sudah tidak ada
                 var stillThere = await supplierManager.GetSupplierByIDAsync(LoadedSupplier.SupplierID);
                 bool success = stillThere == null;
 

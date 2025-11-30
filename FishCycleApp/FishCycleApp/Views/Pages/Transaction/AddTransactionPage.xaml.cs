@@ -83,15 +83,19 @@ namespace FishCycleApp.Views.Pages.Transaction
         {
             try
             {
-                var dt = await _employeeDataManager.LoadEmployeeDataAsync();
+                // DataManager sekarang mengembalikan List<Employee>
+                var employees = await _employeeDataManager.LoadEmployeeDataAsync();
 
                 cmbEmployee.Items.Clear();
-                foreach (System.Data.DataRow row in dt.Rows)
+
+                // Loop langsung ke dalam List
+                foreach (var emp in employees)
                 {
                     cmbEmployee.Items.Add(new
                     {
-                        EmployeeID = row["employee_id"].ToString(),
-                        EmployeeName = row["name"].ToString()
+                        // Akses property langsung
+                        EmployeeID = emp.EmployeeID,
+                        EmployeeName = emp.EmployeeName
                     });
                 }
 

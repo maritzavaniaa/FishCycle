@@ -70,17 +70,22 @@ namespace FishCycleApp.Views.Pages.Stock
         {
             try
             {
-                var suppliersTable = await supplierDataManager.LoadSupplierDataAsync();
+                // 1. Ambil data (Sekarang tipe datanya List<Supplier>)
+                var suppliers = await supplierDataManager.LoadSupplierDataAsync();
 
                 cmbSupplier.Items.Clear();
+
+                // Tambah opsi default
                 cmbSupplier.Items.Add(new ComboBoxItem { Content = "-- Select Supplier --", Tag = null });
 
-                foreach (DataRow row in suppliersTable.Rows)
+                // 2. Loop langsung ke object (JANGAN pakai .Rows lagi)
+                foreach (var s in suppliers)
                 {
                     var item = new ComboBoxItem
                     {
-                        Content = row["supplier_name"].ToString(),
-                        Tag = row["supplierid"].ToString()
+                        // 3. Akses property pakai Titik (Bukan ["string"])
+                        Content = s.SupplierName,
+                        Tag = s.SupplierID
                     };
                     cmbSupplier.Items.Add(item);
                 }
