@@ -3,6 +3,9 @@ using FishCycleApp.Models;
 using FishCycleApp.Views.Pages.Stock;
 using FishCycleApp.Views.Pages.Transaction;
 using Google.Apis.PeopleService.v1.Data;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -11,9 +14,6 @@ using System.Windows.Shapes;
 
 namespace FishCycleApp
 {
-    /// <summary>
-    /// Interaction logic for DashboardPage.xaml
-    /// </summary>
     public partial class DashboardPage : Page
     {
         private readonly Person _currentUserProfile;
@@ -21,6 +21,7 @@ namespace FishCycleApp
         private bool _isWeatherLoading;
         private readonly TransactionDataManager _transactionDataManager = new TransactionDataManager();
         private readonly ProductDataManager _productDataManager = new ProductDataManager();
+        private readonly ClientDataManager _clientDataManager = new ClientDataManager();
 
         private async Task LoadWeatherPanelAsync()
         {
@@ -72,59 +73,89 @@ namespace FishCycleApp
 
         private async Task LoadDashboardStatsAsync()
         {
-            int year = DateTime.Now.Year;
-            int month = DateTime.Now.Month;
+            try
+            {
+                var trans = await _transactionDataManager.LoadTransactionDataAsync();
+                var now = DateTime.Now;
 
-            var revenue = await _transactionDataManager.GetMonthlyRevenueAsync(year, month);
-            txtTotalRevenue.Text = $"Rp{revenue:N0}";
+                var monthTrans = trans.Where(t => t.TransactionDate.Month == now.Month && t.TransactionDate.Year == now.Year).ToList();
 
-            var totalTransactions = await _transactionDataManager.GetMonthlyTransactionCountAsync(year, month);
-            txtTotalTransaction.Text = totalTransactions.ToString();
+                decimal revenue = monthTrans.Where(t => t.PaymentStatus == "Paid").Sum(t => t.TotalAmount);
+                int count = monthTrans.Count;
+                int activeDelivery = trans.Count(t => t.DeliveryStatus == "In Transit" || t.DeliveryStatus == "Pending");
 
-            var activeDelivery = await _transactionDataManager.GetActiveDeliveryTodayAsync();
-            txtActiveDelivery.Text = activeDelivery.ToString();
+                txtTotalRevenue.Text = $"Rp {revenue:N0}";
+                txtTotalTransaction.Text = count.ToString();
+                txtActiveDelivery.Text = activeDelivery.ToString();
+            }
+            catch { }
         }
 
         private async Task LoadFishStockAsync()
         {
-            var totalStock = await _productDataManager.GetTotalStockQuantityAsync();
-            txtTotalFishStock.Text = $"{totalStock:N0} kg";
+            try
+            {
+                var products = await _productDataManager.LoadProductDataAsync();
 
-            var top5 = await _productDataManager.GetTop5StockAsync();
+                // Total Quantity
+                decimal totalQty = products.Sum(p => p.Quantity);
+                txtTotalFishStock.Text = $"{totalQty:N0} kg";
 
-            // Bind ke UI
-            stockItem1Name.Text = top5.Count > 0 ? top5[0].ProductName : "-";
-            stockItem1Qty.Text = top5.Count > 0 ? $"{top5[0].Quantity:N0} kg" : "0 kg";
+                // Top 5 Stock
+                var top5 = products.OrderByDescending(p => p.Quantity).Take(5).ToList();
 
-            stockItem2Name.Text = top5.Count > 1 ? top5[1].ProductName : "-";
-            stockItem2Qty.Text = top5.Count > 1 ? $"{top5[1].Quantity:N0} kg" : "0 kg";
+                // Helper function untuk set text aman
+                void SetText(TextBlock nameTxt, TextBlock qtyTxt, int index)
+                {
+                    if (index < top5.Count)
+                    {
+                        nameTxt.Text = top5[index].ProductName;
+                        qtyTxt.Text = $"{top5[index].Quantity:N0} kg";
+                    }
+                    else
+                    {
+                        nameTxt.Text = "-";
+                        qtyTxt.Text = "0 kg";
+                    }
+                }
 
-            stockItem3Name.Text = top5.Count > 2 ? top5[2].ProductName : "-";
-            stockItem3Qty.Text = top5.Count > 2 ? $"{top5[2].Quantity:N0} kg" : "0 kg";
-
-            stockItem4Name.Text = top5.Count > 3 ? top5[3].ProductName : "-";
-            stockItem4Qty.Text = top5.Count > 3 ? $"{top5[3].Quantity:N0} kg" : "0 kg";
-
-            stockItem5Name.Text = top5.Count > 4 ? top5[4].ProductName : "-";
-            stockItem5Qty.Text = top5.Count > 4 ? $"{top5[4].Quantity:N0} kg" : "0 kg";
+                SetText(stockItem1Name, stockItem1Qty, 0);
+                SetText(stockItem2Name, stockItem2Qty, 1);
+                SetText(stockItem3Name, stockItem3Qty, 2);
+                SetText(stockItem4Name, stockItem4Qty, 3);
+                SetText(stockItem5Name, stockItem5Qty, 4);
+            }
+            catch { }
         }
 
         private async void LoadTodayTransactions()
         {
             try
             {
-                var todayList = await _transactionDataManager.GetTodayTransactionsAsync();
+                var allTransactions = await _transactionDataManager.LoadTransactionDataAsync();
+                var today = DateTime.Now.Date;
+                var todayList = allTransactions
+                                    .Where(t => t.TransactionDate.ToLocalTime().Date == today)
+                                    .OrderByDescending(t => t.TransactionDate)
+                                    .ToList();
+                var clients = await _clientDataManager.LoadClientDataAsync();
 
-                var formatted = todayList.Select(t => new
+                var formattedList = todayList.Select(t =>
                 {
-                    TransactionNumber = t.TransactionID,
-                    ClientName = t.ClientName,
-                    Amount = "Rp " + t.TotalAmount.ToString("N0"),
-                    TransactionStatus = t.PaymentStatus,
-                    DeliveryStatus = t.DeliveryStatus
+                    // Cari Nama Client berdasarkan ID
+                    var clientName = clients.FirstOrDefault(c => c.ClientID == t.ClientID)?.ClientName ?? "-";
+
+                    return new
+                    {
+                        TransactionNumber = t.TransactionID,
+                        ClientName = clientName, // <--- Nama Client Terisi di sini
+                        Amount = $"Rp {t.TotalAmount:N0}",
+                        TransactionStatus = t.PaymentStatus,
+                        DeliveryStatus = t.DeliveryStatus
+                    };
                 }).ToList();
 
-                dgTodayTransactions.ItemsSource = formatted;
+                dgTodayTransactions.ItemsSource = formattedList;
             }
             catch (Exception ex)
             {
@@ -182,16 +213,81 @@ namespace FishCycleApp
             InitializeComponent();
             _currentUserProfile = userProfile;
             DisplayProfileData(userProfile);
-            LoadTodayTransactions();
 
-            Loaded += DashboardPage_Loaded;   // tambahkan ini
+            this.Loaded += DashboardPage_Loaded;   // tambahkan ini
         }
 
         private async void DashboardPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await LoadWeatherPanelAsync();
-            await LoadDashboardStatsAsync();
-            await LoadFishStockAsync();
+            await Task.WhenAll(
+                LoadWeatherPanelAsync(),
+                LoadDashboardStatsAndTableAsync(),
+                LoadFishStockAsync()
+            );
+        }
+
+        private async Task LoadDashboardStatsAndTableAsync()
+        {
+            try
+            {
+                // A. Ambil SEMUA Transaksi & Client
+                var transactions = await _transactionDataManager.LoadTransactionDataAsync();
+                var clients = await _clientDataManager.LoadClientDataAsync();
+
+                // --- HITUNG STATISTIK (C# Calculation) ---
+                var now = DateTime.Now;
+                var thisMonthTransactions = transactions
+                    .Where(t => t.TransactionDate.ToLocalTime().Month == now.Month &&
+                                t.TransactionDate.ToLocalTime().Year == now.Year)
+                    .ToList();
+
+                // 1. Total Revenue (Bulan Ini, Status Paid)
+                decimal revenue = thisMonthTransactions
+                    .Where(t => t.PaymentStatus == "Paid")
+                    .Sum(t => t.TotalAmount);
+
+                // 2. Total Transaction Count (Bulan Ini)
+                int transCount = thisMonthTransactions.Count;
+
+                // 3. Active Delivery (Hari Ini, Status Pending/In Transit)
+                int activeDelivery = transactions
+                    .Count(t => t.TransactionDate.ToLocalTime().Date == now.Date &&
+                                (t.DeliveryStatus == "Pending" || t.DeliveryStatus == "In Transit"));
+
+                // Update UI Statistik
+                txtTotalRevenue.Text = $"Rp {revenue:N0}";
+                txtTotalTransaction.Text = transCount.ToString();
+                txtActiveDelivery.Text = activeDelivery.ToString();
+
+
+                // --- ISI TABEL TRANSAKSI HARI INI (MANUAL JOIN) ---
+                var todayList = transactions
+                    .Where(t => t.TransactionDate.ToLocalTime().Date == now.Date)
+                    .OrderByDescending(t => t.TransactionDate)
+                    .ToList();
+
+                var formattedList = todayList.Select(t =>
+                {
+                    // MANUAL JOIN: Cari Nama Client berdasarkan ID
+                    var client = clients.FirstOrDefault(c => c.ClientID == t.ClientID);
+                    string clientName = client?.ClientName ?? "-"; // Jika tidak ketemu, strip
+
+                    return new
+                    {
+                        TransactionNumber = t.TransactionID,
+                        ClientName = clientName,        // <--- SUDAH DIPERBAIKI
+                        Amount = $"Rp {t.TotalAmount:N0}",
+                        TransactionStatus = t.PaymentStatus,
+                        DeliveryStatus = t.DeliveryStatus
+                    };
+                }).ToList();
+
+                dgTodayTransactions.ItemsSource = formattedList;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Dashboard Error]: {ex.Message}");
+            }
         }
 
         private void btnDetailStock_Click(object sender, RoutedEventArgs e)
