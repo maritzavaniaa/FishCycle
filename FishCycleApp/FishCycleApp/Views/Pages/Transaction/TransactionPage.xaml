@@ -284,7 +284,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="Admin" Binding="{Binding EmployeeName}" Width="150" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Employee" Binding="{Binding EmployeeName}" Width="150" IsReadOnly="True"/>
 
                         <DataGridTextColumn Header="Payment" Binding="{Binding PaymentStatus}" Width="120" IsReadOnly="True"/>
 

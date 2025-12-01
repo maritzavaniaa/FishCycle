@@ -126,7 +126,7 @@ namespace FishCycleApp.Views.Pages.Transaction
 
         private void UpdateResultInfo(int count)
         {
-            string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
+            string suffix = _lastSuccessUtc != default ? $"" : string.Empty;
             if (txtResultInfo != null)
                 txtResultInfo.Text = $"Total: {count} transactions found{suffix}";
         }

@@ -106,7 +106,7 @@ namespace FishCycleApp
 
         private void UpdateResultInfo(int count)
         {
-            string suffix = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : string.Empty;
+            string suffix = _lastSuccessUtc != default ? $"" : string.Empty;
             txtResultInfo.Text = $"Total: {count} records found{suffix}";
         }
 

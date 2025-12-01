@@ -26,8 +26,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Dashboard" FontSize="28" FontWeight="Bold" Foreground="#00334E"/>
-                        <TextBlock Text="Thu 11 Sep | 12.00 WIB" FontSize="18" Foreground="#00334E"/>
+                        <TextBlock Text="Dashboard FishCycle" FontSize="28" FontWeight="Bold" Foreground="#00334E"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

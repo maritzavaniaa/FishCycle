@@ -98,7 +98,7 @@ namespace FishCycleApp
         }
         private void UpdateResultInfo(int count)
         {
-            string time = _lastSuccessUtc != default ? $" • last update {_lastSuccessUtc:HH:mm:ss}" : "";
+            string time = _lastSuccessUtc != default ? $"" : "";
             txtResultInfo.Text = $"Total: {count} suppliers found{time}";
         }
 
