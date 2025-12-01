@@ -1,0 +1,118 @@
+﻿<Page x:Class="FishCycleApp.Views.Pages.Transaction.EditTransactionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      d:DesignHeight="768" d:DesignWidth="1366"
+      Title="EditTransactionPage" Background="#E9ECEF">
+
+    <Grid Margin="40,30,40,40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,25">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Edit Transaction" FontSize="28" FontWeight="Bold" Foreground="#1a1a1a"/>
+                <TextBlock Text="Transaction > Edit Transaction" FontSize="14" Foreground="#6C757D" Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Image x:Name="imgUserProfile" Height="30" Width="30" Margin="0,0,10,0"/>
+                <TextBlock x:Name="lblUserName" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="18" Foreground="#212529" Margin="0,0,20,0"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="20" Padding="40" BorderBrush="#E0E0E0" BorderThickness="1" VerticalAlignment="Top">
+            <StackPanel>
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Transaction ID" FontWeight="SemiBold" Foreground="#6C757D" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
+                            <TextBox x:Name="txtTransactionID" Padding="10" IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Total Amount" FontWeight="SemiBold" Foreground="#6C757D" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
+                            <TextBox x:Name="txtTotal" Padding="10" IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Client Name" FontWeight="SemiBold" Foreground="#6C757D" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="#F5F5F5">
+                            <TextBox x:Name="txtClient" Padding="10" IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Transaction Date" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                            <DatePicker x:Name="dpTransactionDate" BorderThickness="0" Padding="10" VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,0,0,30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Payment Status" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                            <ComboBox x:Name="cmbPaymentStatus" Padding="10" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Delivery Status" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,5"/>
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="8" Background="White">
+                            <ComboBox x:Name="cmbDeliveryStatus" Padding="10" BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnCancel" Content="CANCEL" Padding="25,12" Background="White" Foreground="#333" BorderBrush="#CCC" BorderThickness="1" Margin="0,0,10,0" Click="btnCancel_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button x:Name="btnSave" Content="SAVE CHANGES" Padding="35,12" Background="#007ACC" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="btnSave_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
