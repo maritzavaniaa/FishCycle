@@ -2,49 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Threading; 
+using System.Threading;
 using FishCycleApp.Models;
 using System.IO;
 
 namespace FishCycleApp.DataAccess
 {
-    public class TransactionDataManager
+    public class TransactionDataManager : BaseDataManager
     {
-        private static Supabase.Client? _supabaseClient;
         private readonly ProductDataManager _productManager = new ProductDataManager();
-
-        private async Task<Supabase.Client> GetClientAsync()
-        {
-            if (_supabaseClient != null) return _supabaseClient;
-            LoadEnv();
-            var url = Environment.GetEnvironmentVariable("SUPABASE_URL") ?? "";
-            var key = Environment.GetEnvironmentVariable("SUPABASE_KEY") ?? "";
-            var options = new Supabase.SupabaseOptions { AutoRefreshToken = true, AutoConnectRealtime = true };
-            _supabaseClient = new Supabase.Client(url, key, options);
-            await _supabaseClient.InitializeAsync();
-            return _supabaseClient;
-        }
-
-        private void LoadEnv()
-        {
-            try
-            {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-                if (!File.Exists(path))
-                {
-                    string root = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.FullName ?? "";
-                    path = Path.Combine(root, ".env");
-                }
-                if (!File.Exists(path)) return;
-                foreach (var line in File.ReadAllLines(path))
-                {
-                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
-                    var parts = line.Split('=', 2);
-                    if (parts.Length == 2) Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
-                }
-            }
-            catch { }
-        }
 
         public async Task<List<Transaction>> LoadTransactionDataAsync()
         {
@@ -72,7 +38,7 @@ namespace FishCycleApp.DataAccess
             catch (Exception ex)
             {
                 Console.WriteLine($"[Transaction] Insert Header error: {ex.Message}");
-                return false; 
+                return false;
             }
         }
 
@@ -174,6 +140,7 @@ namespace FishCycleApp.DataAccess
                 return false;
             }
         }
+
         public async Task<decimal> GetMonthlyRevenueAsync(int year, int month)
         {
             try
@@ -220,6 +187,7 @@ namespace FishCycleApp.DataAccess
                 return 0;
             }
         }
+
         public async Task<int> GetActiveDeliveryTodayAsync()
         {
             try
@@ -243,6 +211,7 @@ namespace FishCycleApp.DataAccess
                 return 0;
             }
         }
+
         public async Task<List<Transaction>> GetTodayTransactionsAsync()
         {
             try
