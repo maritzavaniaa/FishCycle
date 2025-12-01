@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -16,10 +16,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x 
+        dotnet-version: 9.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore FishCycleApp.sln
 
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build FishCycleApp.sln --no-restore --configuration Release
